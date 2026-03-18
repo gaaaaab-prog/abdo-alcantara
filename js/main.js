@@ -50,13 +50,15 @@ document.addEventListener('touchmove', e => {
 document.addEventListener('touchend', () => { mouseX = -9999; mouseY = -9999; mouseSpeed = 0; });
 
 // ── PHYSICS CONSTANTS ──────────────────────
-const DRIFT_SPEED   = 0.15;
-const FRICTION      = 0.984;
-const MAX_SPEED     = 2.2;
-const ATTRACT_STEP  = 0.014;
-const REPEL_FORCE   = 0.10;
-const JITTER        = 0.006;
-const COLLISION_PAD = 24;
+// Words float on a slowly-rotating force — continuous arcing curves, no sudden kicks.
+// DRIFT_FORCE applied each frame in _driftAngle direction;
+// _driftAngle rotates at _driftAngleSpeed rad/frame → full spin every ~60-140 s.
+// Terminal speed ≈ DRIFT_FORCE / (1 - FRICTION) ≈ 0.0042 / 0.009 ≈ 0.47 px/frame.
+const FRICTION      = 0.991;
+const MAX_SPEED     = 1.4;
+const ATTRACT_STEP  = 0.010;
+const REPEL_FORCE   = 0.07;
+const DRIFT_FORCE   = 0.0042;
 const allBodies     = [];
 
 // ── FLOATING WORD ──────────────────────────
@@ -64,11 +66,19 @@ class FloatingWord {
   constructor(el, x, y) {
     this.el = el;
     this.x  = x; this.y  = y;
-    this.vx = (Math.random() - 0.5) * DRIFT_SPEED;
-    this.vy = (Math.random() - 0.5) * DRIFT_SPEED;
     this.w  = 0; this.h  = 0;
-    this._driftFrame    = Math.floor(Math.random() * 200);
-    this._driftInterval = 160 + Math.floor(Math.random() * 220);
+
+    // Each word gets a random starting drift direction that rotates very slowly.
+    // This produces long, graceful arcs instead of straight-line drifts or
+    // sudden kicks — the key to dreamy motion.
+    this._driftAngle      = Math.random() * Math.PI * 2;
+    this._driftAngleSpeed = (Math.random() < 0.5 ? 1 : -1)
+                            * (0.0005 + Math.random() * 0.0008); // ~0.03–0.08 deg/frame
+
+    // Launch outward in the drift direction so words spread from center on load.
+    this.vx = Math.cos(this._driftAngle) * 0.55;
+    this.vy = Math.sin(this._driftAngle) * 0.55;
+
     el.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
     allBodies.push(this);
   }
@@ -81,13 +91,14 @@ class FloatingWord {
     const dx = cx - mx, dy = cy - my;
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
+    // Cursor attraction / repulsion (unchanged feel)
     if (mouseSpeed < SLOW_THRESH && dist < ATTRACT_R) {
       const t = 1 - mouseSpeed / SLOW_THRESH;
       const distFactor = dist / ATTRACT_R;
       const step = t * ATTRACT_STEP * (0.15 + 0.85 * distFactor);
       this.vx += (mx - cx) * step;
       this.vy += (my - cy) * step;
-      const damp = 0.82 + 0.15 * distFactor;
+      const damp = 0.88 + 0.10 * distFactor;
       this.vx *= damp; this.vy *= damp;
     } else if (dist < REPEL_R) {
       const f = ((REPEL_R - dist) / REPEL_R) * REPEL_FORCE;
@@ -95,51 +106,37 @@ class FloatingWord {
       this.vy += (dy / dist) * f;
     }
 
-    this._driftFrame++;
-    if (this._driftFrame >= this._driftInterval) {
-      this._driftFrame    = 0;
-      this._driftInterval = 160 + Math.floor(Math.random() * 220);
-      const angle    = Math.random() * Math.PI * 2;
-      const strength = 0.28 + Math.random() * 0.32;
-      this.vx += Math.cos(angle) * strength;
-      this.vy += Math.sin(angle) * strength;
+    // Rotate drift direction and apply tiny continuous force.
+    // Very rarely nudge the spin rate for long-term variety.
+    this._driftAngle += this._driftAngleSpeed;
+    if (Math.random() < 0.0008) {
+      this._driftAngleSpeed += (Math.random() - 0.5) * 0.0003;
+      this._driftAngleSpeed = Math.max(-0.0014, Math.min(0.0014, this._driftAngleSpeed));
     }
+    this.vx += Math.cos(this._driftAngle) * DRIFT_FORCE;
+    this.vy += Math.sin(this._driftAngle) * DRIFT_FORCE;
 
-    for (let i = 0; i < allBodies.length; i++) {
-      const o = allBodies[i];
-      if (o === this) continue;
-      const ddx = cx - (o.x + o.w * 0.5);
-      const ddy = cy - (o.y + o.h * 0.5);
-      const d   = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
-      const minD = (this.w + o.w) * 0.5 + COLLISION_PAD;
-      if (d < minD) {
-        const push = (minD - d) / minD * 0.08;
-        this.vx += (ddx / d) * push;
-        this.vy += (ddy / d) * push;
-      }
-    }
-
+    // Speed cap & friction
     const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
     if (spd > MAX_SPEED) { this.vx = this.vx / spd * MAX_SPEED; this.vy = this.vy / spd * MAX_SPEED; }
-    this.vx *= FRICTION; this.vy *= FRICTION;
-    if (spd < 0.04) { this.vx += (Math.random() - 0.5) * JITTER; this.vy += (Math.random() - 0.5) * JITTER; }
+    this.vx *= FRICTION;
+    this.vy *= FRICTION;
 
-    this.x += this.vx; this.y += this.vy;
-    if (this.x < PAD)               { this.x = PAD;               this.vx =  Math.abs(this.vx) * 0.5; }
-    if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.5; }
-    if (this.y < PAD)               { this.y = PAD;               this.vy =  Math.abs(this.vy) * 0.5; }
-    if (this.y + this.h > VH - PAD) { this.y = VH - this.h - PAD; this.vy = -Math.abs(this.vy) * 0.5; }
+    this.x += this.vx;
+    this.y += this.vy;
+
+    // Soft boundary: kill most momentum and flip drift direction so the
+    // word gently curves away from the edge rather than snapping back hard.
+    if (this.x < PAD)               { this.x = PAD;               this.vx =  Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
+    if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
+    if (this.y < PAD)               { this.y = PAD;               this.vy =  Math.abs(this.vy) * 0.2; this._driftAngle = -this._driftAngle; }
+    if (this.y + this.h > VH - PAD) { this.y = VH - this.h - PAD; this.vy = -Math.abs(this.vy) * 0.2; this._driftAngle = -this._driftAngle; }
 
     this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)';
   }
 }
 
 // ── RECORD PHYSICS ─────────────────────────
-// The record uses its own calmer constants so it never fights the user:
-// – No cursor attraction/repulsion.
-// – Drift impulses ~6× weaker and ~2× less frequent than nav words.
-// – Friction 0.960 so motion settles in ~2 s.
-// – 5 s cooldown after every drag/click so the record stays where placed.
 const REC_FRICTION        = 0.960;
 const REC_MAX_SPEED       = 0.45;
 const REC_IMPULSE_MIN     = 0.04;
@@ -163,6 +160,7 @@ class RecordPhysics extends FloatingWord {
     this._didDrag  = false;
     this._postDragCooldown = REC_POST_DRAG_FRAMES;
     this._driftInterval = REC_INTERVAL_MIN + Math.floor(Math.random() * REC_INTERVAL_RANGE);
+    this._driftFrame    = 0;
 
     el.addEventListener('mouseenter', () => { if (!this.dragging) this.targetRpm = 4; });
     el.addEventListener('mouseleave', () => { if (!this.dragging) this.targetRpm = this._playing ? 33 : 0; });
@@ -181,18 +179,15 @@ class RecordPhysics extends FloatingWord {
   }
 
   _startDrag(px, py) {
-    this.dragging = true;
-    this._didDrag = false;
-    this.dragOffX = px - this.x;
-    this.dragOffY = py - this.y;
+    this.dragging = true; this._didDrag = false;
+    this.dragOffX = px - this.x; this.dragOffY = py - this.y;
     this.vx = 0; this.vy = 0;
     this.el.classList.add('dragging');
   }
 
   _moveDrag(px, py) {
     this._didDrag = true;
-    this.x = px - this.dragOffX;
-    this.y = py - this.dragOffY;
+    this.x = px - this.dragOffX; this.y = py - this.dragOffY;
     this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)';
   }
 
@@ -223,17 +218,14 @@ class RecordPhysics extends FloatingWord {
         this._driftInterval = REC_INTERVAL_MIN + Math.floor(Math.random() * REC_INTERVAL_RANGE);
         const a = Math.random() * Math.PI * 2;
         const s = REC_IMPULSE_MIN + Math.random() * REC_IMPULSE_RANGE;
-        this.vx += Math.cos(a) * s;
-        this.vy += Math.sin(a) * s;
+        this.vx += Math.cos(a) * s; this.vy += Math.sin(a) * s;
       }
 
       const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
       if (spd > REC_MAX_SPEED) { this.vx = this.vx / spd * REC_MAX_SPEED; this.vy = this.vy / spd * REC_MAX_SPEED; }
-      this.vx *= REC_FRICTION;
-      this.vy *= REC_FRICTION;
+      this.vx *= REC_FRICTION; this.vy *= REC_FRICTION;
 
-      this.x += this.vx;
-      this.y += this.vy;
+      this.x += this.vx; this.y += this.vy;
 
       if (this.x < PAD)               { this.x = PAD;               this.vx =  Math.abs(this.vx) * 0.3; }
       if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.3; }
@@ -248,13 +240,14 @@ class RecordPhysics extends FloatingWord {
 }
 
 // ── INIT ───────────────────────────────────
+// All words start near the screen centre and drift outward from there.
 const startPos = (() => {
-  const vw = window.innerWidth, vh = window.innerHeight;
-  return [
-    { x: vw * 0.08, y: vh * 0.10 },
-    { x: vw * 0.52, y: vh * 0.44 },
-    { x: vw * 0.22, y: vh * 0.68 }
-  ];
+  const cx = window.innerWidth  * 0.5;
+  const cy = window.innerHeight * 0.5;
+  return Array.from({ length: 3 }, () => ({
+    x: cx + (Math.random() - 0.5) * 80,
+    y: cy + (Math.random() - 0.5) * 60
+  }));
 })();
 
 const floatingWords = Array.from(navWords).map((el, i) =>
@@ -374,8 +367,8 @@ scNextBtn.addEventListener('click',  e => { e.stopPropagation(); loadTrack(scTra
 let lastScrollY = window.scrollY;
 window.addEventListener('scroll', () => {
   const d = window.scrollY - lastScrollY;
-  floatingWords.forEach(fw => { fw.vy += d * 0.008; });
-  record.vy += d * 0.008;
+  floatingWords.forEach(fw => { fw.vy += d * 0.004; });
+  record.vy += d * 0.004;
   lastScrollY = window.scrollY;
 }, { passive: true });
 
