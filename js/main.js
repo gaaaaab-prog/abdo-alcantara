@@ -7,6 +7,7 @@ const pages = {
   cv:    document.getElementById('page-cv'),
   film:  document.getElementById('page-film'),
   music: document.getElementById('page-music'),
+  'film-photo': document.getElementById('page-film'),
 };
 const navWords = document.querySelectorAll('.nav-word');
 
@@ -61,6 +62,18 @@ document.querySelectorAll('.film-tab').forEach(tab => {
   });
 });
 
+
+// ── CV TABS ───────────────────────────────────
+document.querySelectorAll('.cv-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.cv-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.cv-tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    const target = document.getElementById('cv-tab-' + tab.dataset.cvTab);
+    if (target) target.classList.add('active');
+  });
+});
+
 // ── FLOATING WORD ─────────────────────────
 // Dreamy wind-drift: three words burst outward from near-centre on load,
 // each in a different direction (~120° apart), decelerating via friction into
@@ -106,6 +119,21 @@ class FloatingWord {
       this.vy += (ddy / dist) * 0.002;
     }
 
+
+    // Hero title/subtitle repulsion — keep words from overlapping page headers
+    const heroEl = document.querySelector('.page.active .page-hero');
+    if (heroEl) {
+      const hr = heroEl.getBoundingClientRect();
+      const hrCx = hr.left + hr.width * 0.5, hrCy = hr.top + hr.height * 0.5;
+      const hDx = cx - hrCx, hDy = cy - hrCy;
+      const hDist = Math.sqrt(hDx * hDx + hDy * hDy) || 1;
+      const heroRadius = Math.max(hr.width, hr.height) * 0.45;
+      if (hDist < heroRadius) {
+        const hF = 0.012 * (1 - hDist / heroRadius);
+        this.vx += (hDx / hDist) * hF;
+        this.vy += (hDy / hDist) * hF;
+      }
+    }
     // Rotate drift direction; very rarely nudge the spin rate for variety.
     this._driftAngle += this._driftAngleSpeed;
     if (Math.random() < 0.0005) {
