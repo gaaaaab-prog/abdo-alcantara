@@ -34,13 +34,16 @@ window.addEventListener('popstate', () => {
 });
 
 // ── MOUSE TRACKING ────────────────────────
-let mouseX = -9999, mouseY = -9999, mouseSpeed = 0, mouseLastMoved = 0;
+let mouseX = -9999, mouseY = -9999, mouseSpeed = 0;
+let mouseActive = false, mouseIdleTimer = null;
 
 document.addEventListener('mousemove', e => {
   const dx = e.clientX - mouseX, dy = e.clientY - mouseY;
   mouseX = e.clientX; mouseY = e.clientY;
   mouseSpeed = mouseSpeed * 0.65 + Math.sqrt(dx * dx + dy * dy) * 0.35;
-  mouseLastMoved = performance.now();
+  mouseActive = true;
+  clearTimeout(mouseIdleTimer);
+  mouseIdleTimer = setTimeout(() => { mouseActive = false; }, 5000);
 });
 document.addEventListener('touchmove', e => {
   const t = e.touches[0]; mouseX = t.clientX; mouseY = t.clientY; mouseSpeed = 0;
@@ -87,7 +90,7 @@ class FloatingWord {
     // Only fires when cursor is near-stationary and within 60 px.
     const ddx = mx - cx, ddy = my - cy;
     const dist = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
-    if (mouseSpeed < 2 && dist < 60 && performance.now() - mouseLastMoved < 5000) {
+    if (mouseActive && mouseSpeed < 2 && dist < 60) {
       this.vx += (ddx / dist) * 0.002;
       this.vy += (ddy / dist) * 0.002;
     }
@@ -254,7 +257,7 @@ function updateRecordVisibility(key) {
 // the SVG element interpolates every angle change — including the slow 2 s
 // poll steps during playback — so the sweep reads as perfectly continuous.
 const TONEARM_REST  = 55;    // resting off record
-const TONEARM_OUTER = 45;   // needle at outer groove
+const TONEARM_OUTER = 42;   // needle at outer groove
 const TONEARM_INNER =  4;   // needle near label edge
 const tonearmSvg    = tonearmEl.querySelector('svg');
 let tonearmInterval = null, tonearmFinishTimer = null, scDuration = 0;
