@@ -345,7 +345,7 @@ if (typeof SC !== 'undefined' && scIframe) {
   scWidget.bind(SC.Widget.Events.PAUSE, () => {
     scPlaying = false;
     syncPlayer('pause');
-    scPauseTimer = setTimeout(() => scPlayerEl.classList.remove('visible'), 5 * 60 * 1000);
+    scPauseTimer = setTimeout(() => scPlayerEl.classList.remove('visible'), 2 * 60 * 1000);
   });
 
   scWidget.bind(SC.Widget.Events.FINISH, () => {
