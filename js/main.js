@@ -315,6 +315,7 @@ const SC_TRACKS = [
 const SC_TRACK_TITLES = ['5', '4 - huella', '3 - a love letter', '2', '1'];
 
 let scWidget = null, scReady = false, scPlaying = false, scPendingPlay = false, scTrackIdx = 0;
+let scPauseTimer = null;
 
 const scPlayerEl  = document.getElementById('sc-player');
 const scTrackName = document.getElementById('sc-track-name');
@@ -334,13 +335,18 @@ if (typeof SC !== 'undefined' && scIframe) {
 
   scWidget.bind(SC.Widget.Events.PLAY, () => {
     scPlaying = true;
+    clearTimeout(scPauseTimer);
     scWidget.getCurrentSound(s => {
       scTrackName.textContent = (s ? s.title : SC_TRACK_TITLES[scTrackIdx]) + ' - (soundcloud)';
     });
     syncPlayer();
   });
 
-  scWidget.bind(SC.Widget.Events.PAUSE, () => { scPlaying = false; syncPlayer('pause'); });
+  scWidget.bind(SC.Widget.Events.PAUSE, () => {
+    scPlaying = false;
+    syncPlayer('pause');
+    scPauseTimer = setTimeout(() => scPlayerEl.classList.remove('visible'), 5 * 60 * 1000);
+  });
 
   scWidget.bind(SC.Widget.Events.FINISH, () => {
     scPlaying = false;
