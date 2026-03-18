@@ -252,9 +252,9 @@ function updateRecordVisibility(key) {
 // sweeps toward the label over the track duration. CSS transition (1.5 s) on
 // the SVG element interpolates every angle change — including the slow 2 s
 // poll steps during playback — so the sweep reads as perfectly continuous.
-const TONEARM_REST  = 5;    // resting off record
-const TONEARM_OUTER = 19;   // needle at outer groove
-const TONEARM_INNER = 30;   // needle near label edge
+const TONEARM_REST  = 70;    // resting off record
+const TONEARM_OUTER = 53;   // needle at outer groove
+const TONEARM_INNER = 10;   // needle near label edge
 const tonearmSvg    = tonearmEl.querySelector('svg');
 let tonearmInterval = null, tonearmFinishTimer = null, scDuration = 0;
 
