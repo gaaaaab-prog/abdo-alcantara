@@ -256,18 +256,20 @@ const TONEARM_REST  = 5;    // resting off record
 const TONEARM_OUTER = 19;   // needle at outer groove
 const TONEARM_INNER = 30;   // needle near label edge
 const tonearmSvg    = tonearmEl.querySelector('svg');
-let tonearmInterval = null, scDuration = 0;
+let tonearmInterval = null, tonearmFinishTimer = null, scDuration = 0;
 
 function setTonearmAngle(deg) { tonearmSvg.style.transform = `rotate(${deg}deg)`; }
 
-function startTonearmSweep() {
+function startTonearmSweep(isResume) {
   clearInterval(tonearmInterval);
-  scWidget.getCurrentSound(s => {
-    scDuration = s && s.duration ? s.duration : 0;
-    setTonearmAngle(TONEARM_OUTER);
-  });
+  clearTimeout(tonearmFinishTimer);
+  if (!isResume) {
+    scWidget.getCurrentSound(s => {
+      scDuration = s && s.duration ? s.duration : 0;
+      setTonearmAngle(TONEARM_OUTER);
+    });
+  }
   tonearmInterval = setInterval(() => {
-    if (!scPlaying) { stopTonearmSweep(); return; }
     if (!scDuration) return;
     scWidget.getPosition(pos => {
       setTonearmAngle(TONEARM_OUTER + (TONEARM_INNER - TONEARM_OUTER) * Math.min(pos / scDuration, 1));
@@ -275,8 +277,24 @@ function startTonearmSweep() {
   }, 2000);
 }
 
+// Needle stays in groove on pause — tonearm holds position
+function pauseTonearm() {
+  clearInterval(tonearmInterval);
+  tonearmInterval = null;
+}
+
+// Track finished naturally — land at label edge, lift back to rest after 2.5s
+function finishTonearm() {
+  clearInterval(tonearmInterval);
+  tonearmInterval = null;
+  scDuration = 0;
+  setTonearmAngle(TONEARM_INNER);
+  tonearmFinishTimer = setTimeout(() => setTonearmAngle(TONEARM_REST), 2500);
+}
+
 function stopTonearmSweep() {
   clearInterval(tonearmInterval);
+  clearTimeout(tonearmFinishTimer);
   tonearmInterval = null;
   scDuration      = 0;
   setTonearmAngle(TONEARM_REST);
@@ -318,11 +336,11 @@ if (typeof SC !== 'undefined' && scIframe) {
     syncPlayer();
   });
 
-  scWidget.bind(SC.Widget.Events.PAUSE, () => { scPlaying = false; syncPlayer(); });
+  scWidget.bind(SC.Widget.Events.PAUSE, () => { scPlaying = false; syncPlayer('pause'); });
 
   scWidget.bind(SC.Widget.Events.FINISH, () => {
     scPlaying = false;
-    syncPlayer();
+    syncPlayer('finish');
     loadTrack((scTrackIdx + 1) % SC_TRACKS.length, true);
   });
 }
@@ -345,13 +363,16 @@ function togglePlay() {
   scPlaying ? scWidget.pause() : scWidget.play();
 }
 
-function syncPlayer() {
+function syncPlayer(reason) {
   const ip  = scPlayBtn.querySelector('.icon-play');
   const ip2 = scPlayBtn.querySelector('.icon-pause');
   if (ip)  ip.style.display  = scPlaying ? 'none' : '';
   if (ip2) ip2.style.display = scPlaying ? ''     : 'none';
   record.setPlaying(scPlaying);
-  if (scPlaying) startTonearmSweep(); else stopTonearmSweep();
+  if (scPlaying)                startTonearmSweep(scDuration > 0);
+  else if (reason === 'finish') finishTonearm();
+  else if (reason === 'pause')  pauseTonearm();
+  else                          stopTonearmSweep();
 }
 
 recordEl.addEventListener('click', () => {
@@ -368,8 +389,27 @@ scPrevBtn.addEventListener('click',   e => { e.stopPropagation(); loadTrack(scTr
 scNextBtn.addEventListener('click',   e => { e.stopPropagation(); loadTrack(scTrackIdx + 1, scPlaying); });
 
 // ── RAF LOOP ──────────────────────────────
+// Soft word separation — gentle inverse-distance push, never snaps
+const REPULSE_RADIUS = 160;
+const REPULSE_FORCE  = 0.006;
+
 (function loop(now) {
   floatingWords.forEach(fw => fw.tick(mouseX, mouseY));
+  // Soft repulsion — keeps words breathing apart without jerkiness
+  for (let i = 0; i < floatingWords.length; i++) {
+    for (let j = i + 1; j < floatingWords.length; j++) {
+      const a = floatingWords[i], b = floatingWords[j];
+      const dx = (b.x + b.w * 0.5) - (a.x + a.w * 0.5);
+      const dy = (b.y + b.h * 0.5) - (a.y + a.h * 0.5);
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      if (dist < REPULSE_RADIUS) {
+        const f  = REPULSE_FORCE * (1 - dist / REPULSE_RADIUS);
+        const nx = dx / dist, ny = dy / dist;
+        a.vx -= nx * f;  a.vy -= ny * f;
+        b.vx += nx * f;  b.vy += ny * f;
+      }
+    }
+  }
   if (recordEl.classList.contains('visible')) record.tick(mouseX, mouseY, now);
   requestAnimationFrame(loop);
 })(performance.now());
