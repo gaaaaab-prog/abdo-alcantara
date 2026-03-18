@@ -120,21 +120,6 @@ class FloatingWord {
     }
 
 
-    // Hero repulsion — smooth radial push keeps words clear of page title
-    const heroEl = document.querySelector('.page.active .page-hero');
-    if (heroEl) {
-      const hr = heroEl.getBoundingClientRect();
-      const hrCx = hr.left + hr.width * 0.5, hrCy = hr.top + hr.height * 0.5;
-      const hDx = cx - hrCx, hDy = cy - hrCy;
-      const hDist = Math.sqrt(hDx * hDx + hDy * hDy) || 1;
-      const heroR = Math.max(hr.width, hr.height) * 0.65 + 40;
-      if (hDist < heroR) {
-        const strength = 0.06 * (1 - hDist / heroR);
-        this.vx += (hDx / hDist) * strength;
-        this.vy += (hDy / hDist) * strength;
-      }
-    }
-
     // Rotate drift direction; very rarely nudge the spin rate for variety.
     this._driftAngle += this._driftAngleSpeed;
     if (Math.random() < 0.0005) {
@@ -452,8 +437,8 @@ scNextBtn.addEventListener('click',   e => { e.stopPropagation(); loadTrack(scTr
 
 // ── RAF LOOP ──────────────────────────────
 // Soft word separation — gentle inverse-distance push, never snaps
-const REPULSE_RADIUS = 220;
-const REPULSE_FORCE = 0.012;
+const REPULSE_RADIUS = 100;
+const REPULSE_FORCE = 0.006;
 
 (function loop(now) {
   floatingWords.forEach(fw => fw.tick(mouseX, mouseY));
