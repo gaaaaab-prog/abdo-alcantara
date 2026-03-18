@@ -2,10 +2,8 @@
    Gabriel Abdo Alcântara — Portfolio
    ============================================= */
 
-/* ── RESET ──────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── TOKENS ─────────────────────────────────── */
 :root {
   --bg:       #f5f5f0;
   --text:     #0f0f0f;
@@ -18,7 +16,6 @@
   --font: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* ── BASE ────────────────────────────────────── */
 html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
 body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
@@ -44,8 +41,7 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
 }
 .nav-word:hover  { color: var(--word-hover); }
 .nav-word.active { color: var(--word-active); }
-/* Scale inactive words to 30% when a page is active */
-.nav-word.inactive { transform: scale(0.3); }
+.nav-word.inactive { transform: scale(0.55); color: rgba(15,15,15,0.22); }
 
 /* ── VINYL RECORD ──────────────────────────── */
 .record-el {
@@ -59,21 +55,17 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
   will-change: left, top;
   opacity: 0;
   transition: opacity 0.5s ease;
-  /* Subtle drop shadow on the outer container (doesn't rotate) */
   box-shadow: 0 8px 40px rgba(0,0,0,0.32), 0 2px 10px rgba(0,0,0,0.18);
 }
 .record-el.visible { opacity: 1; pointer-events: all; }
 
-/* Spinning vinyl disc */
 .record-vinyl {
   position: absolute;
   inset: 0;
   border-radius: 50%;
   will-change: transform;
   background:
-    /* Spindle hole */
     radial-gradient(circle at 50% 50%, #080808 0%, #0c0c0c 3.9%, transparent 4.1%),
-    /* Groove bands — keep simple for performance */
     repeating-radial-gradient(circle at 50% 50%,
       #171515 0px, #1f1c1c 1.5px,
       #191717 1.5px, #232020 3.2px,
@@ -81,48 +73,29 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
     );
 }
 
-/* Glint — stays fixed as vinyl spins beneath */
-.record-el::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 2;
-  background:
-    radial-gradient(ellipse 28% 7% at 33% 21%,
-      rgba(255,255,255,0.19) 0%,
-      transparent 100%),
-    radial-gradient(ellipse 8% 3% at 68% 16%,
-      rgba(255,255,255,0.07) 0%,
-      transparent 100%);
-}
-
-/* ── TONEARM ─────────────────────────────────── */
+/* ── TONEARM (child of record-el) ────────────── */
 .tonearm-el {
   position: absolute;
-  width: clamp(170px, 24vw, 300px);
-  pointer-events: none;
-  user-select: none;
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  will-change: left, top;
+  left: 46%;
+  top: 28%;
+  width: 65%;
+  z-index: 3;
   cursor: pointer;
+  pointer-events: all;
 }
-.tonearm-el.visible { opacity: 1; pointer-events: all; }
 .tonearm-el svg {
   width: 100%; height: auto; display: block;
-  transition: transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94);
   transform-box: fill-box;
-  transform-origin: 71.4% 48.6%; /* pivot bearing: x=200/280, y=34/70 */
+  transform-origin: 71.4% 48.6%;
+  transform: rotate(8deg);
+  transition: transform 0.9s cubic-bezier(0.25,0.46,0.45,0.94);
 }
-.tonearm-el.playing svg { transform: rotate(-7deg); }
+.tonearm-el.playing svg { transform: rotate(22deg); }
 
 /* ── PAGES ─────────────────────────────────────── */
 .page { display: none; }
 .page.active { display: block; }
 
-/* ── PAGE HERO ─────────────────────────────────── */
 .page-hero {
   height: 100vh;
   display: flex; flex-direction: column; justify-content: flex-end;
@@ -239,7 +212,6 @@ body { font-family: var(--font); background: var(--bg); color: var(--text); min-
   .cv-block       { grid-template-columns: 1fr; gap: 10px 0; }
   .nav-word       { font-size: clamp(2.8rem,15vw,5rem); }
   .record-el      { width: clamp(140px,40vw,220px); height: clamp(140px,40vw,220px); }
-  .tonearm-el     { width: clamp(130px,38vw,200px); }
   .sc-player      { width: 200px; bottom: 16px; right: 16px; }
 }
 @media (max-width: 420px) {
