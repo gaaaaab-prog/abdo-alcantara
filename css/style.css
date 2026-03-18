@@ -107,15 +107,15 @@ body {
 
 /* ── SCROLL ARROW ───────────────────────────── */
 .scroll-arrow {
-  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+  position: fixed; bottom: 32px; right: 60px;
   z-index: 90; cursor: pointer; color: var(--text);
   opacity: 0.55; transition: opacity 0.5s ease;
   animation: arrow-bob 2.4s ease-in-out infinite;
 }
 .scroll-arrow:hover { opacity: 0.8; }
 @keyframes arrow-bob {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(5px); }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
 }
 
 /* ── PAGES ─────────────────────────────────────── */
@@ -184,6 +184,47 @@ body {
 }
 .cv-contact-links a:hover { border-color: var(--text); }
 
+
+/* ── CV TABS ───────────────────────────────────── */
+.cv-tabs {
+  display: flex; justify-content: center; gap: 0; padding: 0 56px; margin-bottom: 40px;
+  border-bottom: 1px solid var(--border);
+}
+.cv-tab {
+  background: none; border: none; outline: none; font-family: var(--font);
+  font-size: 0.72rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); cursor: pointer; padding: 12px 20px 10px; position: relative;
+  transition: color 0.25s;
+}
+.cv-tab::after {
+  content: ''; position: absolute; bottom: -1px; left: 20px; right: 20px;
+  height: 1.5px; background: var(--text); transform: scaleX(0); transition: transform 0.3s ease;
+}
+.cv-tab:hover { color: var(--text); }
+.cv-tab.active { color: var(--text); }
+.cv-tab.active::after { transform: scaleX(1); }
+.cv-tab-content { display: none; }
+.cv-tab-content.active { display: block; }
+/* ── RESUME CONTENT ────────────────────────────── */
+.resume-section { padding: 36px 0; border-top: 1px solid var(--border); }
+.resume-section:first-child { border-top: none; padding-top: 0; }
+.resume-label {
+  font-size: 0.66rem; font-weight: 600; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 14px;
+}
+.resume-text { font-size: 0.9rem; line-height: 1.82; color: var(--text); }
+.resume-text p { margin-bottom: 10px; }
+.resume-text p:last-child { margin-bottom: 0; }
+.resume-entry { margin-bottom: 24px; }
+.resume-entry:last-child { margin-bottom: 0; }
+.resume-entry-head {
+  font-size: 0.92rem; font-weight: 500; margin-bottom: 2px;
+}
+.resume-entry-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 6px; }
+.resume-entry-body { font-size: 0.87rem; line-height: 1.75; color: #555; }
+.resume-entry-body li { margin-bottom: 4px; list-style: none; }
+.resume-entry-body li::before { content: '–'; margin-right: 8px; color: var(--muted); }
+.resume-contact { display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.87rem; color: var(--muted); }
 /* ── FILM ─────────────────────────────────────── */
 .film-body { padding: 0 4px 140px; }
 .film-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px; }
@@ -369,6 +410,8 @@ body {
   .music-body  { padding: 0 24px 80px; }
   .film-body   { padding: 0 3px 80px; }
   .film-subsection { padding: 48px 21px 0; }
+  .cv-tabs { padding: 0 21px; }
+  .cv-tab { padding: 10px 14px 8px; font-size: 0.65rem; }
   .film-tabs { padding: 0 21px; }
   .film-tab { padding: 10px 14px 8px; font-size: 0.65rem; }
   .film-tab-intro { padding: 0 21px; }
