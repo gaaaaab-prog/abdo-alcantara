@@ -96,7 +96,7 @@ body {
   width: 100%; height: auto; display: block;
   transform-box: fill-box;
   transform-origin: 71.4% 48.6%;
-  transform: rotate(5deg);
+  transform: rotate(70deg);
   transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
@@ -110,6 +110,7 @@ body {
   display: flex; flex-direction: column; justify-content: flex-end;
   padding: 0 60px 64px;
   pointer-events: none;
+  position: relative; z-index: 200;
 }
 .hero-name {
   font-size: clamp(1.6rem, 3.2vw, 2.8rem);
@@ -215,7 +216,7 @@ body {
 
 /* ── SC PLAYER ──────────────────────────────────── */
 .sc-player {
-  position: fixed; bottom: 28px; right: 28px; z-index: 500;
+  position: fixed; bottom: 28px; right: 28px; z-index: 1000;
   width: 230px;
   background: rgba(12,12,10,0.88); color: #f0ede6;
   border-radius: 10px; padding: 13px 16px 11px;
