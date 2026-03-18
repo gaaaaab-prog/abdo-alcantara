@@ -12,10 +12,13 @@
 </head>
 <body>
 
+  <!-- FLOATING NAVIGATION + UNDER CONSTRUCTION -->
   <nav id="float-nav" aria-label="Main navigation">
     <button class="nav-word active" data-page="cv">CV</button>
     <button class="nav-word" data-page="film">Film</button>
     <button class="nav-word" data-page="music">Music</button>
+    <!-- Under construction label — floats freely, no click action -->
+    <span class="under-construction">under construction.</span>
   </nav>
 
   <div id="page-cv" class="page active">
@@ -102,61 +105,146 @@
   <div id="page-film" class="page">
     <header class="page-hero">
       <div class="hero-name">Film</div>
-      <div class="hero-tagline">Photography &amp; Cinematography</div>
-    </header>
-    <main class="film-body">
-      <div class="film-grid" id="film-grid">
-        <div class="fi tall"><div class="ph">01</div></div>
-        <div class="fi"><div class="ph">02</div></div>
-        <div class="fi"><div class="ph">03</div></div>
-        <div class="fi"><div class="ph">04</div></div>
-        <div class="fi tall"><div class="ph">05</div></div>
-        <div class="fi"><div class="ph">06</div></div>
-        <div class="fi"><div class="ph">07</div></div>
-        <div class="fi"><div class="ph">08</div></div>
-        <div class="fi"><div class="ph">09</div></div>
-        <div class="fi"><div class="ph">10</div></div>
-      </div>
-      <section class="film-subsection">
-        <div class="film-sub-label">BTS — November 2024</div>
-        <p class="film-sub-desc">Behind the scenes photography for an independent short film.<br>All images shot on Mamiya 645 in Los Angeles, CA.</p>
-        <div class="film-grid" id="bts-grid">
-          <div class="fi"><div class="ph">01</div></div>
-          <div class="fi"><div class="ph">02</div></div>
-          <div class="fi"><div class="ph">03</div></div>
-          <div class="fi"><div class="ph">04</div></div>
-          <div class="fi"><div class="ph">05</div></div>
-          <div class="fi"><div class="ph">06</div></div>
-        </div>
-      </section>
-    </main>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gabriel Abdo Alcântara</title>
+  <meta name="description" content="Gabriel Abdo Alcântara — Filmmaker, Director of Photography, Photographer." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:   #f5f5f0;
+      --text: #0f0f0f;
+      --font: 'Inter', system-ui, sans-serif;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Floating canvas */
+    #splash-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    /* The floating word */
+    .splash-word {
+      position: absolute;
+      font-size: clamp(1.1rem, 3vw, 2rem);
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      color: rgba(15,15,15,0.75);
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+      line-height: 1;
+    }
+
+    /* Name anchored bottom-left */
+    .splash-name {
+      position: fixed;
+      bottom: 48px;
+      left: 52px;
+      font-size: clamp(0.8rem, 1.2vw, 1rem);
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      color: rgba(15,15,15,0.4);
+      pointer-events: none;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="splash-canvas">
+    <span class="splash-word" id="uc-word">under construction.</span>
   </div>
 
-  <div id="page-music" class="page">
-    <header class="page-hero">
-      <div class="hero-name">Music</div>
-      <div class="hero-tagline">Audio Engineering &amp; Sound</div>
-    </header>
-    <main class="music-body">
-      <div class="music-list">
-        <div class="music-entry">
-          <span class="me-num">01</span>
-          <div class="me-info">
-            <div class="me-title">Carnival Cosmology</div>
-            <div class="me-role">Audio Engineering · Sound Design</div>
-            <div class="me-meta">Documentary · 2023–Present</div>
-          </div>
-          <div class="me-action"></div>
-        </div>
-      </div>
-    </main>
-  </div>
+  <div class="splash-name">Gabriel Abdo Alcântara</div>
 
-  <div id="lightbox" class="lightbox" role="dialog" aria-label="Image viewer" aria-modal="true">
-    <button id="lb-close" class="lb-close" aria-label="Close lightbox">×</button>
-    <img id="lb-img" src="" alt="Expanded image" />
-  </div>
+  <script>
+    const el = document.getElementById('uc-word');
 
-  <script src="js/main.js"></script>
+    // Start near center
+    let x = window.innerWidth  * 0.38;
+    let y = window.innerHeight * 0.42;
+    let vx = (Math.random() - 0.5) * 0.5;
+    let vy = (Math.random() - 0.5) * 0.5;
+    let w = 0, h = 0;
+
+    let mx = -9999, my = -9999;
+
+    function measure() {
+      w = el.offsetWidth;
+      h = el.offsetHeight;
+    }
+
+    function tick() {
+      const VW = window.innerWidth;
+      const VH = window.innerHeight;
+      const PAD = 24;
+      const REPEL = 180;
+
+      // Cursor repulsion
+      const cx = x + w * 0.5;
+      const cy = y + h * 0.5;
+      const dx = cx - mx;
+      const dy = cy - my;
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      if (dist < REPEL) {
+        const f = ((REPEL - dist) / REPEL) * 0.4;
+        vx += (dx / dist) * f;
+        vy += (dy / dist) * f;
+      }
+
+      // Speed cap
+      const spd = Math.sqrt(vx*vx + vy*vy);
+      if (spd > 2.5) { vx = vx/spd*2.5; vy = vy/spd*2.5; }
+
+      // Friction
+      vx *= 0.985;
+      vy *= 0.985;
+
+      // Keep alive
+      if (spd < 0.18) {
+        vx += (Math.random() - 0.5) * 0.06;
+        vy += (Math.random() - 0.5) * 0.06;
+      }
+
+      x += vx;
+      y += vy;
+
+      // Bounce
+      if (x < PAD)           { x = PAD;           vx =  Math.abs(vx) * 0.75; }
+      if (x+w > VW - PAD)    { x = VW - w - PAD;  vx = -Math.abs(vx) * 0.75; }
+      if (y < PAD)           { y = PAD;           vy =  Math.abs(vy) * 0.75; }
+      if (y+h > VH - PAD)    { y = VH - h - PAD;  vy = -Math.abs(vy) * 0.75; }
+
+      el.style.left = x + 'px';
+      el.style.top  = y + 'px';
+
+      requestAnimationFrame(tick);
+    }
+
+    document.fonts.ready.then(() => { measure(); tick(); });
+    window.addEventListener('resize', measure);
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    document.addEventListener('touchmove', e => {
+      mx = e.touches[0].clientX; my = e.touches[0].clientY;
+    }, { passive: true });
+    document.addEventListener('touchend', () => { mx = -9999; my = -9999; });
+  </script>
 </body>
 </html>
