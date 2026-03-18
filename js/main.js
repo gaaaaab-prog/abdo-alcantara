@@ -50,12 +50,12 @@ document.addEventListener('touchmove', e => {
 document.addEventListener('touchend', () => { mouseX = -9999; mouseY = -9999; mouseSpeed = 0; });
 
 // ── PHYSICS CONSTANTS ────────────────────────
-const DRIFT_SPEED   = 0.12;
-const FRICTION      = 0.97;
-const MAX_SPEED     = 1.2;
+const DRIFT_SPEED   = 0.15;
+const FRICTION      = 0.984;   // slower decay → longer, farther drifts
+const MAX_SPEED     = 2.2;
 const ATTRACT_STEP  = 0.014;
 const REPEL_FORCE   = 0.10;
-const JITTER        = 0.008;
+const JITTER        = 0.006;   // tiny baseline tremor when nearly still
 const COLLISION_PAD = 24;
 const allBodies     = [];
 
@@ -66,15 +66,22 @@ class FloatingWord {
     this.vx = (Math.random() - 0.5) * DRIFT_SPEED;
     this.vy = (Math.random() - 0.5) * DRIFT_SPEED;
     this.w = 0; this.h = 0;
-    el.style.transform = 'translate3d(' + Math.round(x) + 'px,' + Math.round(y) + 'px,0)';
+    // Each element gets a staggered random-walk timer so they don't all
+    // lurch in the same direction at the same moment.
+    this._driftFrame    = Math.floor(Math.random() * 200);
+    this._driftInterval = 160 + Math.floor(Math.random() * 220); // ~2.7–6.3 s at 60 fps
+    el.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
     allBodies.push(this);
   }
   measure() { this.w = this.el.offsetWidth; this.h = this.el.offsetHeight; }
+
   tick(mx, my) {
     const VW = window.innerWidth, VH = window.innerHeight, PAD = 18;
     const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
     const dx = cx - mx, dy = cy - my;
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+    // Cursor attraction / repulsion (unchanged feel from before)
     if (mouseSpeed < SLOW_THRESH && dist < ATTRACT_R) {
       const t = 1 - mouseSpeed / SLOW_THRESH;
       const distFactor = dist / ATTRACT_R;
@@ -89,6 +96,20 @@ class FloatingWord {
       this.vx += (dx / dist) * f;
       this.vy += (dy / dist) * f;
     }
+
+    // Periodic random-walk impulse — the main driver of organic drift.
+    // Each element kicks itself in a new random direction every few seconds,
+    // giving sustained motion that fades naturally via friction.
+    this._driftFrame++;
+    if (this._driftFrame >= this._driftInterval) {
+      this._driftFrame    = 0;
+      this._driftInterval = 160 + Math.floor(Math.random() * 220);
+      const angle    = Math.random() * Math.PI * 2;
+      const strength = 0.28 + Math.random() * 0.32; // 0.28–0.60 → ~19–40 px total glide
+      this.vx += Math.cos(angle) * strength;
+      this.vy += Math.sin(angle) * strength;
+    }
+
     // Collision avoidance
     for (let i = 0; i < allBodies.length; i++) {
       const o = allBodies[i]; if (o === this) continue;
@@ -102,20 +123,26 @@ class FloatingWord {
         this.vy += (ddy / d) * push;
       }
     }
+
     const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
     if (spd > MAX_SPEED) { this.vx = this.vx / spd * MAX_SPEED; this.vy = this.vy / spd * MAX_SPEED; }
     this.vx *= FRICTION; this.vy *= FRICTION;
-    if (spd < 0.05) {
+    // Tiny baseline tremor so elements never freeze completely
+    if (spd < 0.04) {
       this.vx += (Math.random() - 0.5) * JITTER;
       this.vy += (Math.random() - 0.5) * JITTER;
     }
+
     this.x += this.vx; this.y += this.vy;
     if (this.x < PAD) { this.x = PAD; this.vx = Math.abs(this.vx) * 0.5; }
     if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.5; }
     if (this.y < PAD) { this.y = PAD; this.vy = Math.abs(this.vy) * 0.5; }
     if (this.y + this.h > VH - PAD) { this.y = VH - this.h - PAD; this.vy = -Math.abs(this.vy) * 0.5; }
-    // Integer-snapped positions keep GPU-composited text sharp while moving
-    this.el.style.transform = 'translate3d(' + Math.round(this.x) + 'px,' + Math.round(this.y) + 'px,0)';
+
+    // Sub-pixel float values — smooth continuous motion.
+    // (CSS will-change / backface-visibility removed from .nav-word so the
+    //  browser rasterises text on the main thread = sharp at any position.)
+    this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)';
   }
 }
 
@@ -192,12 +219,6 @@ window.addEventListener('resize', () => {
 function updateRecordVisibility(key) {
   const on = key === 'music';
   recordEl.classList.toggle('visible', on);
-  if (on) {
-    scPlayerEl.classList.add('visible');
-    if (scTrackName.textContent === '—') {
-      scTrackName.textContent = SC_TRACK_TITLES[scTrackIdx] + ' - (soundcloud)';
-    }
-  }
   if (!on) {
     record.lastTime = null;
     if (scWidget && scPlaying) scWidget.pause();
@@ -222,6 +243,7 @@ const scTrackName = document.getElementById('sc-track-name');
 const scPlayBtn   = document.getElementById('sc-play');
 const scPrevBtn   = document.getElementById('sc-prev');
 const scNextBtn   = document.getElementById('sc-next');
+const scCloseBtn  = document.getElementById('sc-close');
 const scIframe    = document.getElementById('sc-iframe');
 
 if (typeof SC !== 'undefined' && scIframe) {
@@ -234,7 +256,7 @@ if (typeof SC !== 'undefined' && scIframe) {
 
   scWidget.bind(SC.Widget.Events.PLAY, () => {
     scPlaying = true;
-    scPlayerEl.classList.add('visible');
+    // Player visibility is controlled only by record click — don't auto-show here.
     scWidget.getCurrentSound(s => {
       scTrackName.textContent = (s ? s.title : SC_TRACK_TITLES[scTrackIdx]) + ' - (soundcloud)';
     });
@@ -283,10 +305,20 @@ function syncPlayer() {
   tonearmEl.classList.toggle('playing', scPlaying);
 }
 
+// Record click: reveal player + toggle play
 recordEl.addEventListener('click', () => {
   if (record._didDrag) { record._didDrag = false; return; }
+  scPlayerEl.classList.add('visible');
+  scTrackName.textContent = SC_TRACK_TITLES[scTrackIdx] + ' - (soundcloud)';
   togglePlay();
 });
+
+// X closes the player window (playback continues uninterrupted)
+scCloseBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  scPlayerEl.classList.remove('visible');
+});
+
 tonearmEl.addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
 scPlayBtn.addEventListener('click',  e => { e.stopPropagation(); togglePlay(); });
 
