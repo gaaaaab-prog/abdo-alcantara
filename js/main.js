@@ -257,8 +257,6 @@ function updateRecordVisibility(key) {
   recordEl.classList.toggle('visible', on);
   if (!on) {
     record.lastTime = null;
-    if (scWidget && scPlaying) scWidget.pause();
-    stopTonearmSweep();
   }
 }
 
