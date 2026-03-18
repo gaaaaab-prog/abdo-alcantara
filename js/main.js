@@ -1,6 +1,8 @@
 // =============================================
 // Gabriel Abdo Alcântara — Portfolio
 // =============================================
+
+// ── PAGE ROUTING ──────────────────────────
 const pages = {
   cv:    document.getElementById('page-cv'),
   film:  document.getElementById('page-film'),
@@ -13,71 +15,65 @@ function showPage(key) {
   Object.values(pages).forEach(p => p.classList.remove('active'));
   pages[key].classList.add('active');
   navWords.forEach(w => {
-    const active = w.dataset.page === key;
-    w.classList.toggle('active', active);
-    w.classList.toggle('inactive', !active);
+    const on = w.dataset.page === key;
+    w.classList.toggle('active',   on);
+    w.classList.toggle('inactive', !on);
   });
   updateRecordVisibility(key);
   history.pushState(null, '', key === 'cv' ? '/' : '#' + key);
   window.scrollTo(0, 0);
 }
 
-function loadFromHash() {
-  const hash = location.hash.replace('#', '');
-  showPage(pages[hash] ? hash : 'cv');
-}
-
 navWords.forEach(w => {
-  w.addEventListener('click', () => showPage(w.dataset.page));
+  w.addEventListener('click',      () => showPage(w.dataset.page));
   w.addEventListener('mouseenter', () => w.classList.remove('inactive'));
 });
-window.addEventListener('popstate', loadFromHash);
+window.addEventListener('popstate', () => {
+  const h = location.hash.replace('#', '');
+  showPage(pages[h] ? h : 'cv');
+});
 
-// ── MOUSE ──────────────────────────────────
+// ── MOUSE TRACKING ────────────────────────
 let mouseX = -9999, mouseY = -9999, mouseSpeed = 0;
-const SLOW_THRESH = 4;
-const ATTRACT_R   = 130;
-const REPEL_R     = 180;
 
 document.addEventListener('mousemove', e => {
-  const ddx = e.clientX - mouseX, ddy = e.clientY - mouseY;
+  const dx = e.clientX - mouseX, dy = e.clientY - mouseY;
   mouseX = e.clientX; mouseY = e.clientY;
-  mouseSpeed = mouseSpeed * 0.65 + Math.sqrt(ddx * ddx + ddy * ddy) * 0.35;
+  mouseSpeed = mouseSpeed * 0.65 + Math.sqrt(dx * dx + dy * dy) * 0.35;
 });
 document.addEventListener('touchmove', e => {
   const t = e.touches[0]; mouseX = t.clientX; mouseY = t.clientY; mouseSpeed = 0;
 }, { passive: true });
 document.addEventListener('touchend', () => { mouseX = -9999; mouseY = -9999; mouseSpeed = 0; });
 
-// ── PHYSICS CONSTANTS ──────────────────────
-const FRICTION     = 0.991;   // dreamy long decay
-const MAX_SPEED    = 1.4;
-const ATTRACT_STEP = 0.010;
-const REPEL_FORCE  = 0.07;
-const DRIFT_FORCE  = 0.0042;  // continuous gentle push (~0.47 px/frame terminal)
-const allBodies    = [];
+// ── FLOATING WORD ─────────────────────────
+// Dreamy wind-drift: three words burst outward from near-centre on load,
+// each in a different direction (~120° apart), decelerating via friction into
+// a lazy continuous arc. The force direction rotates so slowly (full cycle ≈
+// 2–6 min) the motion reads as aimless floating rather than mechanical pattern.
+// No collisions. No repulsion. Cursor pull is near-zero and only when still.
+const FRICTION    = 0.994;  // terminal speed ≈ 0.001/0.006 ≈ 0.17 px/frame
+const DRIFT_FORCE = 0.001;  // continuous gentle push along _driftAngle
+const MAX_SPEED   = 2.0;    // high cap so the launch burst isn't clipped
 
-// ── FLOATING WORD ──────────────────────────
 class FloatingWord {
-  constructor(el, x, y) {
+  constructor(el, x, y, spreadAngle) {
     this.el = el;
     this.x  = x; this.y  = y;
     this.w  = 0; this.h  = 0;
 
-    // Slowly rotating drift direction — produces long arcing curves, no sudden kicks.
-    this._driftAngle      = Math.random() * Math.PI * 2;
+    // Drift direction aligned with spread angle so initial momentum and
+    // long-term force agree — no jarring direction fight during deceleration.
+    this._driftAngle      = spreadAngle;
+    // Full spin every ~2–6 minutes — change is imperceptible frame-to-frame.
     this._driftAngleSpeed = (Math.random() < 0.5 ? 1 : -1)
-                            * (0.0005 + Math.random() * 0.0008);
+                            * (0.0003 + Math.random() * 0.0005);
 
-    // Launch outward so words spread from centre on load.
-    this.vx = Math.cos(this._driftAngle) * 0.55;
-    this.vy = Math.sin(this._driftAngle) * 0.55;
+    // Strong outward launch — words snap apart from centre immediately.
+    this.vx = Math.cos(spreadAngle) * 1.5;
+    this.vy = Math.sin(spreadAngle) * 1.5;
 
-    // Per-body cooldown: once bumped, ignore further collisions for ~50 frames.
-    this._colCooldown = 0;
-
-    el.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
-    allBodies.push(this);
+    el.style.transform = `translate3d(${x}px,${y}px,0)`;
   }
 
   measure() { this.w = this.el.offsetWidth; this.h = this.el.offsetHeight; }
@@ -85,90 +81,53 @@ class FloatingWord {
   tick(mx, my) {
     const VW = window.innerWidth, VH = window.innerHeight, PAD = 18;
     const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
-    const dx = cx - mx, dy = cy - my;
-    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-    // Cursor attraction / repulsion
-    if (mouseSpeed < SLOW_THRESH && dist < ATTRACT_R) {
-      const t = 1 - mouseSpeed / SLOW_THRESH;
-      const distFactor = dist / ATTRACT_R;
-      const step = t * ATTRACT_STEP * (0.15 + 0.85 * distFactor);
-      this.vx += (mx - cx) * step;
-      this.vy += (my - cy) * step;
-      const damp = 0.88 + 0.10 * distFactor;
-      this.vx *= damp; this.vy *= damp;
-    } else if (dist < REPEL_R) {
-      const f = ((REPEL_R - dist) / REPEL_R) * REPEL_FORCE;
-      this.vx += (dx / dist) * f;
-      this.vy += (dy / dist) * f;
+    // Barely-perceptible cursor pull — normalised so distance doesn't amplify.
+    // Only fires when cursor is near-stationary and within 60 px.
+    const ddx = mx - cx, ddy = my - cy;
+    const dist = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
+    if (mouseSpeed < 2 && dist < 60) {
+      this.vx += (ddx / dist) * 0.002;
+      this.vy += (ddy / dist) * 0.002;
     }
 
-    // Slowly rotating continuous drift — the core of dreamy motion.
+    // Rotate drift direction; very rarely nudge the spin rate for variety.
     this._driftAngle += this._driftAngleSpeed;
-    if (Math.random() < 0.0008) {
-      this._driftAngleSpeed += (Math.random() - 0.5) * 0.0003;
-      this._driftAngleSpeed = Math.max(-0.0014, Math.min(0.0014, this._driftAngleSpeed));
+    if (Math.random() < 0.0005) {
+      this._driftAngleSpeed += (Math.random() - 0.5) * 0.0002;
+      this._driftAngleSpeed = Math.max(-0.0009, Math.min(0.0009, this._driftAngleSpeed));
     }
     this.vx += Math.cos(this._driftAngle) * DRIFT_FORCE;
     this.vy += Math.sin(this._driftAngle) * DRIFT_FORCE;
 
-    // Collision response — objects may freely overlap, but when they do each
-    // gets a light impulse roughly away from the other, with a random flutter
-    // so the outcome feels organic rather than mechanical.
-    if (this._colCooldown > 0) {
-      this._colCooldown--;
-    } else {
-      for (let i = 0; i < allBodies.length; i++) {
-        const o = allBodies[i];
-        if (o === this) continue;
-        const ddx = cx - (o.x + o.w * 0.5);
-        const ddy = cy - (o.y + o.h * 0.5);
-        const d   = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
-        // Trigger when bounding boxes visually touch (half combined widths).
-        if (d < (this.w + o.w) * 0.5 + 4) {
-          // Opposite direction from the other body, ±~25° random flutter.
-          const baseAngle = Math.atan2(ddy, ddx);
-          const flutter   = (Math.random() - 0.5) * 0.9;
-          const strength  = 0.10 + Math.random() * 0.12;
-          this.vx += Math.cos(baseAngle + flutter) * strength;
-          this.vy += Math.sin(baseAngle + flutter) * strength;
-          this._colCooldown = 50; // ~0.8 s before this body can be bumped again
-          break;
-        }
-      }
-    }
-
-    // Speed cap & friction
+    // Speed cap + friction
     const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-    if (spd > MAX_SPEED) { this.vx = this.vx / spd * MAX_SPEED; this.vy = this.vy / spd * MAX_SPEED; }
+    if (spd > MAX_SPEED) { const r = MAX_SPEED / spd; this.vx *= r; this.vy *= r; }
     this.vx *= FRICTION;
     this.vy *= FRICTION;
 
     this.x += this.vx;
     this.y += this.vy;
 
-    // Soft boundary: kill momentum and flip drift angle so the word curves away.
+    // Soft boundary: absorb most momentum, flip drift angle so the word curves away.
     if (this.x < PAD)               { this.x = PAD;               this.vx =  Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
     if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
     if (this.y < PAD)               { this.y = PAD;               this.vy =  Math.abs(this.vy) * 0.2; this._driftAngle = -this._driftAngle; }
     if (this.y + this.h > VH - PAD) { this.y = VH - this.h - PAD; this.vy = -Math.abs(this.vy) * 0.2; this._driftAngle = -this._driftAngle; }
 
-    this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)';
+    this.el.style.transform = `translate3d(${this.x}px,${this.y}px,0)`;
   }
 }
 
-// ── RECORD PHYSICS ─────────────────────────
-const REC_FRICTION         = 0.960;
-const REC_MAX_SPEED        = 0.45;
-const REC_IMPULSE_MIN      = 0.04;
-const REC_IMPULSE_RANGE    = 0.06;
-const REC_INTERVAL_MIN     = 280;
-const REC_INTERVAL_RANGE   = 360;
-const REC_POST_DRAG_FRAMES = 300;
-
-class RecordPhysics extends FloatingWord {
+// ── RECORD PHYSICS ────────────────────────
+// Separate class — the record has its own impulse drift that is much calmer
+// and fully respects user drag placement (5 s cooldown after every interaction).
+class RecordPhysics {
   constructor(el, x, y) {
-    super(el, x, y);
+    this.el        = el;
+    this.x         = x; this.y  = y;
+    this.vx        = 0; this.vy = 0;
+    this.w         = 0; this.h  = 0;
     this.vinylEl   = el.querySelector('.record-vinyl');
     this.angle     = 0;
     this.rpm       = 0;
@@ -176,28 +135,23 @@ class RecordPhysics extends FloatingWord {
     this._playing  = false;
     this.lastTime  = null;
     this.dragging  = false;
-    this.dragOffX  = 0;
-    this.dragOffY  = 0;
+    this.dragOffX  = 0; this.dragOffY  = 0;
     this._didDrag  = false;
-    this._postDragCooldown = REC_POST_DRAG_FRAMES;
-    this._driftInterval    = REC_INTERVAL_MIN + Math.floor(Math.random() * REC_INTERVAL_RANGE);
-    this._driftFrame       = 0;
+    this._cooldown   = 300;
+    this._driftCount = 0;
+    this._driftTimer = 300 + Math.floor(Math.random() * 360);
 
     el.addEventListener('mouseenter', () => { if (!this.dragging) this.targetRpm = 4; });
     el.addEventListener('mouseleave', () => { if (!this.dragging) this.targetRpm = this._playing ? 33 : 0; });
-
-    el.addEventListener('mousedown', e => { e.preventDefault(); this._startDrag(e.clientX, e.clientY); });
+    el.addEventListener('mousedown',  e => { e.preventDefault(); this._startDrag(e.clientX, e.clientY); });
+    el.addEventListener('touchstart', e => { const t = e.touches[0]; this._startDrag(t.clientX, t.clientY); }, { passive: true });
     document.addEventListener('mousemove', e => { if (this.dragging) this._moveDrag(e.clientX, e.clientY); });
-    document.addEventListener('mouseup', () => this._endDrag());
-
-    el.addEventListener('touchstart', e => {
-      const t = e.touches[0]; this._startDrag(t.clientX, t.clientY);
-    }, { passive: true });
-    document.addEventListener('touchmove', e => {
-      if (this.dragging) { const t = e.touches[0]; this._moveDrag(t.clientX, t.clientY); }
-    }, { passive: true });
-    document.addEventListener('touchend', () => this._endDrag());
+    document.addEventListener('mouseup',   () => this._endDrag());
+    document.addEventListener('touchmove', e => { if (this.dragging) { const t = e.touches[0]; this._moveDrag(t.clientX, t.clientY); } }, { passive: true });
+    document.addEventListener('touchend',  () => this._endDrag());
   }
+
+  measure() { this.w = this.el.offsetWidth; this.h = this.el.offsetHeight; }
 
   _startDrag(px, py) {
     this.dragging = true; this._didDrag = false;
@@ -208,8 +162,9 @@ class RecordPhysics extends FloatingWord {
 
   _moveDrag(px, py) {
     this._didDrag = true;
-    this.x = px - this.dragOffX; this.y = py - this.dragOffY;
-    this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)';
+    this.x = px - this.dragOffX;
+    this.y = py - this.dragOffY;
+    this.el.style.transform = `translate3d(${this.x}px,${this.y}px,0)`;
   }
 
   _endDrag() {
@@ -217,99 +172,127 @@ class RecordPhysics extends FloatingWord {
     this.dragging = false;
     this.el.classList.remove('dragging');
     this.vx = 0; this.vy = 0;
-    this._postDragCooldown = REC_POST_DRAG_FRAMES;
+    this._cooldown = 300;
   }
 
   setPlaying(on) { this._playing = on; this.targetRpm = on ? 33 : 0; }
 
   tick(mx, my, now) {
-    const dt = this.lastTime !== null ? (now - this.lastTime) / 1000 : 0;
+    const dt = this.lastTime ? (now - this.lastTime) / 1000 : 0;
     this.lastTime = now;
     this.rpm   += (this.targetRpm - this.rpm) * 0.03;
     this.angle += this.rpm * 6 * dt;
+    if (this.vinylEl) this.vinylEl.style.transform = `rotate(${this.angle}deg)`;
+    if (this.dragging) return;
 
-    if (!this.dragging) {
-      const VW = window.innerWidth, VH = window.innerHeight, PAD = 18;
+    const VW = window.innerWidth, VH = window.innerHeight, PAD = 18;
 
-      if (this._postDragCooldown > 0) this._postDragCooldown--;
-
-      this._driftFrame++;
-      if (this._driftFrame >= this._driftInterval && this._postDragCooldown === 0) {
-        this._driftFrame    = 0;
-        this._driftInterval = REC_INTERVAL_MIN + Math.floor(Math.random() * REC_INTERVAL_RANGE);
+    if (this._cooldown > 0) {
+      this._cooldown--;
+    } else {
+      this._driftCount++;
+      if (this._driftCount >= this._driftTimer) {
+        this._driftCount = 0;
+        this._driftTimer = 300 + Math.floor(Math.random() * 360);
         const a = Math.random() * Math.PI * 2;
-        const s = REC_IMPULSE_MIN + Math.random() * REC_IMPULSE_RANGE;
-        this.vx += Math.cos(a) * s; this.vy += Math.sin(a) * s;
+        this.vx += Math.cos(a) * (0.04 + Math.random() * 0.06);
+        this.vy += Math.sin(a) * (0.04 + Math.random() * 0.06);
       }
-
-      const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-      if (spd > REC_MAX_SPEED) { this.vx = this.vx / spd * REC_MAX_SPEED; this.vy = this.vy / spd * REC_MAX_SPEED; }
-      this.vx *= REC_FRICTION; this.vy *= REC_FRICTION;
-
-      this.x += this.vx; this.y += this.vy;
-
-      if (this.x < PAD)               { this.x = PAD;               this.vx =  Math.abs(this.vx) * 0.3; }
-      if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.3; }
-      if (this.y < PAD)               { this.y = PAD;               this.vy =  Math.abs(this.vy) * 0.3; }
-      if (this.y + this.h > VH - PAD) { this.y = VH - this.h - PAD; this.vy = -Math.abs(this.vy) * 0.3; }
-
-      this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)';
     }
 
-    if (this.vinylEl) this.vinylEl.style.transform = 'rotate(' + this.angle + 'deg)';
+    const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    if (spd > 0.45) { const r = 0.45 / spd; this.vx *= r; this.vy *= r; }
+    this.vx *= 0.960; this.vy *= 0.960;
+    this.x += this.vx; this.y += this.vy;
+
+    if (this.x < PAD)               { this.x = PAD;               this.vx =  Math.abs(this.vx) * 0.3; }
+    if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.3; }
+    if (this.y < PAD)               { this.y = PAD;               this.vy =  Math.abs(this.vy) * 0.3; }
+    if (this.y + this.h > VH - PAD) { this.y = VH - this.h - PAD; this.vy = -Math.abs(this.vy) * 0.3; }
+
+    this.el.style.transform = `translate3d(${this.x}px,${this.y}px,0)`;
   }
 }
 
-// ── INIT ───────────────────────────────────
-// All words start near the screen centre and drift outward.
-const startPos = (() => {
-  const cx = window.innerWidth  * 0.5;
-  const cy = window.innerHeight * 0.5;
-  return Array.from({ length: 3 }, () => ({
-    x: cx + (Math.random() - 0.5) * 80,
-    y: cy + (Math.random() - 0.5) * 60
-  }));
+// ── INIT ──────────────────────────────────
+// Words burst from near-centre, evenly spread 120° apart (random base angle).
+const floatingWords = (() => {
+  const cx   = window.innerWidth  * 0.5;
+  const cy   = window.innerHeight * 0.5;
+  const base = Math.random() * Math.PI * 2;
+  const n    = navWords.length;
+  return Array.from(navWords).map((el, i) => new FloatingWord(
+    el,
+    cx + (Math.random() - 0.5) * 20,
+    cy + (Math.random() - 0.5) * 15,
+    base + (i / n) * Math.PI * 2
+  ));
 })();
-
-const floatingWords = Array.from(navWords).map((el, i) =>
-  new FloatingWord(el, startPos[i].x, startPos[i].y)
-);
 
 const recordEl  = document.getElementById('record');
 const tonearmEl = document.getElementById('tonearm');
 const record    = new RecordPhysics(recordEl, window.innerWidth * 0.55, window.innerHeight * 0.35);
 
-document.fonts.ready.then(() => {
-  floatingWords.forEach(fw => fw.measure());
-  record.measure();
-});
-window.addEventListener('resize', () => {
-  floatingWords.forEach(fw => fw.measure());
-  record.measure();
-});
+document.fonts.ready.then(() => { floatingWords.forEach(fw => fw.measure()); record.measure(); });
+window.addEventListener('resize',    () => { floatingWords.forEach(fw => fw.measure()); record.measure(); });
 
-// ── VISIBILITY ─────────────────────────────
+// ── RECORD VISIBILITY ─────────────────────
 function updateRecordVisibility(key) {
   const on = key === 'music';
   recordEl.classList.toggle('visible', on);
   if (!on) {
     record.lastTime = null;
     if (scWidget && scPlaying) scWidget.pause();
+    stopTonearmSweep();
   }
 }
 
-// ── SOUNDCLOUD ─────────────────────────────
+// ── TONEARM ───────────────────────────────
+// Rest: arm parallel, needle clear of groove. Play: drops to outer groove then
+// sweeps toward the label over the track duration. CSS transition (1.5 s) on
+// the SVG element interpolates every angle change — including the slow 2 s
+// poll steps during playback — so the sweep reads as perfectly continuous.
+const TONEARM_REST  = 5;    // resting off record
+const TONEARM_OUTER = 19;   // needle at outer groove
+const TONEARM_INNER = 30;   // needle near label edge
+const tonearmSvg    = tonearmEl.querySelector('svg');
+let tonearmInterval = null, scDuration = 0;
+
+function setTonearmAngle(deg) { tonearmSvg.style.transform = `rotate(${deg}deg)`; }
+
+function startTonearmSweep() {
+  clearInterval(tonearmInterval);
+  scWidget.getCurrentSound(s => {
+    scDuration = s && s.duration ? s.duration : 0;
+    setTonearmAngle(TONEARM_OUTER);
+  });
+  tonearmInterval = setInterval(() => {
+    if (!scPlaying) { stopTonearmSweep(); return; }
+    if (!scDuration) return;
+    scWidget.getPosition(pos => {
+      setTonearmAngle(TONEARM_OUTER + (TONEARM_INNER - TONEARM_OUTER) * Math.min(pos / scDuration, 1));
+    });
+  }, 2000);
+}
+
+function stopTonearmSweep() {
+  clearInterval(tonearmInterval);
+  tonearmInterval = null;
+  scDuration      = 0;
+  setTonearmAngle(TONEARM_REST);
+}
+
+// ── SOUNDCLOUD ────────────────────────────
 const SC_TRACKS = [
   'https://soundcloud.com/gabd0/5-el-cronopio',
   'https://soundcloud.com/gabd0/4-huella',
   'https://soundcloud.com/gabd0/c3331b42-8ae1-4b01-acf1-cea184ad11f5',
   'https://soundcloud.com/gabd0/gabdo23-wav',
-  'https://soundcloud.com/gabd0/gabdo1-vinyl-mix'
+  'https://soundcloud.com/gabd0/gabdo1-vinyl-mix',
 ];
 const SC_TRACK_TITLES = ['5', '4 - huella', '3 - a love letter', '2', '1'];
 
-let scWidget = null, scReady = false, scPlaying = false, scPendingPlay = false;
-let scTrackIdx = 0;
+let scWidget = null, scReady = false, scPlaying = false, scPendingPlay = false, scTrackIdx = 0;
 
 const scPlayerEl  = document.getElementById('sc-player');
 const scTrackName = document.getElementById('sc-track-name');
@@ -338,7 +321,8 @@ if (typeof SC !== 'undefined' && scIframe) {
   scWidget.bind(SC.Widget.Events.PAUSE, () => { scPlaying = false; syncPlayer(); });
 
   scWidget.bind(SC.Widget.Events.FINISH, () => {
-    scPlaying = false; syncPlayer();
+    scPlaying = false;
+    syncPlayer();
     loadTrack((scTrackIdx + 1) % SC_TRACKS.length, true);
   });
 }
@@ -351,7 +335,7 @@ function loadTrack(idx, autoPlay) {
   scTrackName.textContent = SC_TRACK_TITLES[scTrackIdx] + ' - (soundcloud)';
   scWidget.load(SC_TRACKS[scTrackIdx], {
     auto_play: false, hide_related: true, show_comments: false,
-    show_user: false, show_reposts: false, show_teaser: false, visual: true
+    show_user: false, show_reposts: false, show_teaser: false, visual: true,
   });
 }
 
@@ -367,7 +351,7 @@ function syncPlayer() {
   if (ip)  ip.style.display  = scPlaying ? 'none' : '';
   if (ip2) ip2.style.display = scPlaying ? ''     : 'none';
   record.setPlaying(scPlaying);
-  tonearmEl.classList.toggle('playing', scPlaying);
+  if (scPlaying) startTonearmSweep(); else stopTonearmSweep();
 }
 
 recordEl.addEventListener('click', () => {
@@ -377,46 +361,35 @@ recordEl.addEventListener('click', () => {
   togglePlay();
 });
 
-scCloseBtn.addEventListener('click', e => { e.stopPropagation(); scPlayerEl.classList.remove('visible'); });
+scCloseBtn.addEventListener('click',  e => { e.stopPropagation(); scPlayerEl.classList.remove('visible'); });
+tonearmEl.addEventListener('click',   e => { e.stopPropagation(); togglePlay(); });
+scPlayBtn.addEventListener('click',   e => { e.stopPropagation(); togglePlay(); });
+scPrevBtn.addEventListener('click',   e => { e.stopPropagation(); loadTrack(scTrackIdx - 1, scPlaying); });
+scNextBtn.addEventListener('click',   e => { e.stopPropagation(); loadTrack(scTrackIdx + 1, scPlaying); });
 
-tonearmEl.addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
-scPlayBtn.addEventListener('click',  e => { e.stopPropagation(); togglePlay(); });
-scPrevBtn.addEventListener('click',  e => { e.stopPropagation(); loadTrack(scTrackIdx - 1, scPlaying); });
-scNextBtn.addEventListener('click',  e => { e.stopPropagation(); loadTrack(scTrackIdx + 1, scPlaying); });
-
-// ── SCROLL ─────────────────────────────────
-let lastScrollY = window.scrollY;
-window.addEventListener('scroll', () => {
-  const d = window.scrollY - lastScrollY;
-  floatingWords.forEach(fw => { fw.vy += d * 0.004; });
-  record.vy += d * 0.004;
-  lastScrollY = window.scrollY;
-}, { passive: true });
-
-// ── LOOP ───────────────────────────────────
+// ── RAF LOOP ──────────────────────────────
 (function loop(now) {
   floatingWords.forEach(fw => fw.tick(mouseX, mouseY));
   if (recordEl.classList.contains('visible')) record.tick(mouseX, mouseY, now);
   requestAnimationFrame(loop);
 })(performance.now());
 
-loadFromHash();
+// ── INITIAL ROUTE ─────────────────────────
+const _h = location.hash.replace('#', '');
+showPage(pages[_h] ? _h : 'cv');
 
-// ── LIGHTBOX ───────────────────────────────
+// ── LIGHTBOX ──────────────────────────────
 const lb    = document.getElementById('lightbox');
 const lbImg = document.getElementById('lb-img');
 
-function openLightbox(src)  { lbImg.src = src; lb.classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeLightbox()    { lb.classList.remove('open'); lbImg.src = ''; document.body.style.overflow = ''; }
+function openLightbox(src) { lbImg.src = src; lb.classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeLightbox()   { lb.classList.remove('open'); lbImg.src = ''; document.body.style.overflow = ''; }
 
 document.getElementById('lb-close').addEventListener('click', closeLightbox);
 lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
-['film-grid','bts-grid'].forEach(id => {
+['film-grid', 'bts-grid'].forEach(id => {
   const g = document.getElementById(id);
-  if (g) g.addEventListener('click', e => {
-    const img = e.target.closest('img');
-    if (img) openLightbox(img.src);
-  });
+  if (g) g.addEventListener('click', e => { const img = e.target.closest('img'); if (img) openLightbox(img.src); });
 });
