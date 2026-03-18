@@ -43,10 +43,8 @@ body {
   padding: 0;
   white-space: nowrap;
   transition: color 0.6s ease, opacity 0.8s ease;
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
   text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
 .nav-word:hover  { color: rgba(15,15,15,0.82); }
 .nav-word.active { color: rgba(15,15,15,0.88); }
@@ -249,6 +247,23 @@ body {
 }
 .sc-btn-main:hover { background: rgba(255,255,255,0.15); }
 .sc-btn-main svg   { width: 15px; height: 15px; }
+
+/* ── SC CLOSE ──────────────────────────────────── */
+.sc-close {
+  position: absolute;
+  top: 7px;
+  right: 9px;
+  background: none;
+  border: none;
+  color: rgba(240,237,230,0.35);
+  font-size: 0.8rem;
+  line-height: 1;
+  padding: 3px 5px;
+  cursor: pointer;
+  transition: color 0.15s;
+  font-family: var(--font);
+}
+.sc-close:hover { color: rgba(240,237,230,0.85); }
 
 /* ── LIGHTBOX ──────────────────────────────────── */
 .lightbox {
