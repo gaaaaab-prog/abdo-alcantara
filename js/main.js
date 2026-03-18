@@ -120,20 +120,28 @@ class FloatingWord {
     }
 
 
-    // Hero title/subtitle repulsion — keep words from overlapping page headers
+    // Hero title/subtitle repulsion — hard AABB push, words never overlap hero text
     const heroEl = document.querySelector('.page.active .page-hero');
     if (heroEl) {
       const hr = heroEl.getBoundingClientRect();
-      const hrCx = hr.left + hr.width * 0.5, hrCy = hr.top + hr.height * 0.5;
-      const hDx = cx - hrCx, hDy = cy - hrCy;
-      const hDist = Math.sqrt(hDx * hDx + hDy * hDy) || 1;
-      const heroRadius = Math.max(hr.width, hr.height) * 0.45;
-      if (hDist < heroRadius) {
-        const hF = 0.012 * (1 - hDist / heroRadius);
-        this.vx += (hDx / hDist) * hF;
-        this.vy += (hDy / hDist) * hF;
+      const pad = 30;
+      const hL = hr.left - pad, hR = hr.right + pad, hT = hr.top - pad, hB = hr.bottom + pad;
+      const wR = this.x + this.w, wB = this.y + this.h;
+      if (this.x < hR && wR > hL && this.y < hB && wB > hT) {
+        const overlapL = wR - hL, overlapR = hR - this.x;
+        const overlapT = wB - hT, overlapB = hB - this.y;
+        const minH = overlapL < overlapR ? -overlapL : overlapR;
+        const minV = overlapT < overlapB ? -overlapT : overlapB;
+        if (Math.abs(minH) < Math.abs(minV)) {
+          this.x += minH * 0.15;
+          this.vx += minH * 0.005;
+        } else {
+          this.y += minV * 0.15;
+          this.vy += minV * 0.005;
+        }
       }
     }
+
     // Rotate drift direction; very rarely nudge the spin rate for variety.
     this._driftAngle += this._driftAngleSpeed;
     if (Math.random() < 0.0005) {
