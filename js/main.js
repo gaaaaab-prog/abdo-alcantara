@@ -50,16 +50,12 @@ document.addEventListener('touchmove', e => {
 document.addEventListener('touchend', () => { mouseX = -9999; mouseY = -9999; mouseSpeed = 0; });
 
 // ── PHYSICS CONSTANTS ──────────────────────
-// Words float on a slowly-rotating force — continuous arcing curves, no sudden kicks.
-// DRIFT_FORCE applied each frame in _driftAngle direction;
-// _driftAngle rotates at _driftAngleSpeed rad/frame → full spin every ~60-140 s.
-// Terminal speed ≈ DRIFT_FORCE / (1 - FRICTION) ≈ 0.0042 / 0.009 ≈ 0.47 px/frame.
-const FRICTION      = 0.991;
-const MAX_SPEED     = 1.4;
-const ATTRACT_STEP  = 0.010;
-const REPEL_FORCE   = 0.07;
-const DRIFT_FORCE   = 0.0042;
-const allBodies     = [];
+const FRICTION     = 0.991;   // dreamy long decay
+const MAX_SPEED    = 1.4;
+const ATTRACT_STEP = 0.010;
+const REPEL_FORCE  = 0.07;
+const DRIFT_FORCE  = 0.0042;  // continuous gentle push (~0.47 px/frame terminal)
+const allBodies    = [];
 
 // ── FLOATING WORD ──────────────────────────
 class FloatingWord {
@@ -68,16 +64,17 @@ class FloatingWord {
     this.x  = x; this.y  = y;
     this.w  = 0; this.h  = 0;
 
-    // Each word gets a random starting drift direction that rotates very slowly.
-    // This produces long, graceful arcs instead of straight-line drifts or
-    // sudden kicks — the key to dreamy motion.
+    // Slowly rotating drift direction — produces long arcing curves, no sudden kicks.
     this._driftAngle      = Math.random() * Math.PI * 2;
     this._driftAngleSpeed = (Math.random() < 0.5 ? 1 : -1)
-                            * (0.0005 + Math.random() * 0.0008); // ~0.03–0.08 deg/frame
+                            * (0.0005 + Math.random() * 0.0008);
 
-    // Launch outward in the drift direction so words spread from center on load.
+    // Launch outward so words spread from centre on load.
     this.vx = Math.cos(this._driftAngle) * 0.55;
     this.vy = Math.sin(this._driftAngle) * 0.55;
+
+    // Per-body cooldown: once bumped, ignore further collisions for ~50 frames.
+    this._colCooldown = 0;
 
     el.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
     allBodies.push(this);
@@ -91,7 +88,7 @@ class FloatingWord {
     const dx = cx - mx, dy = cy - my;
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-    // Cursor attraction / repulsion (unchanged feel)
+    // Cursor attraction / repulsion
     if (mouseSpeed < SLOW_THRESH && dist < ATTRACT_R) {
       const t = 1 - mouseSpeed / SLOW_THRESH;
       const distFactor = dist / ATTRACT_R;
@@ -106,8 +103,7 @@ class FloatingWord {
       this.vy += (dy / dist) * f;
     }
 
-    // Rotate drift direction and apply tiny continuous force.
-    // Very rarely nudge the spin rate for long-term variety.
+    // Slowly rotating continuous drift — the core of dreamy motion.
     this._driftAngle += this._driftAngleSpeed;
     if (Math.random() < 0.0008) {
       this._driftAngleSpeed += (Math.random() - 0.5) * 0.0003;
@@ -115,6 +111,32 @@ class FloatingWord {
     }
     this.vx += Math.cos(this._driftAngle) * DRIFT_FORCE;
     this.vy += Math.sin(this._driftAngle) * DRIFT_FORCE;
+
+    // Collision response — objects may freely overlap, but when they do each
+    // gets a light impulse roughly away from the other, with a random flutter
+    // so the outcome feels organic rather than mechanical.
+    if (this._colCooldown > 0) {
+      this._colCooldown--;
+    } else {
+      for (let i = 0; i < allBodies.length; i++) {
+        const o = allBodies[i];
+        if (o === this) continue;
+        const ddx = cx - (o.x + o.w * 0.5);
+        const ddy = cy - (o.y + o.h * 0.5);
+        const d   = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
+        // Trigger when bounding boxes visually touch (half combined widths).
+        if (d < (this.w + o.w) * 0.5 + 4) {
+          // Opposite direction from the other body, ±~25° random flutter.
+          const baseAngle = Math.atan2(ddy, ddx);
+          const flutter   = (Math.random() - 0.5) * 0.9;
+          const strength  = 0.10 + Math.random() * 0.12;
+          this.vx += Math.cos(baseAngle + flutter) * strength;
+          this.vy += Math.sin(baseAngle + flutter) * strength;
+          this._colCooldown = 50; // ~0.8 s before this body can be bumped again
+          break;
+        }
+      }
+    }
 
     // Speed cap & friction
     const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
@@ -125,8 +147,7 @@ class FloatingWord {
     this.x += this.vx;
     this.y += this.vy;
 
-    // Soft boundary: kill most momentum and flip drift direction so the
-    // word gently curves away from the edge rather than snapping back hard.
+    // Soft boundary: kill momentum and flip drift angle so the word curves away.
     if (this.x < PAD)               { this.x = PAD;               this.vx =  Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
     if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
     if (this.y < PAD)               { this.y = PAD;               this.vy =  Math.abs(this.vy) * 0.2; this._driftAngle = -this._driftAngle; }
@@ -137,12 +158,12 @@ class FloatingWord {
 }
 
 // ── RECORD PHYSICS ─────────────────────────
-const REC_FRICTION        = 0.960;
-const REC_MAX_SPEED       = 0.45;
-const REC_IMPULSE_MIN     = 0.04;
-const REC_IMPULSE_RANGE   = 0.06;
-const REC_INTERVAL_MIN    = 280;
-const REC_INTERVAL_RANGE  = 360;
+const REC_FRICTION         = 0.960;
+const REC_MAX_SPEED        = 0.45;
+const REC_IMPULSE_MIN      = 0.04;
+const REC_IMPULSE_RANGE    = 0.06;
+const REC_INTERVAL_MIN     = 280;
+const REC_INTERVAL_RANGE   = 360;
 const REC_POST_DRAG_FRAMES = 300;
 
 class RecordPhysics extends FloatingWord {
@@ -159,8 +180,8 @@ class RecordPhysics extends FloatingWord {
     this.dragOffY  = 0;
     this._didDrag  = false;
     this._postDragCooldown = REC_POST_DRAG_FRAMES;
-    this._driftInterval = REC_INTERVAL_MIN + Math.floor(Math.random() * REC_INTERVAL_RANGE);
-    this._driftFrame    = 0;
+    this._driftInterval    = REC_INTERVAL_MIN + Math.floor(Math.random() * REC_INTERVAL_RANGE);
+    this._driftFrame       = 0;
 
     el.addEventListener('mouseenter', () => { if (!this.dragging) this.targetRpm = 4; });
     el.addEventListener('mouseleave', () => { if (!this.dragging) this.targetRpm = this._playing ? 33 : 0; });
@@ -240,7 +261,7 @@ class RecordPhysics extends FloatingWord {
 }
 
 // ── INIT ───────────────────────────────────
-// All words start near the screen centre and drift outward from there.
+// All words start near the screen centre and drift outward.
 const startPos = (() => {
   const cx = window.innerWidth  * 0.5;
   const cy = window.innerHeight * 0.5;
