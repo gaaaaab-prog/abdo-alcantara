@@ -37,7 +37,6 @@ function loadFromHash() {
 
 navWords.forEach(w => w.addEventListener('click', () => showPage(w.dataset.page)));
 window.addEventListener('popstate', loadFromHash);
-loadFromHash();
 
 
 // ── FLOATING WORD PHYSICS ──────────────────
@@ -282,6 +281,10 @@ window.addEventListener('scroll', () => {
   }
   requestAnimationFrame(loop);
 })(performance.now());
+
+// ── Load initial page from URL hash ──
+// Called last so recordEl is fully initialized before any visibility toggle
+loadFromHash();
 
 
 // ── LIGHTBOX ─────────────────────────────────
