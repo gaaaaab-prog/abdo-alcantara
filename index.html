@@ -4,186 +4,62 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gabriel Abdo Alcântara</title>
-  <meta name="description" content="Filmmaker · Director of Photography · Photographer — Southern California" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css" />
-</head>
-<body>
-
-  <!-- FLOATING NAVIGATION + UNDER CONSTRUCTION -->
-  <nav id="float-nav" aria-label="Main navigation">
-    <button class="nav-word active" data-page="cv">CV</button>
-    <button class="nav-word" data-page="film">Film</button>
-    <button class="nav-word" data-page="music">Music</button>
-    <!-- Under construction label — floats freely, no click action -->
-    <span class="under-construction">under construction.</span>
-  </nav>
-
-  <div id="page-cv" class="page active">
-    <header class="page-hero">
-      <div class="hero-name">Gabriel Abdo Alcântara</div>
-      <div class="hero-tagline">Filmmaker · Director of Photography · Photographer</div>
-    </header>
-    <main class="cv-body">
-      <section class="cv-block">
-        <h2 class="cv-label">Bio</h2>
-        <div class="cv-text">
-          <p>Gabe is a filmmaker and Director of Photography based in Southern California. Born in São Paulo, Brazil, he grew up across Bogotá, Buenos Aires, and São Paulo before completing his education in Los Angeles.</p>
-          <p>He holds a BFA in Cinematography from Chapman University, with a minor in Design &amp; Fabrication. Currently, Gabriel is co-directing and serving as Director of Photography on <em>Carnival Cosmology</em> — a documentary about the San Francisco Cacophony Society, produced alongside Mia since November 2023.</p>
-        </div>
-      </section>
-      <section class="cv-block">
-        <h2 class="cv-label">Credits</h2>
-        <div class="cv-entries">
-          <div class="cv-entry">
-            <span class="cv-entry-title">Carnival Cosmology</span>
-            <span class="cv-entry-role">Director of Photography · Co-Director</span>
-            <span class="cv-entry-meta">Documentary · In Post-Production · 2023–Present</span>
-          </div>
-        </div>
-      </section>
-      <section class="cv-block">
-        <h2 class="cv-label">Education</h2>
-        <div class="cv-entries">
-          <div class="cv-entry">
-            <span class="cv-entry-title">Chapman University</span>
-            <span class="cv-entry-role">BFA, Cinematography (Film Production)</span>
-            <span class="cv-entry-meta">Minor: Design &amp; Fabrication · Orange, CA · 2019–2023</span>
-          </div>
-        </div>
-      </section>
-      <section class="cv-block">
-        <h2 class="cv-label">Skills</h2>
-        <div class="skills-grid">
-          <div class="skill-col">
-            <h3 class="skill-col-title">Camera</h3>
-            <ul>
-              <li>ARRI Alexa / Mini LF</li>
-              <li>RED Monstro / Komodo</li>
-              <li>Sony FX9 / Venice</li>
-              <li>Mamiya 645 (Film)</li>
-            </ul>
-          </div>
-          <div class="skill-col">
-            <h3 class="skill-col-title">Lighting</h3>
-            <ul>
-              <li>Lighting Design</li>
-              <li>Gaffer Experience</li>
-              <li>LED &amp; Practical</li>
-            </ul>
-          </div>
-          <div class="skill-col">
-            <h3 class="skill-col-title">Post</h3>
-            <ul>
-              <li>DaVinci Resolve</li>
-              <li>Adobe Premiere</li>
-              <li>Final Cut Pro</li>
-            </ul>
-          </div>
-          <div class="skill-col">
-            <h3 class="skill-col-title">Audio</h3>
-            <ul>
-              <li>Audio Engineering</li>
-              <li>Pro Tools</li>
-              <li>Logic Pro X</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-      <section class="cv-block">
-        <h2 class="cv-label">Contact</h2>
-        <div class="cv-contact-links">
-          <a href="https://www.instagram.com/gabdo.alcantara" target="_blank" rel="noopener">Instagram ↗</a>
-          <a href="https://www.linkedin.com/in/gabriel-abdo-alcantara" target="_blank" rel="noopener">LinkedIn ↗</a>
-        </div>
-      </section>
-    </main>
-  </div>
-
-  <div id="page-film" class="page">
-    <header class="page-hero">
-      <div class="hero-name">Film</div>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gabriel Abdo Alcântara</title>
   <meta name="description" content="Gabriel Abdo Alcântara — Filmmaker, Director of Photography, Photographer." />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --bg:   #f5f5f0;
-      --text: #0f0f0f;
-      --font: 'Inter', system-ui, sans-serif;
-    }
-
     html, body {
-      width: 100%; height: 100%;
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
+      width: 100%;
+      height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #f5f5f0;
+      color: #0f0f0f;
       overflow: hidden;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Floating canvas */
-    #splash-canvas {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-    }
-
     /* The floating word */
-    .splash-word {
-      position: absolute;
-      font-size: clamp(1.1rem, 3vw, 2rem);
+    #uc {
+      position: fixed;
+      font-size: clamp(1rem, 2.8vw, 1.9rem);
       font-weight: 400;
       letter-spacing: -0.01em;
-      color: rgba(15,15,15,0.75);
+      color: rgba(15, 15, 15, 0.72);
       pointer-events: none;
       user-select: none;
       white-space: nowrap;
       line-height: 1;
     }
 
-    /* Name anchored bottom-left */
-    .splash-name {
+    /* Name — bottom left, always fixed */
+    #name {
       position: fixed;
       bottom: 48px;
       left: 52px;
-      font-size: clamp(0.8rem, 1.2vw, 1rem);
+      font-size: 0.8rem;
       font-weight: 500;
       letter-spacing: -0.01em;
-      color: rgba(15,15,15,0.4);
-      pointer-events: none;
+      color: rgba(15, 15, 15, 0.38);
       user-select: none;
     }
   </style>
 </head>
 <body>
 
-  <div id="splash-canvas">
-    <span class="splash-word" id="uc-word">under construction.</span>
-  </div>
-
-  <div class="splash-name">Gabriel Abdo Alcântara</div>
+  <span id="uc">under construction.</span>
+  <div id="name">Gabriel Abdo Alcântara</div>
 
   <script>
-    const el = document.getElementById('uc-word');
+    const el = document.getElementById('uc');
 
-    // Start near center
     let x = window.innerWidth  * 0.38;
-    let y = window.innerHeight * 0.42;
-    let vx = (Math.random() - 0.5) * 0.5;
-    let vy = (Math.random() - 0.5) * 0.5;
+    let y = window.innerHeight * 0.40;
+    let vx = (Math.random() - 0.5) * 0.55;
+    let vy = (Math.random() - 0.5) * 0.55;
     let w = 0, h = 0;
-
     let mx = -9999, my = -9999;
 
     function measure() {
@@ -194,7 +70,7 @@
     function tick() {
       const VW = window.innerWidth;
       const VH = window.innerHeight;
-      const PAD = 24;
+      const PAD = 28;
       const REPEL = 180;
 
       // Cursor repulsion
@@ -202,22 +78,22 @@
       const cy = y + h * 0.5;
       const dx = cx - mx;
       const dy = cy - my;
-      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
-      if (dist < REPEL) {
-        const f = ((REPEL - dist) / REPEL) * 0.4;
-        vx += (dx / dist) * f;
-        vy += (dy / dist) * f;
+      const d = Math.sqrt(dx * dx + dy * dy) || 1;
+      if (d < REPEL) {
+        const f = ((REPEL - d) / REPEL) * 0.4;
+        vx += (dx / d) * f;
+        vy += (dy / d) * f;
       }
 
       // Speed cap
-      const spd = Math.sqrt(vx*vx + vy*vy);
-      if (spd > 2.5) { vx = vx/spd*2.5; vy = vy/spd*2.5; }
+      const spd = Math.sqrt(vx * vx + vy * vy);
+      if (spd > 2.5) { vx = vx / spd * 2.5; vy = vy / spd * 2.5; }
 
       // Friction
       vx *= 0.985;
       vy *= 0.985;
 
-      // Keep alive
+      // Keep drifting if nearly still
       if (spd < 0.18) {
         vx += (Math.random() - 0.5) * 0.06;
         vy += (Math.random() - 0.5) * 0.06;
@@ -226,11 +102,11 @@
       x += vx;
       y += vy;
 
-      // Bounce
-      if (x < PAD)           { x = PAD;           vx =  Math.abs(vx) * 0.75; }
-      if (x+w > VW - PAD)    { x = VW - w - PAD;  vx = -Math.abs(vx) * 0.75; }
-      if (y < PAD)           { y = PAD;           vy =  Math.abs(vy) * 0.75; }
-      if (y+h > VH - PAD)    { y = VH - h - PAD;  vy = -Math.abs(vy) * 0.75; }
+      // Bounce off edges
+      if (x < PAD)            { x = PAD;            vx =  Math.abs(vx) * 0.75; }
+      if (x + w > VW - PAD)   { x = VW - w - PAD;   vx = -Math.abs(vx) * 0.75; }
+      if (y < PAD)            { y = PAD;            vy =  Math.abs(vy) * 0.75; }
+      if (y + h > VH - PAD)   { y = VH - h - PAD;   vy = -Math.abs(vy) * 0.75; }
 
       el.style.left = x + 'px';
       el.style.top  = y + 'px';
@@ -242,9 +118,11 @@
     window.addEventListener('resize', measure);
     document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
     document.addEventListener('touchmove', e => {
-      mx = e.touches[0].clientX; my = e.touches[0].clientY;
+      mx = e.touches[0].clientX;
+      my = e.touches[0].clientY;
     }, { passive: true });
     document.addEventListener('touchend', () => { mx = -9999; my = -9999; });
   </script>
+
 </body>
 </html>
