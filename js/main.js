@@ -412,7 +412,12 @@ recordEl.addEventListener('click', () => {
   togglePlay();
 });
 
-scCloseBtn.addEventListener('click',  e => { e.stopPropagation(); scPlayerEl.classList.remove('visible'); });
+scCloseBtn.addEventListener('click',  e => {
+  e.stopPropagation();
+  clearTimeout(scPauseTimer);
+  if (scWidget && scPlaying) scWidget.pause();
+  scPlayerEl.classList.remove('visible');
+});
 tonearmEl.addEventListener('click',   e => { e.stopPropagation(); togglePlay(); });
 scPlayBtn.addEventListener('click',   e => { e.stopPropagation(); togglePlay(); });
 scPrevBtn.addEventListener('click',   e => { e.stopPropagation(); loadTrack(scTrackIdx - 1, scPlaying); });
@@ -443,6 +448,23 @@ const REPULSE_FORCE  = 0.006;
   if (recordEl.classList.contains('visible')) record.tick(mouseX, mouseY, now);
   requestAnimationFrame(loop);
 })(performance.now());
+
+// ── NAV FADE ON SCROLL ───────────────────────
+window.addEventListener('scroll', () => {
+  const past = window.scrollY > window.innerHeight * 0.6;
+  document.getElementById('float-nav').classList.toggle('scrolled', past);
+}, { passive: true });
+
+// ── SCROLL ARROW ───────────────────────────
+const scrollArrow = document.getElementById('scroll-arrow');
+if (scrollArrow) {
+  window.addEventListener('scroll', () => {
+    scrollArrow.style.opacity = window.scrollY > 80 ? '0' : '';
+  }, { passive: true });
+  scrollArrow.addEventListener('click', () => {
+    window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' });
+  });
+}
 
 // ── INITIAL ROUTE ─────────────────────────
 const _h = location.hash.replace('#', '');
