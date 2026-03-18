@@ -50,6 +50,17 @@ document.addEventListener('touchmove', e => {
 }, { passive: true });
 document.addEventListener('touchend', () => { mouseX = -9999; mouseY = -9999; mouseSpeed = 0; });
 
+// ── FILM TABS ────────────────────────────────────
+document.querySelectorAll('.film-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.film-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.film-tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    const target = document.getElementById('tab-' + tab.dataset.filmTab);
+    if (target) target.classList.add('active');
+  });
+});
+
 // ── FLOATING WORD ─────────────────────────
 // Dreamy wind-drift: three words burst outward from near-centre on load,
 // each in a different direction (~120° apart), decelerating via friction into
