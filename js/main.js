@@ -29,25 +29,40 @@ navWords.forEach(w => w.addEventListener('click', () => showPage(w.dataset.page)
 window.addEventListener('popstate', loadFromHash);
 
 
+// ── MOUSE TRACKING + SPEED ─────────────────
+// Fast mouse  → repulsion (existing feel)
+// Slow mouse  → direct lerp toward cursor (no spring, just settles)
+
 let mouseX = -9999, mouseY = -9999;
+let mouseSpeed = 0;
+const SLOW_THRESHOLD = 5;   // px/event — below = intentional hover
+const ATTRACT_RADIUS  = 110; // px — zone where slow hover pulls element in
+const REPEL_RADIUS    = 200; // px
 
 document.addEventListener('mousemove', e => {
+  const ddx = e.clientX - mouseX;
+  const ddy = e.clientY - mouseY;
   mouseX = e.clientX;
   mouseY = e.clientY;
+  const raw = Math.sqrt(ddx * ddx + ddy * ddy);
+  mouseSpeed = mouseSpeed * 0.65 + raw * 0.35; // smoothed
 });
 
 document.addEventListener('touchmove', e => {
   const t = e.touches[0];
   mouseX = t.clientX;
   mouseY = t.clientY;
+  mouseSpeed = 0; // touch always = slow
 }, { passive: true });
 
 document.addEventListener('touchend', () => {
   mouseX = -9999;
   mouseY = -9999;
+  mouseSpeed = 0;
 });
 
 
+// ── FLOATING WORD PHYSICS ──────────────────
 class FloatingWord {
   constructor(el, startX, startY) {
     this.el = el;
@@ -67,10 +82,9 @@ class FloatingWord {
   }
 
   tick(mx, my) {
-    const VW  = window.innerWidth;
-    const VH  = window.innerHeight;
-    const PAD = 18;
-    const REPEL = 200;
+    const VW   = window.innerWidth;
+    const VH   = window.innerHeight;
+    const PAD  = 18;
 
     const cx = this.x + this.w * 0.5;
     const cy = this.y + this.h * 0.5;
@@ -78,8 +92,19 @@ class FloatingWord {
     const dy = cy - my;
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-    if (dist < REPEL) {
-      const force = ((REPEL - dist) / REPEL) * 0.45;
+    if (mouseSpeed < SLOW_THRESHOLD && dist < ATTRACT_RADIUS) {
+      // Slow hover: slide element toward cursor via lerp.
+      // No force = no velocity buildup = no spring/oscillation.
+      const slowness = 1 - mouseSpeed / SLOW_THRESHOLD;
+      const step = slowness * 0.055;
+      this.x += (mx - cx) * step;
+      this.y += (my - cy) * step;
+      // Drain velocity so repulsion re-entry feels clean
+      this.vx *= 0.80;
+      this.vy *= 0.80;
+    } else if (dist < REPEL_RADIUS) {
+      // Fast approach: repulsion
+      const force = ((REPEL_RADIUS - dist) / REPEL_RADIUS) * 0.45;
       this.vx += (dx / dist) * force;
       this.vy += (dy / dist) * force;
     }
@@ -128,6 +153,7 @@ document.fonts.ready.then(() => floatingWords.forEach(fw => fw.measure()));
 window.addEventListener('resize', () => floatingWords.forEach(fw => fw.measure()));
 
 
+// ── VINYL RECORD ───────────────────────────
 class RecordPhysics {
   constructor(el, startX, startY) {
     this.el = el;
@@ -158,10 +184,9 @@ class RecordPhysics {
     this.rpm   += (this.targetRpm - this.rpm) * 0.03;
     this.angle += this.rpm * 6 * dt;
 
-    const VW  = window.innerWidth;
-    const VH  = window.innerHeight;
-    const PAD = 18;
-    const REPEL = 200;
+    const VW   = window.innerWidth;
+    const VH   = window.innerHeight;
+    const PAD  = 18;
 
     const cx = this.x + this.w * 0.5;
     const cy = this.y + this.h * 0.5;
@@ -169,8 +194,15 @@ class RecordPhysics {
     const dy = cy - my;
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
-    if (dist < REPEL) {
-      const force = ((REPEL - dist) / REPEL) * 0.45;
+    if (mouseSpeed < SLOW_THRESHOLD && dist < ATTRACT_RADIUS) {
+      const slowness = 1 - mouseSpeed / SLOW_THRESHOLD;
+      const step = slowness * 0.055;
+      this.x += (mx - cx) * step;
+      this.y += (my - cy) * step;
+      this.vx *= 0.80;
+      this.vy *= 0.80;
+    } else if (dist < REPEL_RADIUS) {
+      const force = ((REPEL_RADIUS - dist) / REPEL_RADIUS) * 0.45;
       this.vx += (dx / dist) * force;
       this.vy += (dy / dist) * force;
     }
