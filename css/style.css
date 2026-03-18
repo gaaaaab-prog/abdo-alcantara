@@ -29,6 +29,7 @@ body {
 }
 .nav-word {
   position: absolute;
+  left: 0; top: 0;
   background: none; border: none; outline: none;
   font-family: var(--font);
   font-size: clamp(3.5rem, 9vw, 8rem);
@@ -41,8 +42,10 @@ body {
   user-select: none;
   padding: 0;
   white-space: nowrap;
-  transition: color 0.6s ease, transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
-  will-change: left, top;
+  transition: color 0.6s ease, opacity 0.8s ease;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 .nav-word:hover  { color: rgba(15,15,15,0.82); }
 .nav-word.active { color: rgba(15,15,15,0.88); }
@@ -54,18 +57,22 @@ body {
 /* ── VINYL RECORD ──────────────────────────── */
 .record-el {
   position: absolute;
+  left: 0; top: 0;
   width: clamp(180px, 26vw, 340px);
   height: clamp(180px, 26vw, 340px);
   border-radius: 50%;
-  cursor: pointer;
+  cursor: grab;
   pointer-events: none;
   user-select: none;
-  will-change: left, top;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   opacity: 0;
   transition: opacity 0.8s ease;
   box-shadow: 0 8px 40px rgba(0,0,0,0.32), 0 2px 10px rgba(0,0,0,0.18);
 }
 .record-el.visible { opacity: 1; pointer-events: all; }
+.record-el.dragging { cursor: grabbing; }
 
 .record-vinyl {
   position: absolute; inset: 0; border-radius: 50%;
