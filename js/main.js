@@ -34,12 +34,13 @@ window.addEventListener('popstate', () => {
 });
 
 // ── MOUSE TRACKING ────────────────────────
-let mouseX = -9999, mouseY = -9999, mouseSpeed = 0;
+let mouseX = -9999, mouseY = -9999, mouseSpeed = 0, mouseLastMoved = 0;
 
 document.addEventListener('mousemove', e => {
   const dx = e.clientX - mouseX, dy = e.clientY - mouseY;
   mouseX = e.clientX; mouseY = e.clientY;
   mouseSpeed = mouseSpeed * 0.65 + Math.sqrt(dx * dx + dy * dy) * 0.35;
+  mouseLastMoved = performance.now();
 });
 document.addEventListener('touchmove', e => {
   const t = e.touches[0]; mouseX = t.clientX; mouseY = t.clientY; mouseSpeed = 0;
@@ -86,7 +87,7 @@ class FloatingWord {
     // Only fires when cursor is near-stationary and within 60 px.
     const ddx = mx - cx, ddy = my - cy;
     const dist = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
-    if (mouseSpeed < 2 && dist < 60) {
+    if (mouseSpeed < 2 && dist < 60 && performance.now() - mouseLastMoved < 5000) {
       this.vx += (ddx / dist) * 0.002;
       this.vy += (ddy / dist) * 0.002;
     }
