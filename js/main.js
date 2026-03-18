@@ -30,20 +30,20 @@ function loadFromHash() {
 
 navWords.forEach(w => {
   w.addEventListener('click', () => showPage(w.dataset.page));
-  // Remove inactive state on hover (restores to full size until next page change)
   w.addEventListener('mouseenter', () => w.classList.remove('inactive'));
 });
 window.addEventListener('popstate', loadFromHash);
 
 // ── MOUSE ──────────────────────────────────────
 let mouseX = -9999, mouseY = -9999, mouseSpeed = 0;
-const SLOW_THRESHOLD = 5;
-const ATTRACT_RADIUS = 110;
-const REPEL_RADIUS   = 200;
+const SLOW_THRESHOLD  = 5;
+const ATTRACT_RADIUS  = 110;
+const REPEL_RADIUS    = 200;
 
 document.addEventListener('mousemove', e => {
   const ddx = e.clientX - mouseX, ddy = e.clientY - mouseY;
-  mouseX = e.clientX; mouseY = e.clientY;
+  mouseX = e.clientX;
+  mouseY = e.clientY;
   mouseSpeed = mouseSpeed * 0.65 + Math.sqrt(ddx*ddx + ddy*ddy) * 0.35;
 });
 document.addEventListener('touchmove', e => {
@@ -54,14 +54,16 @@ document.addEventListener('touchend', () => {
   mouseX = -9999; mouseY = -9999; mouseSpeed = 0;
 });
 
-// ── FLOATING PHYSICS ───────────────────────────
+// ── FLOATING PHYSICS ─────────────────────────────
 class FloatingWord {
   constructor(el, x, y) {
-    this.el = el; this.x = x; this.y = y;
+    this.el = el;
+    this.x = x; this.y = y;
     this.vx = (Math.random() - 0.5) * 0.6;
     this.vy = (Math.random() - 0.5) * 0.6;
     this.w = 0; this.h = 0;
-    el.style.left = x + 'px'; el.style.top = y + 'px';
+    el.style.left = x + 'px';
+    el.style.top  = y + 'px';
   }
   measure() { this.w = this.el.offsetWidth; this.h = this.el.offsetHeight; }
   tick(mx, my) {
@@ -69,39 +71,51 @@ class FloatingWord {
     const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
     const dx = cx - mx, dy = cy - my;
     const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+
     if (mouseSpeed < SLOW_THRESHOLD && dist < ATTRACT_RADIUS) {
       const step = (1 - mouseSpeed / SLOW_THRESHOLD) * 0.055;
-      this.x += (mx - cx) * step; this.y += (my - cy) * step;
+      this.x += (mx - cx) * step;
+      this.y += (my - cy) * step;
       this.vx *= 0.80; this.vy *= 0.80;
     } else if (dist < REPEL_RADIUS) {
       const f = ((REPEL_RADIUS - dist) / REPEL_RADIUS) * 0.45;
       this.vx += (dx/dist)*f; this.vy += (dy/dist)*f;
     }
+
     const spd = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
     if (spd > 3.2) { this.vx = this.vx/spd*3.2; this.vy = this.vy/spd*3.2; }
     this.vx *= 0.984; this.vy *= 0.984;
-    if (spd < 0.22) { this.vx += (Math.random()-0.5)*0.07; this.vy += (Math.random()-0.5)*0.07; }
+    if (spd < 0.22) {
+      this.vx += (Math.random()-0.5)*0.07;
+      this.vy += (Math.random()-0.5)*0.07;
+    }
+
     this.x += this.vx; this.y += this.vy;
-    if (this.x < PAD)             { this.x = PAD;             this.vx =  Math.abs(this.vx)*0.75; }
-    if (this.x+this.w > VW-PAD)   { this.x = VW-this.w-PAD;  this.vx = -Math.abs(this.vx)*0.75; }
-    if (this.y < PAD)             { this.y = PAD;             this.vy =  Math.abs(this.vy)*0.75; }
-    if (this.y+this.h > VH-PAD)   { this.y = VH-this.h-PAD;  this.vy = -Math.abs(this.vy)*0.75; }
-    this.el.style.left = this.x + 'px'; this.el.style.top = this.y + 'px';
+    if (this.x < PAD) { this.x = PAD; this.vx =  Math.abs(this.vx)*0.75; }
+    if (this.x+this.w > VW-PAD) { this.x = VW-this.w-PAD; this.vx = -Math.abs(this.vx)*0.75; }
+    if (this.y < PAD) { this.y = PAD; this.vy =  Math.abs(this.vy)*0.75; }
+    if (this.y+this.h > VH-PAD) { this.y = VH-this.h-PAD; this.vy = -Math.abs(this.vy)*0.75; }
+
+    this.el.style.left = this.x + 'px';
+    this.el.style.top  = this.y + 'px';
   }
 }
 
-// ── RECORD PHYSICS ─────────────────────────────
+// ── RECORD PHYSICS ───────────────────────────────
 class RecordPhysics extends FloatingWord {
   constructor(el, x, y) {
     super(el, x, y);
-    this.vinylEl  = el.querySelector('.record-vinyl');
-    this.angle    = 0;
-    this.rpm      = 0;
+    this.vinylEl   = el.querySelector('.record-vinyl');
+    this.angle     = 0;
+    this.rpm       = 0;
     this.targetRpm = 0;
     this._playing  = false;
     this.lastTime  = null;
+
     el.addEventListener('mouseenter', () => { this.targetRpm = 4; });
-    el.addEventListener('mouseleave', () => { this.targetRpm = this._playing ? 33 : 0; });
+    el.addEventListener('mouseleave', () => {
+      this.targetRpm = this._playing ? 33 : 0;
+    });
   }
   setPlaying(on) {
     this._playing = on;
@@ -117,7 +131,7 @@ class RecordPhysics extends FloatingWord {
   }
 }
 
-// ── INIT ELEMENTS ──────────────────────────────
+// ── INIT ─────────────────────────────────────────
 const startPos = (() => {
   const vw = window.innerWidth, vh = window.innerHeight;
   return [{ x: vw*0.08, y: vh*0.10 }, { x: vw*0.52, y: vh*0.44 }, { x: vw*0.22, y: vh*0.68 }];
@@ -127,31 +141,31 @@ const floatingWords = Array.from(navWords).map((el, i) =>
   new FloatingWord(el, startPos[i].x, startPos[i].y)
 );
 
-const recordEl     = document.getElementById('record');
-const record       = new RecordPhysics(recordEl, window.innerWidth*0.55, window.innerHeight*0.35);
-const tonearmEl    = document.getElementById('tonearm');
-const tonearmFloat = new FloatingWord(tonearmEl, window.innerWidth*0.68, window.innerHeight*0.22);
+const recordEl   = document.getElementById('record');
+const tonearmEl  = document.getElementById('tonearm');
+const record     = new RecordPhysics(recordEl, window.innerWidth*0.55, window.innerHeight*0.35);
 
 document.fonts.ready.then(() => {
   floatingWords.forEach(fw => fw.measure());
   record.measure();
-  tonearmFloat.measure();
 });
+
 window.addEventListener('resize', () => {
   floatingWords.forEach(fw => fw.measure());
   record.measure();
-  tonearmFloat.measure();
 });
 
-// ── VISIBILITY ─────────────────────────────────
+// ── VISIBILITY ───────────────────────────────────
 function updateRecordVisibility(key) {
   const on = key === 'music';
   recordEl.classList.toggle('visible', on);
-  tonearmEl.classList.toggle('visible', on);
-  if (!on) { record.lastTime = null; if (scWidget && scPlaying) scWidget.pause(); }
+  if (!on) {
+    record.lastTime = null;
+    if (scWidget && scPlaying) scWidget.pause();
+  }
 }
 
-// ── SOUNDCLOUD ─────────────────────────────────
+// ── SOUNDCLOUD ───────────────────────────────────
 let scWidget = null, scReady = false, scPlaying = false;
 const scPlayerEl  = document.getElementById('sc-player');
 const scTrackName = document.getElementById('sc-track-name');
@@ -162,14 +176,19 @@ const scIframe    = document.getElementById('sc-iframe');
 
 if (typeof SC !== 'undefined' && scIframe) {
   scWidget = SC.Widget(scIframe);
+
   scWidget.bind(SC.Widget.Events.READY, () => { scReady = true; });
+
   scWidget.bind(SC.Widget.Events.PLAY, () => {
     scPlaying = true;
     scPlayerEl.classList.add('visible');
-    scWidget.getCurrentSound(s => { scTrackName.textContent = s ? s.title : '—'; });
+    scWidget.getCurrentSound(s => {
+      scTrackName.textContent = s ? s.title : '—';
+    });
     syncPlayer();
   });
-  scWidget.bind(SC.Widget.Events.PAUSE,  () => { scPlaying = false; syncPlayer(); });
+
+  scWidget.bind(SC.Widget.Events.PAUSE, () => { scPlaying = false; syncPlayer(); });
   scWidget.bind(SC.Widget.Events.FINISH, () => { scPlaying = false; syncPlayer(); });
 }
 
@@ -179,44 +198,43 @@ function togglePlay() {
 }
 
 function syncPlayer() {
-  const ip = scPlayBtn.querySelector('.icon-play');
+  const ip  = scPlayBtn.querySelector('.icon-play');
   const ip2 = scPlayBtn.querySelector('.icon-pause');
   if (ip)  ip.style.display  = scPlaying ? 'none' : '';
-  if (ip2) ip2.style.display = scPlaying ? '' : 'none';
+  if (ip2) ip2.style.display = scPlaying ? ''     : 'none';
   record.setPlaying(scPlaying);
   tonearmEl.classList.toggle('playing', scPlaying);
 }
 
 recordEl.addEventListener('click', togglePlay);
-tonearmEl.addEventListener('click', togglePlay);
+tonearmEl.addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
+
 scPlayBtn.addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
 scPrevBtn.addEventListener('click', e => { e.stopPropagation(); if (scWidget && scReady) scWidget.prev(); });
 scNextBtn.addEventListener('click', e => { e.stopPropagation(); if (scWidget && scReady) scWidget.next(); });
 
-// ── SCROLL ─────────────────────────────────────
+// ── SCROLL ───────────────────────────────────────
 let lastScrollY = window.scrollY;
 window.addEventListener('scroll', () => {
   const d = window.scrollY - lastScrollY;
   floatingWords.forEach(fw => { fw.vy += d * 0.035; });
   record.vy += d * 0.035;
-  tonearmFloat.vy += d * 0.035;
   lastScrollY = window.scrollY;
 }, { passive: true });
 
-// ── LOOP ───────────────────────────────────────
+// ── LOOP ─────────────────────────────────────────
 (function loop(now) {
   floatingWords.forEach(fw => fw.tick(mouseX, mouseY));
   if (recordEl.classList.contains('visible')) {
     record.tick(mouseX, mouseY, now);
-    tonearmFloat.tick(mouseX, mouseY);
   }
   requestAnimationFrame(loop);
 })(performance.now());
 
 loadFromHash();
 
-// ── LIGHTBOX ───────────────────────────────────
-const lb = document.getElementById('lightbox');
+// ── LIGHTBOX ─────────────────────────────────────
+const lb    = document.getElementById('lightbox');
 const lbImg = document.getElementById('lb-img');
 function openLightbox(src)  { lbImg.src = src; lb.classList.add('open'); document.body.style.overflow = 'hidden'; }
 function closeLightbox()    { lb.classList.remove('open'); lbImg.src = ''; document.body.style.overflow = ''; }
@@ -225,5 +243,8 @@ lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 ['film-grid','bts-grid'].forEach(id => {
   const g = document.getElementById(id);
-  if (g) g.addEventListener('click', e => { const img = e.target.closest('img'); if (img) openLightbox(img.src); });
+  if (g) g.addEventListener('click', e => {
+    const img = e.target.closest('img');
+    if (img) openLightbox(img.src);
+  });
 });
