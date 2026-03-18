@@ -87,7 +87,7 @@ body {
 /* ── TONEARM (child of record-el) ────────────── */
 .tonearm-el {
   position: absolute;
-  left: 46%; top: 28%; width: 65%;
+  left: 61%; top: 28%; width: 65%; overflow: visible;
   z-index: 3;
   cursor: pointer;
   pointer-events: all;
@@ -96,7 +96,7 @@ body {
   width: 100%; height: auto; display: block;
   transform-box: fill-box;
   transform-origin: 71.4% 48.6%;
-  transform: rotate(70deg);
+  transform: rotate(55deg);
   transition: transform 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
