@@ -46,6 +46,7 @@ body {
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  text-rendering: optimizeLegibility;
 }
 .nav-word:hover  { color: rgba(15,15,15,0.82); }
 .nav-word.active { color: rgba(15,15,15,0.88); }
