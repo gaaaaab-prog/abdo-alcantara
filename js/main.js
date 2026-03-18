@@ -50,13 +50,12 @@ document.addEventListener('touchmove', e => {
 document.addEventListener('touchend', () => { mouseX = -9999; mouseY = -9999; mouseSpeed = 0; });
 
 // ── PHYSICS CONSTANTS ────────────────────────
-const DRIFT_SPEED   = 0.14;
+const DRIFT_SPEED   = 0.12;
 const FRICTION      = 0.97;
-const MAX_SPEED     = 1.4;
+const MAX_SPEED     = 1.2;
 const ATTRACT_STEP  = 0.014;
 const REPEL_FORCE   = 0.10;
-const JITTER        = 0.014;
-const EDGE_PULL     = 0.003;
+const JITTER        = 0.008;
 const COLLISION_PAD = 24;
 const allBodies     = [];
 
@@ -71,12 +70,25 @@ class FloatingWord {
     allBodies.push(this);
   }
   measure() { this.w = this.el.offsetWidth; this.h = this.el.offsetHeight; }
-
-  // Shared physics: collision avoidance, friction, jitter, boundary bounce, snapped transform
-  _physicsStep() {
+  tick(mx, my) {
     const VW = window.innerWidth, VH = window.innerHeight, PAD = 18;
     const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
-
+    const dx = cx - mx, dy = cy - my;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    if (mouseSpeed < SLOW_THRESH && dist < ATTRACT_R) {
+      const t = 1 - mouseSpeed / SLOW_THRESH;
+      const distFactor = dist / ATTRACT_R;
+      const step = t * ATTRACT_STEP * (0.15 + 0.85 * distFactor);
+      this.vx += (mx - cx) * step;
+      this.vy += (my - cy) * step;
+      const damp = 0.82 + 0.15 * distFactor;
+      this.vx *= damp;
+      this.vy *= damp;
+    } else if (dist < REPEL_R) {
+      const f = ((REPEL_R - dist) / REPEL_R) * REPEL_FORCE;
+      this.vx += (dx / dist) * f;
+      this.vy += (dy / dist) * f;
+    }
     // Collision avoidance
     for (let i = 0; i < allBodies.length; i++) {
       const o = allBodies[i]; if (o === this) continue;
@@ -90,35 +102,20 @@ class FloatingWord {
         this.vy += (ddy / d) * push;
       }
     }
-
     const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
     if (spd > MAX_SPEED) { this.vx = this.vx / spd * MAX_SPEED; this.vy = this.vy / spd * MAX_SPEED; }
     this.vx *= FRICTION; this.vy *= FRICTION;
-    if (spd < 0.08) {
+    if (spd < 0.05) {
       this.vx += (Math.random() - 0.5) * JITTER;
       this.vy += (Math.random() - 0.5) * JITTER;
     }
-
     this.x += this.vx; this.y += this.vy;
     if (this.x < PAD) { this.x = PAD; this.vx = Math.abs(this.vx) * 0.5; }
     if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.5; }
     if (this.y < PAD) { this.y = PAD; this.vy = Math.abs(this.vy) * 0.5; }
     if (this.y + this.h > VH - PAD) { this.y = VH - this.h - PAD; this.vy = -Math.abs(this.vy) * 0.5; }
-
-    // Integer-snapped positions keep text sharp on GPU compositor layer
+    // Integer-snapped positions keep GPU-composited text sharp while moving
     this.el.style.transform = 'translate3d(' + Math.round(this.x) + 'px,' + Math.round(this.y) + 'px,0)';
-  }
-
-  // Nav words: gentle outward drift toward edges + random jitter
-  tick(mx, my) {
-    const VW = window.innerWidth, VH = window.innerHeight;
-    const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
-    // Push outward from viewport center → elements naturally gravitate toward edges
-    const outX = cx - VW * 0.5, outY = cy - VH * 0.5;
-    const outDist = Math.sqrt(outX * outX + outY * outY) || 1;
-    this.vx += (outX / outDist) * EDGE_PULL;
-    this.vy += (outY / outDist) * EDGE_PULL;
-    this._physicsStep();
   }
 }
 
@@ -156,34 +153,12 @@ class RecordPhysics extends FloatingWord {
     this.dragging = false; this.el.classList.remove('dragging');
   }
   setPlaying(on) { this._playing = on; this.targetRpm = on ? 33 : 0; }
-
   tick(mx, my, now) {
     const dt = this.lastTime !== null ? (now - this.lastTime) / 1000 : 0;
     this.lastTime = now;
     this.rpm += (this.targetRpm - this.rpm) * 0.03;
     this.angle += this.rpm * 6 * dt;
-
-    if (!this.dragging) {
-      // Cursor attraction/repulsion — record only, not nav words
-      const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
-      const dx = cx - mx, dy = cy - my;
-      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-      if (mouseSpeed < SLOW_THRESH && dist < ATTRACT_R) {
-        const t = 1 - mouseSpeed / SLOW_THRESH;
-        const distFactor = dist / ATTRACT_R;
-        const step = t * ATTRACT_STEP * (0.15 + 0.85 * distFactor);
-        this.vx += (mx - cx) * step;
-        this.vy += (my - cy) * step;
-        const damp = 0.82 + 0.15 * distFactor;
-        this.vx *= damp;
-        this.vy *= damp;
-      } else if (dist < REPEL_R) {
-        const f = ((REPEL_R - dist) / REPEL_R) * REPEL_FORCE;
-        this.vx += (dx / dist) * f;
-        this.vy += (dy / dist) * f;
-      }
-      this._physicsStep();
-    }
+    if (!this.dragging) { super.tick(mx, my); }
     if (this.vinylEl) this.vinylEl.style.transform = 'rotate(' + this.angle + 'deg)';
   }
 }
@@ -192,9 +167,9 @@ class RecordPhysics extends FloatingWord {
 const startPos = (() => {
   const vw = window.innerWidth, vh = window.innerHeight;
   return [
-    { x: vw * 0.06, y: vh * 0.08 },
-    { x: vw * 0.55, y: vh * 0.40 },
-    { x: vw * 0.10, y: vh * 0.72 }
+    { x: vw * 0.08, y: vh * 0.10 },
+    { x: vw * 0.52, y: vh * 0.44 },
+    { x: vw * 0.22, y: vh * 0.68 }
   ];
 })();
 
@@ -218,7 +193,6 @@ function updateRecordVisibility(key) {
   const on = key === 'music';
   recordEl.classList.toggle('visible', on);
   if (on) {
-    // Show player bar immediately with current track title on music page open
     scPlayerEl.classList.add('visible');
     if (scTrackName.textContent === '—') {
       scTrackName.textContent = SC_TRACK_TITLES[scTrackIdx] + ' - (soundcloud)';
@@ -282,7 +256,6 @@ function loadTrack(idx, autoPlay) {
   scReady = false;
   scPlaying = false;
   if (autoPlay) scPendingPlay = true;
-  // Update title immediately so the display never lags behind the user's action
   scTrackName.textContent = SC_TRACK_TITLES[scTrackIdx] + ' - (soundcloud)';
   scWidget.load(SC_TRACKS[scTrackIdx], {
     auto_play: false,
