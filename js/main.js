@@ -257,8 +257,8 @@ function updateRecordVisibility(key) {
 // the SVG element interpolates every angle change — including the slow 2 s
 // poll steps during playback — so the sweep reads as perfectly continuous.
 const TONEARM_REST  = 55;    // resting off record
-const TONEARM_OUTER = 42;   // needle at outer groove
-const TONEARM_INNER =  4;   // needle near label edge
+const TONEARM_OUTER = 47;   // needle at outer groove
+const TONEARM_INNER =  3;   // needle near label edge
 const tonearmSvg    = tonearmEl.querySelector('svg');
 let tonearmInterval = null, tonearmFinishTimer = null, scDuration = 0;
 
@@ -276,7 +276,12 @@ function startTonearmSweep(isResume) {
   tonearmInterval = setInterval(() => {
     if (!scDuration) return;
     scWidget.getPosition(pos => {
-      setTonearmAngle(TONEARM_OUTER + (TONEARM_INNER - TONEARM_OUTER) * Math.min(pos / scDuration, 1));
+      const pct = Math.min(pos / scDuration, 1);
+      setTonearmAngle(TONEARM_OUTER + (TONEARM_INNER - TONEARM_OUTER) * pct);
+      const bar = document.getElementById('sc-progress-bar');
+      const el  = document.getElementById('sc-elapsed');
+      if (bar) bar.style.width = (pct * 100).toFixed(1) + '%';
+      if (el) { const s = Math.floor(pos/1000); el.textContent = Math.floor(s/60)+':'+String(s%60).padStart(2,'0'); }
     });
   }, 2000);
 }
@@ -302,6 +307,10 @@ function stopTonearmSweep() {
   tonearmInterval = null;
   scDuration      = 0;
   setTonearmAngle(TONEARM_REST);
+  const _bar = document.getElementById('sc-progress-bar');
+  const _el  = document.getElementById('sc-elapsed');
+  if (_bar) _bar.style.width = '0%';
+  if (_el)  _el.textContent = '0:00';
 }
 
 // ── SOUNDCLOUD ────────────────────────────
@@ -369,7 +378,7 @@ function loadTrack(idx, autoPlay) {
 
 function togglePlay() {
   if (!scWidget) return;
-  if (!scReady) { scPendingPlay = !scPendingPlay; return; }
+  if (!scReady) { scPendingPlay = true; return; }
   scPlaying ? scWidget.pause() : scWidget.play();
 }
 
