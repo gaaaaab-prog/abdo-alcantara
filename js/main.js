@@ -42,8 +42,7 @@ const REPEL_R     = 180;
 
 document.addEventListener('mousemove', e => {
   const ddx = e.clientX - mouseX, ddy = e.clientY - mouseY;
-  mouseX = e.clientX;
-  mouseY = e.clientY;
+  mouseX = e.clientX; mouseY = e.clientY;
   mouseSpeed = mouseSpeed * 0.65 + Math.sqrt(ddx * ddx + ddy * ddy) * 0.35;
 });
 document.addEventListener('touchmove', e => {
@@ -83,15 +82,23 @@ class FloatingWord {
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
     if (mouseSpeed < SLOW_THRESH && dist < ATTRACT_R) {
-      const step = (1 - mouseSpeed / SLOW_THRESH) * ATTRACT_STEP;
+      // Scale force by distance — zero force at cursor, full at edge.
+      // Also damp heavily near cursor to eliminate oscillation/jiggle.
+      const t = 1 - mouseSpeed / SLOW_THRESH;
+      const distFactor = dist / ATTRACT_R;
+      const step = t * ATTRACT_STEP * (0.15 + 0.85 * distFactor);
       this.vx += (mx - cx) * step;
       this.vy += (my - cy) * step;
+      const damp = 0.82 + 0.15 * distFactor;
+      this.vx *= damp;
+      this.vy *= damp;
     } else if (dist < REPEL_R) {
       const f = ((REPEL_R - dist) / REPEL_R) * REPEL_FORCE;
       this.vx += (dx / dist) * f;
       this.vy += (dy / dist) * f;
     }
 
+    // Collision avoidance
     for (let i = 0; i < allBodies.length; i++) {
       const o = allBodies[i]; if (o === this) continue;
       const ddx = cx - (o.x + o.w * 0.5);
@@ -143,18 +150,12 @@ class RecordPhysics extends FloatingWord {
       if (!this.dragging) this.targetRpm = this._playing ? 33 : 0;
     });
 
-    el.addEventListener('mousedown', e => {
-      e.preventDefault();
-      this._startDrag(e.clientX, e.clientY);
-    });
-    document.addEventListener('mousemove', e => {
-      if (this.dragging) this._moveDrag(e.clientX, e.clientY);
-    });
+    el.addEventListener('mousedown', e => { e.preventDefault(); this._startDrag(e.clientX, e.clientY); });
+    document.addEventListener('mousemove', e => { if (this.dragging) this._moveDrag(e.clientX, e.clientY); });
     document.addEventListener('mouseup', () => this._endDrag());
 
     el.addEventListener('touchstart', e => {
-      const t = e.touches[0];
-      this._startDrag(t.clientX, t.clientY);
+      const t = e.touches[0]; this._startDrag(t.clientX, t.clientY);
     }, { passive: true });
     document.addEventListener('touchmove', e => {
       if (this.dragging) { const t = e.touches[0]; this._moveDrag(t.clientX, t.clientY); }
@@ -165,15 +166,13 @@ class RecordPhysics extends FloatingWord {
   _startDrag(px, py) {
     this.dragging = true;
     this._didDrag = false;
-    this.dragOffX = px - this.x;
-    this.dragOffY = py - this.y;
+    this.dragOffX = px - this.x; this.dragOffY = py - this.y;
     this.vx = 0; this.vy = 0;
     this.el.classList.add('dragging');
   }
   _moveDrag(px, py) {
     this._didDrag = true;
-    this.x = px - this.dragOffX;
-    this.y = py - this.dragOffY;
+    this.x = px - this.dragOffX; this.y = py - this.dragOffY;
     this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)';
   }
   _endDrag() {
@@ -182,10 +181,7 @@ class RecordPhysics extends FloatingWord {
     this.el.classList.remove('dragging');
   }
 
-  setPlaying(on) {
-    this._playing = on;
-    this.targetRpm = on ? 33 : 0;
-  }
+  setPlaying(on) { this._playing = on; this.targetRpm = on ? 33 : 0; }
 
   tick(mx, my, now) {
     const dt = this.lastTime !== null ? (now - this.lastTime) / 1000 : 0;
@@ -215,15 +211,8 @@ const recordEl  = document.getElementById('record');
 const tonearmEl = document.getElementById('tonearm');
 const record    = new RecordPhysics(recordEl, window.innerWidth * 0.55, window.innerHeight * 0.35);
 
-document.fonts.ready.then(() => {
-  floatingWords.forEach(fw => fw.measure());
-  record.measure();
-});
-
-window.addEventListener('resize', () => {
-  floatingWords.forEach(fw => fw.measure());
-  record.measure();
-});
+document.fonts.ready.then(() => { floatingWords.forEach(fw => fw.measure()); record.measure(); });
+window.addEventListener('resize', () => { floatingWords.forEach(fw => fw.measure()); record.measure(); });
 
 // ── VISIBILITY ─────────────────────────────
 function updateRecordVisibility(key) {
@@ -236,7 +225,7 @@ function updateRecordVisibility(key) {
 }
 
 // ── SOUNDCLOUD ─────────────────────────────
-let scWidget = null, scReady = false, scPlaying = false;
+let scWidget = null, scReady = false, scPlaying = false, scPendingPlay = false;
 const scPlayerEl  = document.getElementById('sc-player');
 const scTrackName = document.getElementById('sc-track-name');
 const scPlayBtn   = document.getElementById('sc-play');
@@ -246,21 +235,26 @@ const scIframe    = document.getElementById('sc-iframe');
 
 if (typeof SC !== 'undefined' && scIframe) {
   scWidget = SC.Widget(scIframe);
-  scWidget.bind(SC.Widget.Events.READY, () => { scReady = true; });
+
+  scWidget.bind(SC.Widget.Events.READY, () => {
+    scReady = true;
+    if (scPendingPlay) { scPendingPlay = false; scWidget.play(); }
+  });
+
   scWidget.bind(SC.Widget.Events.PLAY, () => {
     scPlaying = true;
     scPlayerEl.classList.add('visible');
-    scWidget.getCurrentSound(s => {
-      scTrackName.textContent = s ? s.title : '\u2014';
-    });
+    scWidget.getCurrentSound(s => { scTrackName.textContent = s ? s.title : '—'; });
     syncPlayer();
   });
-  scWidget.bind(SC.Widget.Events.PAUSE, () => { scPlaying = false; syncPlayer(); });
+
+  scWidget.bind(SC.Widget.Events.PAUSE,  () => { scPlaying = false; syncPlayer(); });
   scWidget.bind(SC.Widget.Events.FINISH, () => { scPlaying = false; syncPlayer(); });
 }
 
 function togglePlay() {
-  if (!scWidget || !scReady) return;
+  if (!scWidget) return;
+  if (!scReady) { scPendingPlay = !scPendingPlay; return; }
   scPlaying ? scWidget.pause() : scWidget.play();
 }
 
@@ -273,14 +267,14 @@ function syncPlayer() {
   tonearmEl.classList.toggle('playing', scPlaying);
 }
 
-recordEl.addEventListener('click', e => {
-  if (record._didDrag) return;
+recordEl.addEventListener('click', () => {
+  if (record._didDrag) { record._didDrag = false; return; }
   togglePlay();
 });
 tonearmEl.addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
 scPlayBtn.addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
-scPrevBtn.addEventListener('click', e => { e.stopPropagation(); if (scWidget && scReady) scWidget.prev(); });
-scNextBtn.addEventListener('click', e => { e.stopPropagation(); if (scWidget && scReady) scWidget.next(); });
+scPrevBtn.addEventListener('click', e => { e.stopPropagation(); if (scWidget && scReady) { scWidget.prev(); } });
+scNextBtn.addEventListener('click', e => { e.stopPropagation(); if (scWidget && scReady) { scWidget.next(); } });
 
 // ── SCROLL ─────────────────────────────────
 let lastScrollY = window.scrollY;
@@ -294,9 +288,7 @@ window.addEventListener('scroll', () => {
 // ── LOOP ───────────────────────────────────
 (function loop(now) {
   floatingWords.forEach(fw => fw.tick(mouseX, mouseY));
-  if (recordEl.classList.contains('visible')) {
-    record.tick(mouseX, mouseY, now);
-  }
+  if (recordEl.classList.contains('visible')) record.tick(mouseX, mouseY, now);
   requestAnimationFrame(loop);
 })(performance.now());
 
@@ -312,8 +304,5 @@ lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 ['film-grid','bts-grid'].forEach(id => {
   const g = document.getElementById(id);
-  if (g) g.addEventListener('click', e => {
-    const img = e.target.closest('img');
-    if (img) openLightbox(img.src);
-  });
+  if (g) g.addEventListener('click', e => { const img = e.target.closest('img'); if (img) openLightbox(img.src); });
 });
