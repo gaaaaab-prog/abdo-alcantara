@@ -15,17 +15,10 @@ const navWords = document.querySelectorAll('.nav-word');
 function showPage(key) {
   if (!pages[key]) return;
 
-  // Swap visible page
   Object.values(pages).forEach(p => p.classList.remove('active'));
   pages[key].classList.add('active');
-
-  // Update active word
   navWords.forEach(w => w.classList.toggle('active', w.dataset.page === key));
-
-  // Show/hide vinyl record
   updateRecordVisibility(key);
-
-  // Update URL
   history.pushState(null, '', key === 'cv' ? '/' : '#' + key);
   window.scrollTo(0, 0);
 }
@@ -39,11 +32,43 @@ navWords.forEach(w => w.addEventListener('click', () => showPage(w.dataset.page)
 window.addEventListener('popstate', loadFromHash);
 
 
-// ── FLOATING WORD PHYSICS ──────────────────
-// Each word drifts slowly in zero gravity,
-// bounces off viewport edges,
-// and repels away from the cursor.
+// ── MOUSE TRACKING + VELOCITY ──────────────
+// mouseSpeed is an exponentially-smoothed px/event value.
+// High = fast flick  → repulsion (existing feel).
+// Low  = slow hover  → attraction (helps clicking).
 
+let mouseX = -9999, mouseY = -9999;
+let mouseSpeed = 0;                   // smoothed speed (px per event)
+const SLOW_THRESHOLD = 5;             // px/event — below = intentional hover
+const ATTRACT_RADIUS = 110;           // px — "very close" attraction zone
+const REPEL_RADIUS   = 200;           // px — existing repulsion zone
+
+document.addEventListener('mousemove', e => {
+  const ddx = e.clientX - mouseX;
+  const ddy = e.clientY - mouseY;
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  const raw = Math.sqrt(ddx * ddx + ddy * ddy);
+  // Exponential smoothing: damps sudden jumps so mode doesn't flicker
+  mouseSpeed = mouseSpeed * 0.65 + raw * 0.35;
+});
+
+// Touch tracking (mobile) — treated as always "slow" for attraction
+document.addEventListener('touchmove', e => {
+  const t = e.touches[0];
+  mouseX = t.clientX;
+  mouseY = t.clientY;
+  mouseSpeed = 0; // touch = intentional = always attract
+}, { passive: true });
+
+document.addEventListener('touchend', () => {
+  mouseX = -9999;
+  mouseY = -9999;
+  mouseSpeed = 0;
+});
+
+
+// ── FLOATING WORD PHYSICS ──────────────────
 class FloatingWord {
   constructor(el, startX, startY) {
     this.el = el;
@@ -54,12 +79,10 @@ class FloatingWord {
     this.w  = 0;
     this.h  = 0;
 
-    // Apply initial position
     this.el.style.left = this.x + 'px';
     this.el.style.top  = this.y + 'px';
   }
 
-  // Measure rendered size (call after fonts load)
   measure() {
     this.w = this.el.offsetWidth;
     this.h = this.el.offsetHeight;
@@ -68,20 +91,29 @@ class FloatingWord {
   tick(mx, my) {
     const VW  = window.innerWidth;
     const VH  = window.innerHeight;
-    const PAD = 18;            // keep words away from edges
-    const REPEL_RADIUS = 200; // px — cursor influence zone
+    const PAD = 18;
 
-    // ── Cursor repulsion ──
     const cx = this.x + this.w * 0.5;
     const cy = this.y + this.h * 0.5;
     const dx = cx - mx;
     const dy = cy - my;
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
+    // ── Cursor interaction: repel OR attract based on mouse speed ──
     if (dist < REPEL_RADIUS) {
-      const force = ((REPEL_RADIUS - dist) / REPEL_RADIUS) * 0.45;
-      this.vx += (dx / dist) * force;
-      this.vy += (dy / dist) * force;
+      if (mouseSpeed < SLOW_THRESHOLD && dist < ATTRACT_RADIUS) {
+        // Slow, intentional hover → gentle gravitational pull toward cursor.
+        // Strength scales with how slow the mouse is (0 at threshold → full at rest).
+        const slowness = 1 - mouseSpeed / SLOW_THRESHOLD;
+        const force    = slowness * ((ATTRACT_RADIUS - dist) / ATTRACT_RADIUS) * 0.22;
+        this.vx -= (dx / dist) * force; // subtract = pull toward cursor
+        this.vy -= (dy / dist) * force;
+      } else if (mouseSpeed >= SLOW_THRESHOLD) {
+        // Fast approach → repulsion (original behavior preserved)
+        const force = ((REPEL_RADIUS - dist) / REPEL_RADIUS) * 0.45;
+        this.vx += (dx / dist) * force;
+        this.vy += (dy / dist) * force;
+      }
     }
 
     // ── Speed cap ──
@@ -92,11 +124,11 @@ class FloatingWord {
       this.vy = (this.vy / speed) * MAX_SPEED;
     }
 
-    // ── Friction / dampen ──
+    // ── Friction ──
     this.vx *= 0.984;
     this.vy *= 0.984;
 
-    // ── Keep alive — micro-drift if nearly stopped ──
+    // ── Micro-drift when nearly stopped ──
     if (speed < 0.22) {
       this.vx += (Math.random() - 0.5) * 0.07;
       this.vy += (Math.random() - 0.5) * 0.07;
@@ -106,7 +138,7 @@ class FloatingWord {
     this.x += this.vx;
     this.y += this.vy;
 
-    // ── Bounce off viewport edges ──
+    // ── Bounce ──
     if (this.x < PAD)               { this.x = PAD;               this.vx =  Math.abs(this.vx) * 0.75; }
     if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.75; }
     if (this.y < PAD)               { this.y = PAD;               this.vy =  Math.abs(this.vy) * 0.75; }
@@ -117,51 +149,26 @@ class FloatingWord {
   }
 }
 
-// Spread initial positions so words don't stack
 function getStartPositions() {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   return [
-    { x: vw * 0.08,  y: vh * 0.10 }, // CV   — top-left area
-    { x: vw * 0.52,  y: vh * 0.44 }, // Film — center
-    { x: vw * 0.22,  y: vh * 0.68 }, // Music — lower-left
+    { x: vw * 0.08, y: vh * 0.10 }, // CV
+    { x: vw * 0.52, y: vh * 0.44 }, // Film
+    { x: vw * 0.22, y: vh * 0.68 }, // Music
   ];
 }
 
 const startPos = getStartPositions();
-const floatingWords = Array.from(navWords).map((el, i) => {
-  return new FloatingWord(el, startPos[i].x, startPos[i].y);
-});
+const floatingWords = Array.from(navWords).map((el, i) =>
+  new FloatingWord(el, startPos[i].x, startPos[i].y)
+);
 
-// Measure after fonts are ready
 document.fonts.ready.then(() => floatingWords.forEach(fw => fw.measure()));
-window.addEventListener('resize',  () => floatingWords.forEach(fw => fw.measure()));
-
-// ── Mouse tracking ──
-let mouseX = -9999, mouseY = -9999;
-document.addEventListener('mousemove', e => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-});
-
-// ── Touch tracking (mobile) ──
-document.addEventListener('touchmove', e => {
-  const t = e.touches[0];
-  mouseX = t.clientX;
-  mouseY = t.clientY;
-}, { passive: true });
-
-document.addEventListener('touchend', () => {
-  mouseX = -9999;
-  mouseY = -9999;
-});
+window.addEventListener('resize', () => floatingWords.forEach(fw => fw.measure()));
 
 
 // ── VINYL RECORD ───────────────────────────
-// Floats with the same physics as the nav words.
-// Spins at 33 rpm (time-based, frame-rate independent).
-// Hover slows it to ~4 rpm; mouse-leave returns to 33.
-
 class RecordPhysics {
   constructor(el, startX, startY) {
     this.el = el;
@@ -172,15 +179,14 @@ class RecordPhysics {
     this.w  = 0;
     this.h  = 0;
 
-    this.angle     = 0;       // current rotation in degrees
-    this.rpm       = 33;      // current playback speed
-    this.targetRpm = 33;      // what rpm is easing toward
-    this.lastTime  = null;    // for dt calculation
+    this.angle     = 0;
+    this.rpm       = 33;
+    this.targetRpm = 33;
+    this.lastTime  = null;
 
     this.el.style.left = this.x + 'px';
     this.el.style.top  = this.y + 'px';
 
-    // Hover slows the record like a hand on the platter
     this.el.addEventListener('mouseenter', () => { this.targetRpm = 4; });
     this.el.addEventListener('mouseleave', () => { this.targetRpm = 33; });
   }
@@ -191,21 +197,17 @@ class RecordPhysics {
   }
 
   tick(mx, my, now) {
-    // Time delta in seconds — 0 on first call to avoid jump
     const dt = this.lastTime !== null ? (now - this.lastTime) / 1000 : 0;
     this.lastTime = now;
 
     // ── RPM easing ──
     this.rpm += (this.targetRpm - this.rpm) * 0.03;
-
-    // ── Rotation: rpm × 6 = degrees per second ──
     this.angle += this.rpm * 6 * dt;
 
-    // ── Physics (identical to FloatingWord) ──
+    // ── Physics ──
     const VW  = window.innerWidth;
     const VH  = window.innerHeight;
     const PAD = 18;
-    const REPEL_RADIUS = 200;
 
     const cx = this.x + this.w * 0.5;
     const cy = this.y + this.h * 0.5;
@@ -214,9 +216,16 @@ class RecordPhysics {
     const dist = Math.sqrt(dx * dx + dy * dy) || 1;
 
     if (dist < REPEL_RADIUS) {
-      const force = ((REPEL_RADIUS - dist) / REPEL_RADIUS) * 0.45;
-      this.vx += (dx / dist) * force;
-      this.vy += (dy / dist) * force;
+      if (mouseSpeed < SLOW_THRESHOLD && dist < ATTRACT_RADIUS) {
+        const slowness = 1 - mouseSpeed / SLOW_THRESHOLD;
+        const force    = slowness * ((ATTRACT_RADIUS - dist) / ATTRACT_RADIUS) * 0.22;
+        this.vx -= (dx / dist) * force;
+        this.vy -= (dy / dist) * force;
+      } else if (mouseSpeed >= SLOW_THRESHOLD) {
+        const force = ((REPEL_RADIUS - dist) / REPEL_RADIUS) * 0.45;
+        this.vx += (dx / dist) * force;
+        this.vy += (dy / dist) * force;
+      }
     }
 
     const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
@@ -261,10 +270,11 @@ window.addEventListener('resize', () => record.measure());
 function updateRecordVisibility(pageKey) {
   const isMusic = pageKey === 'music';
   recordEl.classList.toggle('visible', isMusic);
-  if (!isMusic) record.lastTime = null; // reset so no angle jump on re-show
+  if (!isMusic) record.lastTime = null;
 }
 
-// ── Scroll impulse — nudges all floaters ──
+
+// ── Scroll impulse ──
 let lastScrollY = window.scrollY;
 window.addEventListener('scroll', () => {
   const delta = window.scrollY - lastScrollY;
@@ -272,6 +282,7 @@ window.addEventListener('scroll', () => {
   record.vy += delta * 0.035;
   lastScrollY = window.scrollY;
 }, { passive: true });
+
 
 // ── Main animation loop ──
 (function loop(now) {
@@ -282,8 +293,8 @@ window.addEventListener('scroll', () => {
   requestAnimationFrame(loop);
 })(performance.now());
 
-// ── Load initial page from URL hash ──
-// Called last so recordEl is fully initialized before any visibility toggle
+
+// ── Load initial page — called last so recordEl is initialized ──
 loadFromHash();
 
 
@@ -307,7 +318,6 @@ document.getElementById('lb-close').addEventListener('click', closeLightbox);
 lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
-// Delegate click on grid images (works as images are added later)
 ['film-grid', 'bts-grid'].forEach(id => {
   const grid = document.getElementById(id);
   if (!grid) return;
