@@ -201,6 +201,60 @@ body {
   margin-bottom: 28px; max-width: 480px;
 }
 
+/* ── FILM TABS ──────────────────────────────────── */
+.film-tabs {
+  display: flex; gap: 0; padding: 0 56px; margin-bottom: 40px;
+  border-bottom: 1px solid var(--border);
+}
+.film-tab {
+  background: none; border: none; outline: none;
+  font-family: var(--font); font-size: 0.72rem; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); cursor: pointer;
+  padding: 12px 20px 10px; position: relative;
+  transition: color 0.25s;
+}
+.film-tab::after {
+  content: ''; position: absolute; bottom: -1px; left: 20px; right: 20px;
+  height: 1.5px; background: var(--text); transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+.film-tab:hover { color: var(--text); }
+.film-tab.active { color: var(--text); }
+.film-tab.active::after { transform: scaleX(1); }
+.film-tab-content { display: none; }
+.film-tab-content.active { display: block; }
+.film-tab-intro {
+  font-size: 0.88rem; color: var(--muted); line-height: 1.75;
+  margin-bottom: 28px; max-width: 480px; padding: 0 56px;
+}
+
+/* ── FILM PROJECTS (Freelance cards) ─────────────── */
+.film-projects { padding: 0 56px; display: flex; flex-direction: column; gap: 56px; }
+.film-project {
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: 36px; align-items: start;
+}
+.fp-media { overflow: hidden; border-radius: 3px; }
+.fp-video-ph {
+  aspect-ratio: 16/9; background: var(--ph-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.62rem; letter-spacing: 0.12em; color: #b8b8b2;
+  transition: background 0.2s; cursor: pointer;
+}
+.fp-video-ph:hover { background: #d8d8d2; }
+.fp-info { padding-top: 4px; }
+.fp-title { font-size: 1.05rem; font-weight: 500; margin-bottom: 4px; }
+.fp-role { font-size: 0.82rem; color: var(--muted); margin-bottom: 12px; }
+.fp-desc { font-size: 0.87rem; line-height: 1.75; color: #555; margin-bottom: 12px; }
+.fp-meta { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.04em; }
+
+/* ── BURNING MAN FEATURED ────────────────────────── */
+.bm-featured { padding: 0 56px 28px; }
+.bm-video {
+  aspect-ratio: 21/9; max-height: 340px;
+  font-size: 0.72rem;
+}
+
 /* ── MUSIC ────────────────────────────────────── */
 .music-body { max-width: 860px; padding: 0 60px 140px; }
 .music-list  { display: flex; flex-direction: column; }
@@ -298,6 +352,12 @@ body {
   .music-body  { padding: 0 24px 80px; }
   .film-body   { padding: 0 3px 80px; }
   .film-subsection { padding: 48px 21px 0; }
+  .film-tabs { padding: 0 21px; }
+  .film-tab { padding: 10px 14px 8px; font-size: 0.65rem; }
+  .film-tab-intro { padding: 0 21px; }
+  .film-projects { padding: 0 21px; }
+  .film-project { grid-template-columns: 1fr; gap: 16px; }
+  .bm-featured { padding: 0 21px 20px; }
   .cv-block    { grid-template-columns: 1fr; gap: 10px 0; }
   .nav-word    { font-size: clamp(2.8rem, 15vw, 5rem); }
   .record-el   { width: clamp(140px, 40vw, 220px); height: clamp(140px, 40vw, 220px); }
