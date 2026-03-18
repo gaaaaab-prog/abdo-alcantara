@@ -22,37 +22,11 @@
     <div class="record-vinyl" id="record-vinyl"></div>
     <div class="tonearm-el" id="tonearm">
       <svg viewBox="0 0 280 70" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect x="8" y="27" width="22" height="14" rx="2.5" fill="#2d2d2d"/>
-        <rect x="10" y="29" width="18" height="10" rx="1.5" fill="#363636"/>
-        <line x1="12" y1="41" x2="10" y2="53" stroke="#888" stroke-width="1.2" stroke-linecap="round"/>
-        <circle cx="10" cy="54" r="1.8" fill="#aaa"/>
-        <rect x="29" y="30" width="8" height="8" rx="1.5" fill="#252525"/>
-        <path d="M36 29 Q120 27 200 30 L200 38 Q120 40 36 37Z" fill="url(#armG)"/>
-        <path d="M38 29.5 Q120 27.5 199 30.5" stroke="rgba(255,255,255,0.10)" stroke-width="0.8" fill="none"/>
-        <rect x="197" y="12" width="6" height="46" rx="3" fill="#3a3a3a"/>
-        <circle cx="200" cy="34" r="9.5" fill="#3c3c3c" stroke="#4e4e4e" stroke-width="1"/>
-        <circle cx="200" cy="34" r="5.5" fill="#282828"/>
-        <circle cx="200" cy="34" r="2" fill="#505050"/>
-        <line x1="200" y1="12" x2="222" y2="16" stroke="#383838" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="222" cy="17" r="3" fill="#444"/>
-        <rect x="205" y="31" width="38" height="6" rx="3" fill="#282828"/>
-        <rect x="238" y="21" width="32" height="26" rx="5" fill="url(#cwG)"/>
-        <ellipse cx="238" cy="34" rx="5" ry="13" fill="#484848"/>
-        <ellipse cx="270" cy="34" rx="4" ry="13" fill="#303030"/>
-        <path d="M239 22 Q254 20 269 22" stroke="rgba(255,255,255,0.13)" stroke-width="1" fill="none"/>
-        <rect x="188" y="58" width="24" height="7" rx="3" fill="#252525"/>
-        <defs>
-          <linearGradient id="armG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#424242"/>
-            <stop offset="40%" stop-color="#2e2e2e"/>
-            <stop offset="100%" stop-color="#1e1e1e"/>
-          </linearGradient>
-          <linearGradient id="cwG" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#626262"/>
-            <stop offset="45%" stop-color="#484848"/>
-            <stop offset="100%" stop-color="#303030"/>
-          </linearGradient>
-        </defs>
+        <path d="M 200 34 C 160 33 100 37 55 47" stroke="#aaa" stroke-width="3" stroke-linecap="round"/>
+        <line x1="55" y1="47" x2="18" y2="56" stroke="#aaa" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="18" cy="56" r="2.5" fill="#bbb"/>
+        <circle cx="200" cy="34" r="5.5" fill="#2e2e2e" stroke="#666" stroke-width="1.5"/>
+        <circle cx="200" cy="34" r="2" fill="#888"/>
       </svg>
     </div>
   </div>
@@ -183,6 +157,10 @@
 <div id="sc-player" class="sc-player">
   <button class="sc-close" id="sc-close" aria-label="Close player">×</button>
   <div class="sc-track-name" id="sc-track-name">—</div>
+  <div class="sc-progress-row">
+    <span id="sc-elapsed">0:00</span>
+    <div class="sc-progress-wrap"><div id="sc-progress-bar"></div></div>
+  </div>
   <div class="sc-controls">
     <button class="sc-btn" id="sc-prev" aria-label="Previous">
       <svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="3" width="3" height="14" rx="1"/><path d="M7 10L17 3v14z"/></svg>
