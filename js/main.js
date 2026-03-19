@@ -470,7 +470,7 @@ const REPULSE_FORCE = 0.018;
       const minDist = (a.w + b.w) * 0.5 + 28;
       if (dist < minDist) {
         const f  = REPULSE_FORCE * (1 - dist / minDist);
-        const nx = dx minDisty / dist;
+        const nx = dx / dist, ny = dy / dist;
         a.vx -= nx * f;  a.vy -= ny * f;
         b.vx += nx * f;  b.vy += ny * f;
       }
