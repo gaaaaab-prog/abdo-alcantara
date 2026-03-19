@@ -466,6 +466,7 @@ scNextBtn.addEventListener('click',   e => { e.stopPropagation(); loadTrack(scTr
 const REPULSE_FORCE = 0.045;
 
 (function loop(now) {
+    if (document.hidden) { requestAnimationFrame(loop); return; }
   floatingWords.forEach(fw => fw.tick(mouseX, mouseY));
   // Soft repulsion — min distance from actual word widths so edges never overlap
   for (let i = 0; i < floatingWords.length; i++) {
@@ -491,6 +492,13 @@ const REPULSE_FORCE = 0.045;
   if (recordEl.classList.contains('visible')) record.tick(mouseX, mouseY, now);
   requestAnimationFrame(loop);
 })(performance.now());
+
+// ── VISIBILITY (save CPU/battery when tab hidden) ────────
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    record.lastTime = null;   // prevent huge dt jump on resume
+  }
+});
 
 // ── SCROLL ────────────────────────────────
 const floatNav = document.getElementById('float-nav');
@@ -576,7 +584,7 @@ class FloatingImage {
     if (this._hoverStart > 0 && !this._magnified && Date.now() - this._hoverStart > 2000) {
       this._magnified = true;
       this.el.classList.add('magnified');
-      setTimeout(() => this.measure(), 520);
+      setTimeout(() => { if (this.el.isConnected) this.measure(); }, 520);
     }
 
     const ddx = mx - cx, ddy = my - cy;
@@ -656,6 +664,7 @@ function initPhotoFloat() {
   setTimeout(() => floatingImages.forEach(fi => fi.measure()), 100);
 
   (function photoLoop() {
+      if (document.hidden) { photoAnimFrame = requestAnimationFrame(photoLoop); return; }
     floatingImages.forEach(fi => fi.tick(mouseX, mouseY));
     for (let i = 0; i < floatingImages.length; i++) {
       for (let j = i + 1; j < floatingImages.length; j++) {
