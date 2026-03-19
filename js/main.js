@@ -151,11 +151,11 @@ class FloatingWord {
     this.y += this.vy;
 
     // Soft edge avoidance — gentle push away from margins
-    const MARGIN = 100;
+    const MARGIN = 130;
     if (this.x < MARGIN) { this.vx += 0.003 * (MARGIN - this.x) / MARGIN; }
     if (this.x + this.w > VW - MARGIN) { this.vx -= 0.003 * (this.x + this.w - (VW - MARGIN)) / MARGIN; }
     if (this.y < MARGIN) { this.vy += 0.003 * (MARGIN - this.y) / MARGIN; }
-    if (this.y + this.h > VH - MARGIN) { this.vy -= 0.006 * (this.y + this.h - (VH - MARGIN)) / MARGIN; }
+    if (this.y + this.h > VH - MARGIN) { this.vy -= 0.012 * (this.y + this.h - (VH - MARGIN)) / MARGIN; }
 
     // Hard boundary — keep on screen
     if (this.x < PAD) { this.x = PAD; this.vx = Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
