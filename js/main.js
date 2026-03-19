@@ -630,8 +630,8 @@ class FloatingImage {
   }
 }
 
-let floatingImages = [];
-let photoAnimFrame = null;
+var floatingImages = [];
+var photoAnimFrame = null;
 
 function getActivePhotoFilters() {
   const types = [];
