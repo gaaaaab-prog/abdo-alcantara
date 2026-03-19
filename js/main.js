@@ -76,11 +76,10 @@ document.querySelectorAll('.cv-tab').forEach(tab => {
 });
 
 // ── FLOATING WORD ─────────────────────────
-// Dreamy wind-drift: three words burst outward from near-centre on load,
-// each in a different direction (~120° apart), decelerating via friction into
-// a lazy continuous arc. The force direction rotates so slowly (full cycle ≈
-// 2–6 min) the motion reads as aimless floating rather than mechanical pattern.
-// No collisions. No repulsion. Cursor pull is near-zero and only when still.
+// Words burst outward from near-centre on load (~120° apart), decelerating
+// via friction. Drift direction rotates slowly for aimless-looking float.
+// Fast mouse swipe pushes; slow approach attracts. Soft edge avoidance +
+// inter-word repulsion keep words separated and on-screen.
 const FRICTION    = 0.991;  // terminal speed ≈ 0.001/0.006 ≈ 0.17 px/frame
 const DRIFT_FORCE = 0.002;  // continuous gentle push along _driftAngle
 const MAX_SPEED   = 2.5;    // high cap so the launch burst isn't clipped
@@ -481,18 +480,14 @@ const REPULSE_FORCE = 0.006;
   requestAnimationFrame(loop);
 })(performance.now());
 
-// ── NAV FADE ON SCROLL ───────────────────────
-window.addEventListener('scroll', () => {
-  const past = window.scrollY > window.innerHeight * 0.15;
-  document.getElementById('float-nav').classList.toggle('scrolled', past);
-}, { passive: true });
-
-// ── SCROLL ARROW ───────────────────────────
+// ── SCROLL ────────────────────────────────
+const floatNav = document.getElementById('float-nav');
 const scrollArrow = document.getElementById('scroll-arrow');
+window.addEventListener('scroll', () => {
+  floatNav.classList.toggle('scrolled', window.scrollY > window.innerHeight * 0.15);
+  if (scrollArrow) scrollArrow.style.opacity = window.scrollY > 40 ? '0' : '';
+}, { passive: true });
 if (scrollArrow) {
-  window.addEventListener('scroll', () => {
-    scrollArrow.style.opacity = window.scrollY > 40 ? '0' : '';
-  }, { passive: true });
   scrollArrow.addEventListener('click', () => {
     window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' });
   });
