@@ -136,7 +136,7 @@ class FloatingWord {
     this.vy += Math.sin(this._driftAngle) * DRIFT_FORCE;
 
     // Gentle center gravity
-    const gcx = VW * 0.5 - cx, gcy = VH * 0.5 - cy;
+    const gcx = VW * 0.5 - cx, gcy = VH * 0.42 - cy;
     const gd = Math.sqrt(gcx * gcx + gcy * gcy) || 1;
     this.vx += (gcx / gd) * 0.0003;
     this.vy += (gcy / gd) * 0.0003;
@@ -151,7 +151,7 @@ class FloatingWord {
     this.y += this.vy;
 
     // Soft edge avoidance — gentle push away from margins
-    const MARGIN = 60;
+    const MARGIN = 100;
     if (this.x < MARGIN) { this.vx += 0.003 * (MARGIN - this.x) / MARGIN; }
     if (this.x + this.w > VW - MARGIN) { this.vx -= 0.003 * (this.x + this.w - (VW - MARGIN)) / MARGIN; }
     if (this.y < MARGIN) { this.vy += 0.003 * (MARGIN - this.y) / MARGIN; }
