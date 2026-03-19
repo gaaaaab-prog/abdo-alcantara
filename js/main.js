@@ -110,15 +110,21 @@ class FloatingWord {
     const VW = window.innerWidth, VH = window.innerHeight, PAD = 18;
     const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
 
-    // Barely-perceptible cursor pull — normalised so distance doesn't amplify.
-    // Only fires when cursor is near-stationary and within 60 px.
+    // Mouse interaction — slow approach attracts, fast swipe pushes
     const ddx = mx - cx, ddy = my - cy;
     const dist = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
-    if (mouseActive && mouseSpeed < 2 && dist < 60) {
-      this.vx += (ddx / dist) * 0.002;
-      this.vy += (ddy / dist) * 0.002;
+    if (mouseActive && dist < 120) {
+      if (mouseSpeed > 8) {
+        // Fast swipe — push word away
+        const pushF = Math.min(mouseSpeed * 0.004, 0.3);
+        this.vx -= (ddx / dist) * pushF;
+        this.vy -= (ddy / dist) * pushF;
+      } else if (mouseSpeed < 2) {
+        // Slow/still — gentle attract
+        this.vx += (ddx / dist) * 0.002;
+        this.vy += (ddy / dist) * 0.002;
+      }
     }
-
 
     // Rotate drift direction; very rarely nudge the spin rate for variety.
     this._driftAngle += this._driftAngleSpeed;
@@ -138,10 +144,17 @@ class FloatingWord {
     this.x += this.vx;
     this.y += this.vy;
 
-    // Soft boundary: absorb most momentum, flip drift angle so the word curves away.
-    if (this.x < PAD)               { this.x = PAD;               this.vx =  Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
+    // Soft edge avoidance — gentle push away from margins
+    const MARGIN = 60;
+    if (this.x < MARGIN) { this.vx += 0.003 * (MARGIN - this.x) / MARGIN; }
+    if (this.x + this.w > VW - MARGIN) { this.vx -= 0.003 * (this.x + this.w - (VW - MARGIN)) / MARGIN; }
+    if (this.y < MARGIN) { this.vy += 0.003 * (MARGIN - this.y) / MARGIN; }
+    if (this.y + this.h > VH - MARGIN) { this.vy -= 0.003 * (this.y + this.h - (VH - MARGIN)) / MARGIN; }
+
+    // Hard boundary — keep on screen
+    if (this.x < PAD) { this.x = PAD; this.vx = Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
     if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
-    if (this.y < PAD)               { this.y = PAD;               this.vy =  Math.abs(this.vy) * 0.2; this._driftAngle = -this._driftAngle; }
+    if (this.y < PAD) { this.y = PAD; this.vy = Math.abs(this.vy) * 0.2; this._driftAngle = -this._driftAngle; }
     if (this.y + this.h > VH - PAD) { this.y = VH - this.h - PAD; this.vy = -Math.abs(this.vy) * 0.2; this._driftAngle = -this._driftAngle; }
 
     this.el.style.transform = `translate3d(${this.x}px,${this.y}px,0)`;
