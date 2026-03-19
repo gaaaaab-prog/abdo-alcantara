@@ -399,6 +399,220 @@ body {
 .lb-close:hover { opacity: 1; }
 
 /* ── RESPONSIVE ─────────────────────────────────── */
+
+/* ── NAV PULLDOWN (Photo page) ─────────────────── */
+.nav-pulldown {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.nav-pulldown.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.pulldown-toggle {
+  width: 36px;
+  height: 36px;
+  background: rgba(15,15,15,0.06);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.pulldown-toggle:hover {
+  background: rgba(15,15,15,0.12);
+}
+.pulldown-toggle svg {
+  width: 18px;
+  height: 18px;
+}
+.pulldown-menu {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  background: rgba(245,245,240,0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 8px;
+  padding: 8px 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  display: none;
+  flex-direction: column;
+  min-width: 120px;
+}
+.pulldown-menu.open {
+  display: flex;
+}
+.pulldown-menu button {
+  background: none;
+  border: none;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  padding: 10px 20px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.pulldown-menu button:hover {
+  background: rgba(15,15,15,0.06);
+}
+
+/* ── PHOTO TABS ────────────────────────────────── */
+.photo-tabs {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 250;
+  display: flex;
+  gap: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.photo-tabs.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+.photo-tab-group {
+  position: relative;
+}
+.photo-tab {
+  background: none;
+  border: none;
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.25s, background 0.25s;
+  border-radius: 6px;
+}
+.photo-tab:hover { color: var(--text); }
+.photo-tab.active {
+  color: var(--text);
+  background: rgba(15,15,15,0.05);
+}
+.dropdown-arrow {
+  width: 10px;
+  height: 10px;
+  transition: transform 0.3s;
+}
+.photo-tab.dropdown-open .dropdown-arrow {
+  transform: rotate(180deg);
+}
+.photo-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: rgba(245,245,240,0.95);
+  backdrop-filter: blur(12px);
+  border-radius: 6px;
+  padding: 6px 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  display: none;
+  flex-direction: column;
+  min-width: 110px;
+}
+.photo-dropdown.open { display: flex; }
+.photo-filter {
+  background: none;
+  border: none;
+  font-family: var(--font);
+  font-size: 0.75rem;
+  color: var(--muted);
+  padding: 7px 16px;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.15s, background 0.15s;
+}
+.photo-filter:hover {
+  background: rgba(15,15,15,0.04);
+  color: var(--text);
+}
+.photo-filter.active {
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ── FLOATING IMAGES ───────────────────────────── */
+.photo-float-container {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  pointer-events: none;
+  overflow: hidden;
+}
+.float-img {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 72px;
+  height: 72px;
+  pointer-events: all;
+  cursor: pointer;
+  border-radius: 3px;
+  overflow: hidden;
+  will-change: transform;
+  transition: width 0.5s ease, height 0.5s ease, opacity 0.4s ease, box-shadow 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.float-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: grayscale(100%);
+  transition: filter 0.4s;
+}
+.float-img:hover img { filter: grayscale(0%); }
+.float-img.magnified {
+  width: 280px;
+  height: 210px;
+  z-index: 160;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+}
+.float-img.enlarged {
+  width: 70vw;
+  height: 70vh;
+  z-index: 170;
+  box-shadow: 0 12px 60px rgba(0,0,0,0.4);
+  border-radius: 6px;
+  left: 15vw !important;
+  top: 15vh !important;
+}
+.float-img.enlarged img { filter: grayscale(0%); }
+.photo-float-container.has-enlarged .float-img:not(.enlarged) {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+/* ── PHOTO PAGE NAV HIDDEN STATE ───────────────── */
+#float-nav.photo-active .nav-word {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+#float-nav.photo-active .record-el {
+  opacity: 0;
+  pointer-events: none;
+}
+
 @media (max-width: 900px) {
   .skills-grid { grid-template-columns: repeat(2,1fr); row-gap: 32px; }
   .film-grid   { grid-template-columns: repeat(2,1fr); }
