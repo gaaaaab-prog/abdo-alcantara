@@ -24,6 +24,13 @@ function showPage(key) {
   history.pushState(null, '', key === 'cv' ? '/' : '#' + key);
   window.scrollTo(0, 0);
   setTimeout(() => floatingWords.forEach(fw => fw.measure()), 50);
+
+  // Photo page — collapse nav, show tabs + floating images
+  const isPhoto = key === 'film-photo';
+  document.getElementById('float-nav').classList.toggle('photo-active', isPhoto);
+  document.getElementById('nav-pulldown').classList.toggle('visible', isPhoto);
+  document.getElementById('photo-tabs').classList.toggle('visible', isPhoto);
+  if (isPhoto) initPhotoFloat(); else destroyPhotoFloat();
 }
 
 navWords.forEach(w => {
@@ -501,6 +508,228 @@ if (scrollArrow) {
 // ── INITIAL ROUTE ─────────────────────────
 const _h = location.hash.replace('#', '');
 showPage(pages[_h] ? _h : 'cv');
+
+
+// ── PHOTO FLOATING IMAGES ──────────────────────
+// Placeholder pool — real images loaded later from digital/analog folders
+const PHOTO_PLACEHOLDERS = Array.from({length: 15}, (_, i) => ({
+  src: '',
+  type: i < 8 ? 'digital' : 'analog',
+  filter: String((i % 3) + 1),
+  id: 'photo-' + i
+}));
+
+const PHOTO_FRICTION = 0.9917;
+const PHOTO_DRIFT   = 0.00184;
+const PHOTO_MAX_SPEED = 2.3;
+
+class FloatingImage {
+  constructor(el, x, y, angle) {
+    this.el = el;
+    this.x = x; this.y = y;
+    this.w = 72; this.h = 72;
+    this._driftAngle = angle;
+    this._driftAngleSpeed = (Math.random() < 0.5 ? 1 : -1) * (0.0003 + Math.random() * 0.0005);
+    this.vx = Math.cos(angle) * 1.8;
+    this.vy = Math.sin(angle) * 1.8;
+    this._hoverStart = 0;
+    this._magnified = false;
+    this._enlarged = false;
+    el.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
+    el.addEventListener('mouseenter', () => { this._hoverStart = Date.now(); });
+    el.addEventListener('mouseleave', () => {
+      this._hoverStart = 0;
+      if (this._magnified && !this._enlarged) {
+        this._magnified = false;
+        el.classList.remove('magnified');
+        this.w = 72; this.h = 72;
+      }
+    });
+    el.addEventListener('click', () => this.toggleEnlarge());
+  }
+
+  measure() { this.w = this.el.offsetWidth; this.h = this.el.offsetHeight; }
+
+  toggleEnlarge() {
+    const ctr = document.getElementById('photo-float-container');
+    if (this._enlarged) {
+      this._enlarged = false; this._magnified = false;
+      this.el.classList.remove('enlarged', 'magnified');
+      ctr.classList.remove('has-enlarged');
+      this.w = 72; this.h = 72;
+    } else {
+      floatingImages.forEach(fi => {
+        fi._enlarged = false; fi._magnified = false;
+        fi.el.classList.remove('enlarged', 'magnified');
+      });
+      this._enlarged = true;
+      this.el.classList.add('enlarged');
+      ctr.classList.add('has-enlarged');
+    }
+  }
+
+  tick(mx, my) {
+    if (this._enlarged) return;
+    const VW = window.innerWidth, VH = window.innerHeight;
+    const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
+
+    if (this._hoverStart > 0 && !this._magnified && Date.now() - this._hoverStart > 2000) {
+      this._magnified = true;
+      this.el.classList.add('magnified');
+      setTimeout(() => this.measure(), 520);
+    }
+
+    const ddx = mx - cx, ddy = my - cy;
+    const dist = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
+    if (mouseActive && dist < 120) {
+      if (mouseSpeed > 8) {
+        const pf = Math.min(mouseSpeed * 0.004, 0.3);
+        this.vx -= (ddx / dist) * pf; this.vy -= (ddy / dist) * pf;
+      } else if (mouseSpeed < 2) {
+        this.vx += (ddx / dist) * 0.002; this.vy += (ddy / dist) * 0.002;
+      }
+    }
+
+    this._driftAngle += this._driftAngleSpeed;
+    if (Math.random() < 0.0005) {
+      this._driftAngleSpeed += (Math.random() - 0.5) * 0.0002;
+      this._driftAngleSpeed = Math.max(-0.0009, Math.min(0.0009, this._driftAngleSpeed));
+    }
+    this.vx += Math.cos(this._driftAngle) * PHOTO_DRIFT;
+    this.vy += Math.sin(this._driftAngle) * PHOTO_DRIFT;
+
+    const gcx = VW * 0.5 - cx, gcy = VH * 0.42 - cy;
+    const gd = Math.sqrt(gcx * gcx + gcy * gcy) || 1;
+    this.vx += (gcx / gd) * 0.0006; this.vy += (gcy / gd) * 0.0006;
+
+    const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    if (spd > PHOTO_MAX_SPEED) { const r = PHOTO_MAX_SPEED / spd; this.vx *= r; this.vy *= r; }
+    this.vx *= PHOTO_FRICTION; this.vy *= PHOTO_FRICTION;
+    this.x += this.vx; this.y += this.vy;
+
+    const MARGIN = 160, PAD = 18;
+    if (this.x < MARGIN) this.vx += 0.003 * (MARGIN - this.x) / MARGIN;
+    if (this.x + this.w > VW - MARGIN) this.vx -= 0.003 * (this.x + this.w - (VW - MARGIN)) / MARGIN;
+    if (this.y < MARGIN) this.vy += 0.003 * (MARGIN - this.y) / MARGIN;
+    if (this.y + this.h > VH - MARGIN) this.vy -= 0.025 * (this.y + this.h - (VH - MARGIN)) / MARGIN;
+
+    if (this.x < PAD) { this.x = PAD; this.vx = Math.abs(this.vx) * 0.2; }
+    if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.2; }
+    if (this.y < PAD) { this.y = PAD; this.vy = Math.abs(this.vy) * 0.2; }
+    if (this.y + this.h > VH - 130) { this.y = VH - this.h - 130; this.vy = -Math.abs(this.vy) * 0.2; }
+
+    this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)';
+  }
+}
+
+let floatingImages = [];
+let photoAnimFrame = null;
+
+function getActivePhotoFilters() {
+  const types = [];
+  document.querySelectorAll('.photo-tab.active').forEach(t => types.push(t.dataset.photoTab));
+  if (types.length === 0) types.push('digital', 'analog');
+  return { types };
+}
+
+function initPhotoFloat() {
+  destroyPhotoFloat();
+  const container = document.getElementById('photo-float-container');
+  if (!container) return;
+  const cx = window.innerWidth * 0.5, cy = window.innerHeight * 0.4;
+  const base = Math.random() * Math.PI * 2;
+  const af = getActivePhotoFilters();
+  const pool = PHOTO_PLACEHOLDERS.filter(p => af.types.includes(p.type));
+  const count = Math.min(pool.length, 12);
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'float-img';
+    el.dataset.type = pool[i].type;
+    el.dataset.filter = pool[i].filter;
+    el.innerHTML = '<div style="width:100%;height:100%;background:var(--ph-bg);display:flex;align-items:center;justify-content:center;font-size:0.5rem;color:#b8b8b2;">' + pool[i].type[0].toUpperCase() + (i + 1) + '</div>';
+    container.appendChild(el);
+    const angle = base + (i / count) * Math.PI * 2;
+    floatingImages.push(new FloatingImage(el, cx + (Math.random() - 0.5) * 40, cy + (Math.random() - 0.5) * 30, angle));
+  }
+
+  setTimeout(() => floatingImages.forEach(fi => fi.measure()), 100);
+
+  (function photoLoop() {
+    floatingImages.forEach(fi => fi.tick(mouseX, mouseY));
+    for (let i = 0; i < floatingImages.length; i++) {
+      for (let j = i + 1; j < floatingImages.length; j++) {
+        const a = floatingImages[i], b = floatingImages[j];
+        if (a._enlarged || b._enlarged) continue;
+        const dx = (b.x + b.w * 0.5) - (a.x + a.w * 0.5);
+        const dy = (b.y + b.h * 0.5) - (a.y + a.h * 0.5);
+        const d = Math.sqrt(dx * dx + dy * dy) || 1;
+        const md = (a.w + b.w) * 0.5 + 20;
+        if (d < md) {
+          const nx = dx / d, ny = dy / d, f = 0.03 * (1 - d / md);
+          a.vx -= nx * f; a.vy -= ny * f;
+          b.vx += nx * f; b.vy += ny * f;
+        }
+      }
+    }
+    photoAnimFrame = requestAnimationFrame(photoLoop);
+  })();
+}
+
+function destroyPhotoFloat() {
+  if (photoAnimFrame) { cancelAnimationFrame(photoAnimFrame); photoAnimFrame = null; }
+  const ctr = document.getElementById('photo-float-container');
+  if (ctr) ctr.innerHTML = '';
+  floatingImages = [];
+}
+
+// ── PHOTO TAB TOGGLE (non-exclusive) ────────────
+document.querySelectorAll('.photo-tab').forEach(tab => {
+  tab.addEventListener('click', e => {
+    e.stopPropagation();
+    tab.classList.toggle('active');
+    const isOpen = tab.classList.contains('dropdown-open');
+    document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
+    document.querySelectorAll('.photo-dropdown').forEach(dd => dd.classList.remove('open'));
+    if (!isOpen) {
+      tab.classList.add('dropdown-open');
+      const dd = tab.parentElement.querySelector('.photo-dropdown');
+      if (dd) dd.classList.add('open');
+    }
+    if (document.getElementById('page-film-photo').classList.contains('active')) initPhotoFloat();
+  });
+});
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
+  document.querySelectorAll('.photo-dropdown').forEach(dd => dd.classList.remove('open'));
+});
+
+document.querySelectorAll('.photo-filter').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    btn.classList.toggle('active');
+  });
+});
+
+// ── NAV PULLDOWN ────────────────────────────────
+const pulldownToggle = document.getElementById('pulldown-toggle');
+const pulldownMenu = document.getElementById('pulldown-menu');
+if (pulldownToggle) {
+  pulldownToggle.addEventListener('click', e => {
+    e.stopPropagation();
+    pulldownMenu.classList.toggle('open');
+  });
+}
+if (pulldownMenu) {
+  pulldownMenu.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      pulldownMenu.classList.remove('open');
+      showPage(btn.dataset.page);
+    });
+  });
+}
+document.addEventListener('click', () => { if (pulldownMenu) pulldownMenu.classList.remove('open'); });
 
 // ── LIGHTBOX ──────────────────────────────
 const lb    = document.getElementById('lightbox');
