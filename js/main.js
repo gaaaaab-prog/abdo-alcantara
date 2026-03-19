@@ -151,17 +151,17 @@ class FloatingWord {
     this.y += this.vy;
 
     // Soft edge avoidance — gentle push away from margins
-    const MARGIN = 130;
+    const MARGIN = 160;
     if (this.x < MARGIN) { this.vx += 0.003 * (MARGIN - this.x) / MARGIN; }
     if (this.x + this.w > VW - MARGIN) { this.vx -= 0.003 * (this.x + this.w - (VW - MARGIN)) / MARGIN; }
     if (this.y < MARGIN) { this.vy += 0.003 * (MARGIN - this.y) / MARGIN; }
-    if (this.y + this.h > VH - MARGIN) { this.vy -= 0.012 * (this.y + this.h - (VH - MARGIN)) / MARGIN; }
+    if (this.y + this.h > VH - MARGIN) { this.vy -= 0.025 * (this.y + this.h - (VH - MARGIN)) / MARGIN; }
 
     // Hard boundary — keep on screen
     if (this.x < PAD) { this.x = PAD; this.vx = Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
     if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
     if (this.y < PAD) { this.y = PAD; this.vy = Math.abs(this.vy) * 0.2; this._driftAngle = -this._driftAngle; }
-    if (this.y + this.h > VH - PAD) { this.y = VH - this.h - PAD; this.vy = -Math.abs(this.vy) * 0.2; this._driftAngle = -this._driftAngle; }
+    if (this.y + this.h > VH - 130) { this.y = VH - this.h - 130; this.vy = -Math.abs(this.vy) * 0.2; this._driftAngle = -this._driftAngle; }
 
     this.el.style.transform = `translate3d(${this.x}px,${this.y}px,0)`;
   }
