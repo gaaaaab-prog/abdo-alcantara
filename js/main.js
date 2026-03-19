@@ -138,8 +138,8 @@ class FloatingWord {
     // Gentle center gravity
     const gcx = VW * 0.5 - cx, gcy = VH * 0.42 - cy;
     const gd = Math.sqrt(gcx * gcx + gcy * gcy) || 1;
-    this.vx += (gcx / gd) * 0.0003;
-    this.vy += (gcy / gd) * 0.0003;
+    this.vx += (gcx / gd) * 0.0006;
+    this.vy += (gcy / gd) * 0.0006;
 
     // Speed cap + friction
     const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
@@ -155,7 +155,7 @@ class FloatingWord {
     if (this.x < MARGIN) { this.vx += 0.003 * (MARGIN - this.x) / MARGIN; }
     if (this.x + this.w > VW - MARGIN) { this.vx -= 0.003 * (this.x + this.w - (VW - MARGIN)) / MARGIN; }
     if (this.y < MARGIN) { this.vy += 0.003 * (MARGIN - this.y) / MARGIN; }
-    if (this.y + this.h > VH - MARGIN) { this.vy -= 0.003 * (this.y + this.h - (VH - MARGIN)) / MARGIN; }
+    if (this.y + this.h > VH - MARGIN) { this.vy -= 0.006 * (this.y + this.h - (VH - MARGIN)) / MARGIN; }
 
     // Hard boundary — keep on screen
     if (this.x < PAD) { this.x = PAD; this.vx = Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
