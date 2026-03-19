@@ -23,6 +23,7 @@ function showPage(key) {
   updateRecordVisibility(key);
   history.pushState(null, '', key === 'cv' ? '/' : '#' + key);
   window.scrollTo(0, 0);
+  setTimeout(() => floatingWords.forEach(fw => fw.measure()), 50);
 }
 
 navWords.forEach(w => {
@@ -80,9 +81,9 @@ document.querySelectorAll('.cv-tab').forEach(tab => {
 // a lazy continuous arc. The force direction rotates so slowly (full cycle ≈
 // 2–6 min) the motion reads as aimless floating rather than mechanical pattern.
 // No collisions. No repulsion. Cursor pull is near-zero and only when still.
-const FRICTION    = 0.994;  // terminal speed ≈ 0.001/0.006 ≈ 0.17 px/frame
-const DRIFT_FORCE = 0.001;  // continuous gentle push along _driftAngle
-const MAX_SPEED   = 2.0;    // high cap so the launch burst isn't clipped
+const FRICTION    = 0.991;  // terminal speed ≈ 0.001/0.006 ≈ 0.17 px/frame
+const DRIFT_FORCE = 0.002;  // continuous gentle push along _driftAngle
+const MAX_SPEED   = 2.5;    // high cap so the launch burst isn't clipped
 
 class FloatingWord {
   constructor(el, x, y, spreadAngle) {
@@ -98,8 +99,8 @@ class FloatingWord {
                             * (0.0003 + Math.random() * 0.0005);
 
     // Strong outward launch — words snap apart from centre immediately.
-    this.vx = Math.cos(spreadAngle) * 1.5;
-    this.vy = Math.sin(spreadAngle) * 1.5;
+    this.vx = Math.cos(spreadAngle) * 2.0;
+    this.vy = Math.sin(spreadAngle) * 2.0;
 
     el.style.transform = `translate3d(${x}px,${y}px,0)`;
   }
@@ -134,6 +135,12 @@ class FloatingWord {
     }
     this.vx += Math.cos(this._driftAngle) * DRIFT_FORCE;
     this.vy += Math.sin(this._driftAngle) * DRIFT_FORCE;
+
+    // Gentle center gravity
+    const gcx = VW * 0.5 - cx, gcy = VH * 0.5 - cy;
+    const gd = Math.sqrt(gcx * gcx + gcy * gcy) || 1;
+    this.vx += (gcx / gd) * 0.0003;
+    this.vy += (gcy / gd) * 0.0003;
 
     // Speed cap + friction
     const spd = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
@@ -476,7 +483,7 @@ const REPULSE_FORCE = 0.006;
 
 // ── NAV FADE ON SCROLL ───────────────────────
 window.addEventListener('scroll', () => {
-  const past = window.scrollY > window.innerHeight * 0.6;
+  const past = window.scrollY > window.innerHeight * 0.15;
   document.getElementById('float-nav').classList.toggle('scrolled', past);
 }, { passive: true });
 
@@ -484,7 +491,7 @@ window.addEventListener('scroll', () => {
 const scrollArrow = document.getElementById('scroll-arrow');
 if (scrollArrow) {
   window.addEventListener('scroll', () => {
-    scrollArrow.style.opacity = window.scrollY > 80 ? '0' : '';
+    scrollArrow.style.opacity = window.scrollY > 40 ? '0' : '';
   }, { passive: true });
   scrollArrow.addEventListener('click', () => {
     window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' });
