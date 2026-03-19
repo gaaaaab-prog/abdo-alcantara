@@ -456,7 +456,7 @@ scNextBtn.addEventListener('click',   e => { e.stopPropagation(); loadTrack(scTr
 
 // ── RAF LOOP ──────────────────────────────
 // Soft word separation — push scales with actual word sizes so edges never overlap
-const REPULSE_FORCE = 0.018;
+const REPULSE_FORCE = 0.045;
 
 (function loop(now) {
   floatingWords.forEach(fw => fw.tick(mouseX, mouseY));
@@ -467,12 +467,17 @@ const REPULSE_FORCE = 0.018;
       const dx = (b.x + b.w * 0.5) - (a.x + a.w * 0.5);
       const dy = (b.y + b.h * 0.5) - (a.y + a.h * 0.5);
       const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-      const minDist = (a.w + b.w) * 0.5 + 28;
+      const minDist = (a.w + b.w) * 0.5 + 40;
       if (dist < minDist) {
-        const f  = REPULSE_FORCE * (1 - dist / minDist);
         const nx = dx / dist, ny = dy / dist;
+        const f = REPULSE_FORCE * (1 - dist / minDist);
         a.vx -= nx * f;  a.vy -= ny * f;
         b.vx += nx * f;  b.vy += ny * f;
+        if (dist < minDist * 0.85) {
+          const push = (minDist * 0.85 - dist) * 0.12;
+          a.x -= nx * push;  a.y -= ny * push;
+          b.x += nx * push;  b.y += ny * push;
+        }
       }
     }
   }
