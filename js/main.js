@@ -30,8 +30,10 @@ function showPage(key) {
 
   // Photo page — collapse nav, show tabs + floating images
   const isPhoto = key === 'film-photo';
+  const isMusic = key === 'music';
   floatNav.classList.toggle('photo-active', isPhoto);
-  navPulldownEl.classList.toggle('visible', isPhoto);
+  floatNav.classList.toggle('music-active', isMusic);
+  navPulldownEl.classList.toggle('visible', isPhoto || isMusic);
   photoTabsEl.classList.toggle('visible', isPhoto);
   if (isPhoto) initPhotoFloat(); else destroyPhotoFloat();
 }
@@ -519,16 +521,28 @@ const scrollArrow = document.getElementById('scroll-arrow');
 window.addEventListener('scroll', () => {
   const scrolled = window.scrollY > window.innerHeight * 0.15;
   floatNav.classList.toggle('scrolled', scrolled);
-  if (scrollArrow) scrollArrow.style.opacity = window.scrollY > 40 ? '0' : '';
+  if (scrollArrow) {
+    if (window.scrollY > 40) {
+      scrollArrow.classList.remove('visible');
+    } else {
+      scrollArrow.classList.add('visible');
+    }
+  }
   // Show pulldown globally when scrolled (not just Photo page)
-  if (navPulldownEl && !floatNav.classList.contains('photo-active')) {
+  if (navPulldownEl && !floatNav.classList.contains('photo-active') && !floatNav.classList.contains('music-active')) {
     navPulldownEl.classList.toggle('visible', scrolled);
   }
 }, { passive: true });
 if (scrollArrow) {
+  scrollArrow.classList.add('visible');
   scrollArrow.addEventListener('click', () => {
     window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' });
   });
+  setInterval(() => {
+    scrollArrow.classList.remove('bobbing');
+    void scrollArrow.offsetWidth;
+    scrollArrow.classList.add('bobbing');
+  }, 300000);
 }
 
 // ── HERO-NAME CLICK → HOME ──────────────────
