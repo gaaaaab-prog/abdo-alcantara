@@ -504,14 +504,27 @@ document.addEventListener('visibilitychange', () => {
 const floatNav = document.getElementById('float-nav');
 const scrollArrow = document.getElementById('scroll-arrow');
 window.addEventListener('scroll', () => {
-  floatNav.classList.toggle('scrolled', window.scrollY > window.innerHeight * 0.15);
+  const scrolled = window.scrollY > window.innerHeight * 0.15;
+  floatNav.classList.toggle('scrolled', scrolled);
   if (scrollArrow) scrollArrow.style.opacity = window.scrollY > 40 ? '0' : '';
+  // Show pulldown globally when scrolled (not just Photo page)
+  const pulldown = document.getElementById('nav-pulldown');
+  if (pulldown && !document.getElementById('float-nav').classList.contains('photo-active')) {
+    pulldown.classList.toggle('visible', scrolled);
+  }
 }, { passive: true });
 if (scrollArrow) {
   scrollArrow.addEventListener('click', () => {
     window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' });
   });
 }
+
+// ── HERO-NAME CLICK → HOME ──────────────────
+document.querySelectorAll('.hero-name, .hero-tagline').forEach(el => {
+  el.style.cursor = 'pointer';
+  el.style.pointerEvents = 'all';
+  el.addEventListener('click', () => showPage('cv'));
+});
 
 // ── INITIAL ROUTE ─────────────────────────
 const _h = location.hash.replace('#', '');
@@ -563,6 +576,9 @@ class FloatingImage {
     if (this._enlarged) {
       this._enlarged = false; this._magnified = false;
       this.el.classList.remove('enlarged', 'magnified');
+      this.el.style.left = '';
+      this.el.style.top = '';
+      this.el.style.transform = '';
       ctr.classList.remove('has-enlarged');
       this.w = 72; this.h = 72;
     } else {
@@ -572,6 +588,9 @@ class FloatingImage {
       });
       this._enlarged = true;
       this.el.classList.add('enlarged');
+      this.el.style.left = '17.5vw';
+      this.el.style.top = '17.5vh';
+      this.el.style.transform = 'none';
       ctr.classList.add('has-enlarged');
     }
   }
@@ -581,7 +600,7 @@ class FloatingImage {
     const VW = window.innerWidth, VH = window.innerHeight;
     const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
 
-    if (this._hoverStart > 0 && !this._magnified && Date.now() - this._hoverStart > 2000) {
+    if (this._hoverStart > 0 && !this._magnified && Date.now() - this._hoverStart > 850) {
       this._magnified = true;
       this.el.classList.add('magnified');
       setTimeout(() => { if (this.el.isConnected) this.measure(); }, 520);
@@ -705,7 +724,7 @@ document.querySelectorAll('.photo-tab').forEach(tab => {
       const dd = tab.parentElement.querySelector('.photo-dropdown');
       if (dd) dd.classList.add('open');
     }
-    if (document.getElementById('page-film-photo').classList.contains('active')) initPhotoFloat();
+    // Filters changed — images keep floating, no restart
   });
 });
 
