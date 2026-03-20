@@ -722,6 +722,15 @@ function destroyPhotoFloat() {
   floatingImages = [];
 }
 
+function updatePhotoFilter() {
+  const af = getActivePhotoFilters();
+  floatingImages.forEach(fi => {
+    const match = af.types.includes(fi.el.dataset.type);
+    fi.el.style.opacity = match ? '' : '0';
+    fi.el.style.pointerEvents = match ? '' : 'none';
+  });
+}
+
 // ── PHOTO TAB TOGGLE (non-exclusive) ────────────
 document.querySelectorAll('.photo-tab').forEach(tab => {
   tab.addEventListener('click', e => {
@@ -743,6 +752,7 @@ document.querySelectorAll('.photo-tab').forEach(tab => {
       tab.classList.toggle('active');
       document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
       document.querySelectorAll('.photo-dropdown').forEach(dd => dd.classList.remove('open'));
+        updatePhotoFilter();
     }
   });
 });
