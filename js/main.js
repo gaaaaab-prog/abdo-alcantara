@@ -6,7 +6,7 @@
 const pages = {
   cv:    document.getElementById('page-cv'),
   film:  document.getElementById('page-film'),
-  music: document.getElementByd('page-music'),
+  music: document.getElementById('page-music'),
   'film-photo': document.getElementById('page-film-photo'),
 };
 const navWords = document.querySelectorAll('.nav-word');
