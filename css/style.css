@@ -259,17 +259,6 @@ body {
 }
 .fi:hover .ph { background: #d8d8d2; }
 
-.film-subsection { padding: 72px 56px 0; }
-.film-sub-label {
-  font-size: 0.66rem; font-weight: 600;
-  letter-spacing: 0.13em; text-transform: uppercase;
-  color: var(--muted); margin-bottom: 10px;
-}
-.film-sub-desc {
-  font-size: 0.88rem; color: var(--muted); line-height: 1.75;
-  margin-bottom: 28px; max-width: 480px;
-}
-
 /* ── FILM TABS ──────────────────────────────────── */
 .film-tabs {
   display: flex; justify-content: center; gap: 0; padding: 0 56px; margin-bottom: 40px;
@@ -707,8 +696,7 @@ body {
   .cv-body     { padding: 0 24px 80px; }
   .music-body  { padding: 0 24px 80px; }
   .film-body   { padding: 0 3px 80px; }
-  .film-subsection { padding: 48px 21px 0; }
-  .cv-tabs { padding: 0 21px; }
+.cv-tabs { padding: 0 21px; }
   .cv-tab { padding: 10px 14px 8px; font-size: 0.65rem; }
   .film-tabs { padding: 0 21px; }
   .film-tab { padding: 10px 14px 8px; font-size: 0.65rem; }
