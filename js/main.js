@@ -537,9 +537,6 @@ document.querySelectorAll('.hero-name, .hero-tagline').forEach(el => {
   el.addEventListener('click', () => showPage('cv'));
 });
 
-// ── INITIAL ROUTE ─────────────────────────
-const _h = location.hash.replace('#', '');
-showPage(pages[_h] ? _h : 'cv');
 
 
 // ── PHOTO FLOATING IMAGES ──────────────────────
@@ -772,3 +769,8 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbo
   const g = document.getElementById(id);
   if (g) g.addEventListener('click', e => { const img = e.target.closest('img'); if (img) openLightbox(img.src); });
 });
+
+
+// ── INITIAL ROUTE ─────────────────────────
+const _h = location.hash.replace('#', '');
+showPage(pages[_h] ? _h : 'cv');
