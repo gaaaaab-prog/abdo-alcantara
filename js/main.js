@@ -10,6 +10,9 @@ const pages = {
   'film-photo': document.getElementById('page-film-photo'),
 };
 const navWords = document.querySelectorAll('.nav-word');
+const floatNav = document.getElementById('float-nav');
+const navPulldownEl = document.getElementById('nav-pulldown');
+const photoTabsEl = document.getElementById('photo-tabs');
 
 function showPage(key) {
   if (!pages[key]) return;
@@ -27,9 +30,9 @@ function showPage(key) {
 
   // Photo page — collapse nav, show tabs + floating images
   const isPhoto = key === 'film-photo';
-  document.getElementById('float-nav').classList.toggle('photo-active', isPhoto);
-  document.getElementById('nav-pulldown').classList.toggle('visible', isPhoto);
-  document.getElementById('photo-tabs').classList.toggle('visible', isPhoto);
+  floatNav.classList.toggle('photo-active', isPhoto);
+  navPulldownEl.classList.toggle('visible', isPhoto);
+  photoTabsEl.classList.toggle('visible', isPhoto);
   if (isPhoto) initPhotoFloat(); else destroyPhotoFloat();
 }
 
@@ -86,7 +89,7 @@ document.querySelectorAll('.cv-tab').forEach(tab => {
 const PHOTO_PLACEHOLDERS = Array.from({length: 15}, (_, i) => ({
   src: '',
   type: i < 8 ? 'digital' : 'analog'
-}))
+}));
 
 const PHOTO_FRICTION = 0.9917;
 const PHOTO_DRIFT   = 0.00184;
@@ -512,16 +515,14 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // ── SCROLL ────────────────────────────────
-const floatNav = document.getElementById('float-nav');
 const scrollArrow = document.getElementById('scroll-arrow');
 window.addEventListener('scroll', () => {
   const scrolled = window.scrollY > window.innerHeight * 0.15;
   floatNav.classList.toggle('scrolled', scrolled);
   if (scrollArrow) scrollArrow.style.opacity = window.scrollY > 40 ? '0' : '';
   // Show pulldown globally when scrolled (not just Photo page)
-  const pulldown = document.getElementById('nav-pulldown');
-  if (pulldown && !floatNav.classList.contains('photo-active')) {
-    pulldown.classList.toggle('visible', scrolled);
+  if (navPulldownEl && !floatNav.classList.contains('photo-active')) {
+    navPulldownEl.classList.toggle('visible', scrolled);
   }
 }, { passive: true });
 if (scrollArrow) {
@@ -574,7 +575,7 @@ class FloatingImage {
       this.el.classList.remove('enlarged', 'magnified');
       this.el.style.left = '';
       this.el.style.top = '';
-      this.el.style.transform = '';
+      this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)'
       ctr.classList.remove('has-enlarged');
       this.w = 72; this.h = 72;
     } else {
@@ -742,6 +743,7 @@ if (pulldownToggle) {
   pulldownToggle.addEventListener('click', e => {
     e.stopPropagation();
     pulldownMenu.classList.toggle('open');
+    pulldownToggle.setAttribute('aria-expanded', pulldownMenu.classList.contains('open'));
   });
 }
 if (pulldownMenu) {
