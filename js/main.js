@@ -16,6 +16,7 @@ const photoTabsEl = document.getElementById('photo-tabs');
 
 function showPage(key) {
   if (!pages[key]) return;
+  closeLightbox();
   Object.values(pages).forEach(p => p.classList.remove('active'));
   pages[key].classList.add('active');
   navWords.forEach(w => {
