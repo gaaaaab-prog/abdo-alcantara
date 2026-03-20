@@ -401,7 +401,7 @@ body {
 
 /* ── LIGHTBOX ──────────────────────────────────── */
 .lightbox {
-  display: none; position: fixed; inset: 0; z-index: 999;
+  display: none; position: fixed; inset: 0; z-index: 1001;
   background: rgba(8,8,8,0.96);
   align-items: center; justify-content: center;
 }
@@ -720,9 +720,15 @@ body {
   .nav-word    { font-size: clamp(2.8rem, 15vw, 5rem); }
   .record-el   { width: clamp(140px, 40vw, 220px); height: clamp(140px, 40vw, 220px); }
   .sc-player   { width: 200px; bottom: 16px; right: 16px; }
+  .photo-list-body { padding: 0 24px 80px; }
+  .photo-list-item { grid-template-columns: 40px 1fr; gap: 4px 12px; }
+  .photo-list-format,
+  .photo-list-notes { display: none; }
 }
 @media (max-width: 420px) {
   .film-grid   { grid-template-columns: 1fr; }
   .skills-grid { grid-template-columns: 1fr 1fr; }
   .music-entry { grid-template-columns: 32px 1fr auto; gap: 0 16px; }
-}
+
+  .photo-list-item { grid-template-columns: 1fr; gap: 2px; }
+  .photo-list-thumb { display: none; }}
