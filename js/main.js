@@ -575,7 +575,7 @@ class FloatingImage {
       this.el.classList.remove('enlarged', 'magnified');
       this.el.style.left = '';
       this.el.style.top = '';
-      this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)'
+      this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)';
       ctr.classList.remove('has-enlarged');
       this.w = 72; this.h = 72;
     } else {
@@ -750,11 +750,13 @@ if (pulldownMenu) {
   pulldownMenu.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => {
       pulldownMenu.classList.remove('open');
+      pulldownToggle.setAttribute('aria-expanded', 'false');
       showPage(btn.dataset.page);
     });
   });
 }
-document.addEventListener('click', () => { if (pulldownMenu) pulldownMenu.classList.remove('open'); });
+document.addEventListener('click', () => { if (pulldownMenu) pulldownMenu.classList.remove('open');
+  if (pulldownToggle) pulldownToggle.setAttribute('aria-expanded', 'false'); });
 
 // ── LIGHTBOX ──────────────────────────────
 const lb    = document.getElementById('lightbox');
