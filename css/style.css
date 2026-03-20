@@ -708,10 +708,6 @@ body {
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
-#float-nav.music-active .record-el {
-  opacity: 0;
-  pointer-events: none;
-}
 
 @media (max-width: 900px) {
   .skills-grid { grid-template-columns: repeat(2,1fr); row-gap: 32px; }
