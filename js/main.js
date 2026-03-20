@@ -726,16 +726,24 @@ function destroyPhotoFloat() {
 document.querySelectorAll('.photo-tab').forEach(tab => {
   tab.addEventListener('click', e => {
     e.stopPropagation();
-    tab.classList.toggle('active');
-    const isOpen = tab.classList.contains('dropdown-open');
-    document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
-    document.querySelectorAll('.photo-dropdown').forEach(dd => dd.classList.remove('open'));
-    if (!isOpen) {
-      tab.classList.add('dropdown-open');
-      const dd = tab.parentElement.querySelector('.photo-dropdown');
-      if (dd) dd.classList.add('open');
+    const arrow = tab.querySelector('.dropdown-arrow');
+    const clickedArrow = arrow && (e.target === arrow || arrow.contains(e.target));
+    if (clickedArrow) {
+      // Arrow click: toggle dropdown only (don't toggle filter)
+      const isOpen = tab.classList.contains('dropdown-open');
+      document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
+      document.querySelectorAll('.photo-dropdown').forEach(dd => dd.classList.remove('open'));
+      if (!isOpen) {
+        tab.classList.add('dropdown-open');
+        const dd = tab.parentElement.querySelector('.photo-dropdown');
+        if (dd) dd.classList.add('open');
+      }
+    } else {
+      // Text click: toggle filter on/off, close dropdown
+      tab.classList.toggle('active');
+      document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
+      document.querySelectorAll('.photo-dropdown').forEach(dd => dd.classList.remove('open'));
     }
-    // Filters changed — images keep floating, no restart
   });
 });
 
