@@ -535,9 +535,7 @@ showPage(pages[_h] ? _h : 'cv');
 // Placeholder pool — real images loaded later from digital/analog folders
 const PHOTO_PLACEHOLDERS = Array.from({length: 15}, (_, i) => ({
   src: '',
-  type: i < 8 ? 'digital' : 'analog',
-  filter: String((i % 3) + 1),
-  id: 'photo-' + i
+  type: i < 8 ? 'digital' : 'analog'
 }));
 
 const PHOTO_FRICTION = 0.9917;
@@ -673,7 +671,6 @@ function initPhotoFloat() {
     const el = document.createElement('div');
     el.className = 'float-img';
     el.dataset.type = pool[i].type;
-    el.dataset.filter = pool[i].filter;
     el.innerHTML = '<div style="width:100%;height:100%;background:var(--ph-bg);display:flex;align-items:center;justify-content:center;font-size:0.5rem;color:#b8b8b2;">' + pool[i].type[0].toUpperCase() + (i + 1) + '</div>';
     container.appendChild(el);
     const angle = base + (i / count) * Math.PI * 2;
