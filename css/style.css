@@ -524,7 +524,8 @@ body {
 .photo-tab:hover { color: var(--text); }
 .photo-tab.active {
   color: var(--text);
-  background: rgba(15,15,15,0.05);
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 .dropdown-arrow {
   width: 10px;
