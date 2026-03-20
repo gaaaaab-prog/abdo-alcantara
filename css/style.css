@@ -140,7 +140,13 @@ body {
 }
 
 /* ── CV ─────────────────────────────────────────── */
-.cv-body { max-width: 860px; padding: 0 60px 140px; }
+.cv-body {
+  max-width: 860px;
+  padding: 0 60px 140px;
+  position: relative;
+  z-index: 201;
+  background: var(--bg);
+}
 .cv-block {
   display: grid;
   grid-template-columns: 130px 1fr;
@@ -226,7 +232,12 @@ body {
 .resume-entry-body li::before { content: '–'; margin-right: 8px; color: var(--muted); }
 .resume-contact { display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.87rem; color: var(--muted); }
 /* ── FILM ─────────────────────────────────────── */
-.film-body { padding: 0 4px 140px; }
+.film-body {
+  padding: 0 4px 140px;
+  position: relative;
+  z-index: 201;
+  background: var(--bg);
+}
 .film-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 4px; }
 .fi {
   overflow: hidden; aspect-ratio: 4/3;
@@ -314,7 +325,13 @@ body {
 }
 
 /* ── MUSIC ────────────────────────────────────── */
-.music-body { max-width: 860px; padding: 0 60px 140px; }
+.music-body {
+  max-width: 860px;
+  padding: 0 60px 140px;
+  position: relative;
+  z-index: 201;
+  background: var(--bg);
+}
 .music-list  { display: flex; flex-direction: column; }
 .music-entry {
   display: grid; grid-template-columns: 44px 1fr auto;
