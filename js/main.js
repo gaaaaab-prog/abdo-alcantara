@@ -6,8 +6,8 @@
 const pages = {
   cv:    document.getElementById('page-cv'),
   film:  document.getElementById('page-film'),
-  music: document.getElementById('page-music'),
-  'film-photo': document.getEleentById('page-film-photo'),
+  music: document.getElementByd('page-music'),
+  'film-photo': document.getElementById('page-film-photo'),
 };
 const navWords = document.querySelectorAll('.nav-word');
 const floatNav = document.getElementById('float-nav');
