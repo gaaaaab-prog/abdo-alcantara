@@ -108,6 +108,8 @@ body {
 .scroll-arrow {
   position: fixed; bottom: 32px; right: 60px;
   z-index: 200; cursor: pointer; color: #000;
+  background: none; border: none; outline: none;
+  padding: 0; font: inherit;
   opacity: 0; pointer-events: none;
   transition: opacity 0.6s ease;
   mix-blend-mode: difference;
@@ -149,6 +151,7 @@ body {
 /* ── CV ─────────────────────────────────────────── */
 .cv-body {
   max-width: 860px;
+  margin: 0 auto;
   padding: 0 60px 140px;
   position: relative;
   z-index: 201;
@@ -323,6 +326,7 @@ body {
 /* ── MUSIC ────────────────────────────────────── */
 .music-body {
   max-width: 860px;
+  margin: 0 auto;
   padding: 0 60px 140px;
   position: relative;
   z-index: 201;
@@ -538,6 +542,7 @@ body {
   margin-top: 4px;
   background: rgba(245,245,240,0.95);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: 6px;
   padding: 6px 0;
   box-shadow: 0 4px 16px rgba(0,0,0,0.08);
@@ -625,6 +630,7 @@ body {
 /* ── PHOTO LIST (scroll-down catalog) ──────────── */
 .photo-list-body {
   max-width: 860px;
+  margin: 0 auto;
   padding: 0 60px 140px;
   position: relative;
   z-index: 201;
@@ -733,6 +739,10 @@ body {
   .photo-list-item { grid-template-columns: 40px 1fr; gap: 4px 12px; }
   .photo-list-format,
   .photo-list-notes { display: none; }
+  .scroll-arrow {
+    right: 24px;
+    bottom: 24px;
+  }
 }
 @media (max-width: 420px) {
   .film-grid   { grid-template-columns: 1fr; }
