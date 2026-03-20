@@ -21,7 +21,7 @@ function showPage(key) {
     w.classList.toggle('inactive', !on);
   });
   updateRecordVisibility(key);
-  history.pushState(null, '', key === 'cv' ? '/' : '#' + key);
+  history.pushState(null, '', key === 'cv' ? window.location.pathname : '#' + key);
   window.scrollTo(0, 0);
   setTimeout(() => floatingWords.forEach(fw => fw.measure()), 50);
 
@@ -81,6 +81,17 @@ document.querySelectorAll('.cv-tab').forEach(tab => {
     if (target) target.classList.add('active');
   });
 });
+
+// ── PHOTO CONFIG (before showPage for TDZ safety) ──────────
+const PHOTO_PLACEHOLDERS = Array.from({length: 15}, (_, i) => ({
+  src: '',
+  type: i < 8 ? 'digital' : 'analog'
+}))
+
+const PHOTO_FRICTION = 0.9917;
+const PHOTO_DRIFT   = 0.00184;
+const PHOTO_MAX_SPEED = 2.3;
+
 
 // ── FLOATING WORD ─────────────────────────
 // Words burst outward from near-centre on load (~120° apart), decelerating
@@ -509,7 +520,7 @@ window.addEventListener('scroll', () => {
   if (scrollArrow) scrollArrow.style.opacity = window.scrollY > 40 ? '0' : '';
   // Show pulldown globally when scrolled (not just Photo page)
   const pulldown = document.getElementById('nav-pulldown');
-  if (pulldown && !document.getElementById('float-nav').classList.contains('photo-active')) {
+  if (pulldown && !floatNav.classList.contains('photo-active')) {
     pulldown.classList.toggle('visible', scrolled);
   }
 }, { passive: true });
@@ -532,16 +543,6 @@ showPage(pages[_h] ? _h : 'cv');
 
 
 // ── PHOTO FLOATING IMAGES ──────────────────────
-// Placeholder pool — real images loaded later from digital/analog folders
-const PHOTO_PLACEHOLDERS = Array.from({length: 15}, (_, i) => ({
-  src: '',
-  type: i < 8 ? 'digital' : 'analog'
-}));
-
-const PHOTO_FRICTION = 0.9917;
-const PHOTO_DRIFT   = 0.00184;
-const PHOTO_MAX_SPEED = 2.3;
-
 class FloatingImage {
   constructor(el, x, y, angle) {
     this.el = el;
