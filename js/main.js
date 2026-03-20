@@ -7,7 +7,7 @@ const pages = {
   cv:    document.getElementById('page-cv'),
   film:  document.getElementById('page-film'),
   music: document.getElementById('page-music'),
-  'film-photo': document.getElementById('page-film-photo'),
+  'film-photo': document.getEleentById('page-film-photo'),
 };
 const navWords = document.querySelectorAll('.nav-word');
 const floatNav = document.getElementById('float-nav');
@@ -677,8 +677,8 @@ function initPhotoFloat() {
   if (!container) return;
   const cx = window.innerWidth * 0.5, cy = window.innerHeight * 0.4;
   const base = Math.random() * Math.PI * 2;
-  const af = getActivePhotoFilters();
-  const pool = PHOTO_PLACEHOLDERS.filter(p => af.types.includes(p.type));
+  // Always create ALL images — updatePhotoFilter handles visibility
+  const pool = PHOTO_PLACEHOLDERS;
   const count = Math.min(pool.length, 12);
 
   for (let i = 0; i < count; i++) {
@@ -691,7 +691,7 @@ function initPhotoFloat() {
     floatingImages.push(new FloatingImage(el, cx + (Math.random() - 0.5) * 40, cy + (Math.random() - 0.5) * 30, angle));
   }
 
-  setTimeout(() => floatingImages.forEach(fi => fi.measure()), 100);
+  setTimeout(() => { floatingImages.forEach(fi => fi.measure()); updatePhotoFilter(); }, 100);
 
   (function photoLoop() {
       if (document.hidden) { photoAnimFrame = requestAnimationFrame(photoLoop); return; }
