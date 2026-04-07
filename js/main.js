@@ -37,6 +37,7 @@ function showPage(key) {
   navPulldownEl.classList.toggle('visible', isPhoto || isMusic);
   photoTabsEl.classList.toggle('visible', isPhoto);
   if (isPhoto) initPhotoFloat(); else destroyPhotoFloat();
+  if (scrollArrow) scrollArrow.style.display = isPhoto ? 'none' : '';
 }
 
 navWords.forEach(w => {
