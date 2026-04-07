@@ -618,7 +618,7 @@ class FloatingImage {
       });
       this._enlarged = true;
       this.el.classList.add('enlarged');
-      this.el.style.width = ''; this.el.style.height = '';
+      this.el.style.width = '65vw'; this.el.style.height = '65vh';
       this.el.style.left = '17.5vw';
       this.el.style.top = '17.5vh';
       this.el.style.transform = 'none';
@@ -634,7 +634,7 @@ class FloatingImage {
     if (this._hoverStart > 0 && !this._magnified && Date.now() - this._hoverStart > 850) {
       this._magnified = true;
       this.el.classList.add('magnified');
-      this.el.style.width = ''; this.el.style.height = '';
+      this.el.style.width = '280px'; this.el.style.height = '210px';
       setTimeout(() => { if (this.el.isConnected) this.measure(); }, 520);
     }
 
