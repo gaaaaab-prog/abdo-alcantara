@@ -2,17 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta property="og:title" content="Gabriel Abdo Alcântara" />
+  <meta property="og:description" content="Filmmaker · Director of Photography · Photographer — Southern California" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://abdo-alcantara.com/portfolio.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gabriel Abdo Alcântara</title>
   <meta name="description" content="Filmmaker · Director of Photography · Photographer — Southern California" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=15" />
+  <link rel="stylesheet" href="css/style.css?v=16" />
 </head>
 <body>
 
-<nav id="float-nav" aria-label="Main navigtion">
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<script>if(location.protocol!=='https:'&&location.hostname!=='localhost')location.replace('https:'+location.href.substring(5));</script>
+
+
+<nav id="float-nav" aria-label="Main navigation">
   <button class="nav-word active" data-page="cv">CV</button>
   <button class="nav-word" data-page="film">Cine</button>
   <button class="nav-word" data-page="music">Music</button>
@@ -34,7 +44,7 @@
 </nav>
 <div class="nav-pulldown" id="nav-pulldown">
   <button class="pulldown-toggle" id="pulldown-toggle" aria-label="Navigation menu" aria-expanded="false">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
   <div class="pulldown-menu" id="pulldown-menu">
     <button data-page="cv">CV</button>
@@ -46,10 +56,10 @@
 
 <div id="page-cv" class="page active">
   <header class="page-hero">
-    <div class="hero-name">Gabriel Abdo Alcântara</div>
+    <h1 class="hero-name">Gabriel Abdo Alcântara</h1>
     <div class="hero-tagline">Filmmaker · Director of Photography · Photographer</div>
   </header>
-  <main class="cv-body">
+  <main class="cv-body" id="main-content">
     <nav class="cv-tabs" aria-label="CV categories">
       <button class="cv-tab active" data-cv-tab="resume">Resume</button>
       <button class="cv-tab" data-cv-tab="filmmaking">Filmmaking</button>
@@ -240,7 +250,7 @@
 
 <div id="page-film" class="page">
   <header class="page-hero">
-    <div class="hero-name">Cine</div>
+    <h1 class="hero-name">Cine</h1>
     <div class="hero-tagline">Motion &amp; Light</div>
   </header>
   <main class="film-body">
@@ -325,7 +335,7 @@
 
 <div id="page-film-photo" class="page">
   <header class="page-hero">
-    <div class="hero-name">Photo</div>
+    <h1 class="hero-name">Photo</h1>
     <div class="hero-tagline">Stills</div>
   </header>
 
@@ -333,7 +343,7 @@
     <div class="photo-tab-group">
       <button class="photo-tab active" data-photo-tab="digital">
         digital
-        <svg class="dropdown-arrow" viewBox="0 0 12 8" fill="none"><path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg class="dropdown-arrow" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <div class="photo-dropdown" id="dropdown-digital">
         <button class="photo-filter active" data-filter="all" data-tab="digital">All</button>
@@ -345,7 +355,7 @@
     <div class="photo-tab-group">
       <button class="photo-tab active" data-photo-tab="analog">
         analog
-        <svg class="dropdown-arrow" viewBox="0 0 12 8" fill="none"><path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg class="dropdown-arrow" viewBox="0 0 12 8" fill="none" aria-hidden="true"><path d="M1 1.5l5 5 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <div class="photo-dropdown" id="dropdown-analog">
         <button class="photo-filter active" data-filter="all" data-tab="analog">All</button>
@@ -429,7 +439,7 @@
 
 <div id="page-music" class="page">
   <header class="page-hero">
-    <div class="hero-name">Music</div>
+    <h1 class="hero-name">Music</h1>
     <div class="hero-tagline">Audio Engineering &amp; Sound</div>
   </header>
   <main class="music-body">
@@ -448,7 +458,7 @@
 </div>
 
 <button id="scroll-arrow" class="scroll-arrow" aria-label="Scroll down">
-    <svg width="16" height="28" viewBox="0 0 16 28" fill="none"><line x1="8" y1="0" x2="8" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M1 16l7 8 7-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <svg width="16" height="28" viewBox="0 0 16 28" fill="none" aria-hidden="true"><line x1="8" y1="0" x2="8" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M1 16l7 8 7-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
 
 <div id="lightbox" class="lightbox" role="dialog" aria-label="Image viewer" aria-modal="true">
@@ -465,14 +475,14 @@
   </div>
   <div class="sc-controls">
     <button class="sc-btn" id="sc-prev" aria-label="Previous">
-      <svg viewBox="0 0 20 20" fill="currentColor"><rect x="3" y="3" width="3" height="14" rx="1"/><path d="M7 10L17 3v14z"/></svg>
+      <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="3" height="14" rx="1"/><path d="M7 10L17 3v14z"/></svg>
     </button>
     <button class="sc-btn sc-btn-main" id="sc-play" aria-label="Play / Pause">
-      <svg class="icon-play" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3l14 7-14 7z"/></svg>
-      <svg class="icon-pause" viewBox="0 0 20 20" fill="currentColor" style="display:none"><rect x="4" y="3" width="4" height="14" rx="1"/><rect x="12" y="3" width="4" height="14" rx="1"/></svg>
+      <svg class="icon-play" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5 3l14 7-14 7z"/></svg>
+      <svg class="icon-pause" viewBox="0 0 20 20" fill="currentColor" style="display:none" aria-hidden="true"><rect x="4" y="3" width="4" height="14" rx="1"/><rect x="12" y="3" width="4" height="14" rx="1"/></svg>
     </button>
     <button class="sc-btn" id="sc-next" aria-label="Next">
-      <svg viewBox="0 0 20 20" fill="currentColor"><rect x="14" y="3" width="3" height="14" rx="1"/><path d="M13 10L3 3v14z"/></svg>
+      <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="14" y="3" width="3" height="14" rx="1"/><path d="M13 10L3 3v14z"/></svg>
     </button>
   </div>
 </div>
