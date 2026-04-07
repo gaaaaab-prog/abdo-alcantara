@@ -746,7 +746,7 @@ function initPhotoFloat() {
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
     el.className = 'float-img';
-    el.dataset.type = pool[i].type;
+    var _s=pool[i].src.split('/'),_pi=_s.indexOf('photo'); el.dataset.type=(_pi>=0&&_s[_pi+1])||pool[i].type||'digital';
     el.dataset.ar = pool[i].ar || 1;
     el.innerHTML = pool[i].src
       ? '<img src="' + pool[i].src + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" loading="lazy" />'
