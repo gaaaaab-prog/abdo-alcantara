@@ -368,14 +368,14 @@ body {
 .sc-controls { display: flex; align-items: center; justify-content: center; gap: 12px; }
 .sc-btn {
   background: none; border: none; color: rgba(240,237,230,0.6);
-  cursor: pointer; padding: 4px; border-radius: 4px;
+  cursor: pointer; padding: 10px; border-radius: 4px; min-width: 44px; min-height: 44px;
   display: flex; align-items: center; justify-content: center;
   transition: color 0.15s;
 }
 .sc-btn:hover { color: #f0ede6; }
 .sc-btn svg  { width: 14px; height: 14px; }
 .sc-btn-main {
-  width: 30px; height: 30px; border-radius: 50%;
+  width: 44px; height: 44px; border-radius: 50%;
   background: rgba(255,255,255,0.09); color: #f0ede6;
 }
 .sc-btn-main:hover { background: rgba(255,255,255,0.15); }
@@ -747,3 +747,49 @@ body {
 
   .photo-list-item { grid-template-columns: 1fr; gap: 2px; }
   .photo-list-thumb { display: none; }}
+
+
+/* ── ACCESSIBILITY ADDITIONS ── */
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  background: var(--text);
+  color: var(--bg);
+  padding: 12px 20px;
+  z-index: 9999;
+  font-size: 14px;
+  font-family: var(--font);
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  transition: top 0.15s ease;
+}
+.skip-link:focus {
+  top: 0;
+}
+
+*:focus {
+  outline: none;
+}
+*:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.sc-player *:focus-visible,
+.sc-btn:focus-visible,
+.sc-btn-main:focus-visible {
+  outline: 2px solid rgba(240, 237, 230, 0.9);
+  outline-offset: 3px;
+}
+
+.lb-close {
+  min-width: 44px;
+  min-height: 44px;
+}
+.nav-hamburger {
+  min-width: 44px;
+  min-height: 44px;
+}
