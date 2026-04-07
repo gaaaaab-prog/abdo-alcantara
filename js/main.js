@@ -90,10 +90,10 @@ document.querySelectorAll('.cv-tab').forEach(tab => {
 });
 
 // ── PHOTO CONFIG (before showPage for TDZ safety) ──────────
-const PHOTO_PLACEHOLDERS = Array.from({length: 15}, (_, i) => ({
-  src: '',
-  type: i < 8 ? 'digital' : 'analog'
-}));
+// Photo images — updated automatically by the folder-sync task
+// { src: 'images/photo/digital/rhr1talks_web/filename.jpg', type: 'digital'|'analog' }
+const PHOTO_PLACEHOLDERS = [
+];
 
 const PHOTO_FRICTION = 0.9917;
 const PHOTO_DRIFT   = 0.00184;
@@ -686,7 +686,9 @@ function initPhotoFloat() {
     const el = document.createElement('div');
     el.className = 'float-img';
     el.dataset.type = pool[i].type;
-    el.innerHTML = '<div style="width:100%;height:100%;background:var(--ph-bg);display:flex;align-items:center;justify-content:center;font-size:0.5rem;color:#b8b8b2;">' + pool[i].type[0].toUpperCase() + (i + 1) + '</div>';
+    el.innerHTML = pool[i].src
+      ? '<img src="' + pool[i].src + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" loading="lazy" />'
+      : '<div style="width:100%;height:100%;background:var(--ph-bg);display:flex;align-items:center;justify-content:center;font-size:0.5rem;color:#b8b8b2;">' + pool[i].type[0].toUpperCase() + (i + 1) + '</div>';
     container.appendChild(el);
     const angle = base + (i / count) * Math.PI * 2;
     floatingImages.push(new FloatingImage(el, cx + (Math.random() - 0.5) * 40, cy + (Math.random() - 0.5) * 30, angle));
