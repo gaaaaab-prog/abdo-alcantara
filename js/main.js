@@ -1,50 +1,7 @@
 // =============================================
-// Gabriel Abdo AlcÃÂ¢ntara Ã¢ÂÂ Portfolio
+// Gabriel Abdo AlcÃÂÃÂ¢ntara ÃÂ¢ÃÂÃÂ Portfolio
 // =============================================
 
-// Ã¢ÂÂÃ¢ÂÂ PAGE ROUTING Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-// Ã¢ÂÂÃ¢ÂÂ AUTH GATE Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-var PROTECTED_PAGES = ['film', 'film-photo'];
-var _AUTH_KEY = '_pa';
-
-function isAuthenticated() {
-  return sessionStorage.getItem(_AUTH_KEY) === '1';
-}
-function setAuthenticated() {
-  sessionStorage.setItem(_AUTH_KEY, '1');
-}
-
-function showAuthWall(targetPage) {
-  var existing = document.getElementById('auth-wall');
-  if (existing) existing.remove();
-  var wall = document.createElement('div');
-  wall.id = 'auth-wall';
-  wall.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#0e0e0d;display:flex;align-items:center;justify-content:center;';
-  wall.innerHTML = '<div style="text-align:center;width:260px;">'
-    + '<div style="font-size:0.65rem;letter-spacing:0.25em;color:#b8b8b2;text-transform:uppercase;margin-bottom:2.5rem;">Gabriel Abdo AlcÃÂ¢ntara</div>'
-    + '<form id="auth-form" style="display:flex;flex-direction:column;gap:0.75rem;">'
-    + '<input id="auth-user" type="text" placeholder="username" autocomplete="username" style="background:transparent;border:none;border-bottom:1px solid #3a3a36;color:#e8e8e0;padding:0.5rem 0;font-size:0.8rem;letter-spacing:0.05em;outline:none;text-align:center;width:100%;">'
-    + '<input id="auth-pass" type="password" placeholder="password" autocomplete="current-password" style="background:transparent;border:none;border-bottom:1px solid #3a3a36;color:#e8e8e0;padding:0.5rem 0;font-size:0.8rem;letter-spacing:0.05em;outline:none;text-align:center;width:100%;">'
-    + '<button type="submit" style="margin-top:1rem;background:transparent;border:1px solid #3a3a36;color:#b8b8b2;padding:0.6rem 1.5rem;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;">enter</button>'
-    + '<p id="auth-err" style="font-size:0.65rem;color:#c07070;letter-spacing:0.1em;min-height:1em;margin:0.25rem 0 0;"></p>'
-    + '</form></div>';
-  document.body.appendChild(wall);
-  document.getElementById('auth-user').focus();
-  document.getElementById('auth-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    var u = document.getElementById('auth-user').value;
-    var p = document.getElementById('auth-pass').value;
-    if (u === 'admin' && p === 'bogota') {
-      setAuthenticated();
-      wall.remove();
-      showPage(targetPage);
-    } else {
-      document.getElementById('auth-err').textContent = 'incorrect credentials';
-      document.getElementById('auth-pass').value = '';
-      document.getElementById('auth-user').focus();
-    }
-  });
-}
 
 const pages = {
   cv:    document.getElementById('page-cv'),
@@ -58,11 +15,6 @@ const navPulldownEl = document.getElementById('nav-pulldown');
 const photoTabsEl = document.getElementById('photo-tabs');
 
 function showPage(key) {
-  // Auth gate
-  if (PROTECTED_PAGES.indexOf(key) > -1 && !isAuthenticated()) {
-    showAuthWall(key);
-    return;
-  }
   if (!pages[key]) return;
   closeLightbox();
   Object.values(pages).forEach(p => p.classList.remove('active'));
@@ -77,7 +29,7 @@ function showPage(key) {
   window.scrollTo(0, 0);
   setTimeout(() => floatingWords.forEach(fw => fw.measure()), 50);
 
-  // Photo page Ã¢ÂÂ collapse nav, show tabs + floating images
+  // Photo page ÃÂ¢ÃÂÃÂ collapse nav, show tabs + floating images
   const isPhoto = key === 'film-photo';
   const isMusic = key === 'music';
   floatNav.classList.toggle('photo-active', isPhoto);
@@ -97,7 +49,7 @@ window.addEventListener('popstate', () => {
   showPage(pages[h] ? h : 'cv');
 });
 
-// Ã¢ÂÂÃ¢ÂÂ MOUSE TRACKING Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ MOUSE TRACKING ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 let mouseX = -9999, mouseY = -9999, mouseSpeed = 0;
 let mouseActive = false, mouseIdleTimer = null;
 
@@ -114,7 +66,7 @@ document.addEventListener('touchmove', e => {
 }, { passive: true });
 document.addEventListener('touchend', () => { mouseX = -9999; mouseY = -9999; mouseSpeed = 0; });
 
-// Ã¢ÂÂÃ¢ÂÂ FILM TABS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ FILM TABS ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 document.querySelectorAll('.film-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.film-tab').forEach(t => t.classList.remove('active'));
@@ -126,7 +78,7 @@ document.querySelectorAll('.film-tab').forEach(tab => {
 });
 
 
-// Ã¢ÂÂÃ¢ÂÂ CV TABS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ CV TABS ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 document.querySelectorAll('.cv-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.cv-tab').forEach(t => t.classList.remove('active'));
@@ -137,8 +89,8 @@ document.querySelectorAll('.cv-tab').forEach(tab => {
   });
 });
 
-// Ã¢ÂÂÃ¢ÂÂ PHOTO CONFIG (before showPage for TDZ safety) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-// Photo images Ã¢ÂÂ updated automatically by the folder-sync task
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ PHOTO CONFIG (before showPage for TDZ safety) ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+// Photo images ÃÂ¢ÃÂÃÂ updated automatically by the folder-sync task
 // { src: 'images/photo/digital/rhr1talks_web/filename.jpg', type: 'digital'|'analog' }
 const PHOTO_PLACEHOLDERS = [
   { src: 'images/photo/digital/rhr1talks_web/altman-1.jpg',  type: 'digital', ar: 1.500 },
@@ -160,12 +112,12 @@ const PHOTO_DRIFT   = 0.00184;
 const PHOTO_MAX_SPEED = 2.3;
 
 
-// Ã¢ÂÂÃ¢ÂÂ FLOATING WORD Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-// Words burst outward from near-centre on load (~120ÃÂ° apart), decelerating
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ FLOATING WORD ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+// Words burst outward from near-centre on load (~120ÃÂÃÂ° apart), decelerating
 // via friction. Drift direction rotates slowly for aimless-looking float.
 // Fast mouse swipe pushes; slow approach attracts. Soft edge avoidance +
 // inter-word repulsion keep words separated and on-screen.
-const FRICTION    = 0.991;  // terminal speed Ã¢ÂÂ 0.001/0.006 Ã¢ÂÂ 0.17 px/frame
+const FRICTION    = 0.991;  // terminal speed ÃÂ¢ÃÂÃÂ 0.001/0.006 ÃÂ¢ÃÂÃÂ 0.17 px/frame
 const DRIFT_FORCE = 0.002;  // continuous gentle push along _driftAngle
 const MAX_SPEED   = 2.5;    // high cap so the launch burst isn't clipped
 
@@ -176,13 +128,13 @@ class FloatingWord {
     this.w  = 0; this.h  = 0;
 
     // Drift direction aligned with spread angle so initial momentum and
-    // long-term force agree Ã¢ÂÂ no jarring direction fight during deceleration.
+    // long-term force agree ÃÂ¢ÃÂÃÂ no jarring direction fight during deceleration.
     this._driftAngle      = spreadAngle;
-    // Full spin every ~2Ã¢ÂÂ6 minutes Ã¢ÂÂ change is imperceptible frame-to-frame.
+    // Full spin every ~2ÃÂ¢ÃÂÃÂ6 minutes ÃÂ¢ÃÂÃÂ change is imperceptible frame-to-frame.
     this._driftAngleSpeed = (Math.random() < 0.5 ? 1 : -1)
                             * (0.0003 + Math.random() * 0.0005);
 
-    // Strong outward launch Ã¢ÂÂ words snap apart from centre immediately.
+    // Strong outward launch ÃÂ¢ÃÂÃÂ words snap apart from centre immediately.
     this.vx = Math.cos(spreadAngle) * 2.0;
     this.vy = Math.sin(spreadAngle) * 2.0;
 
@@ -195,17 +147,17 @@ class FloatingWord {
     const VW = window.innerWidth, VH = window.innerHeight, PAD = 18;
     const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
 
-    // Mouse interaction Ã¢ÂÂ slow approach attracts, fast swipe pushes
+    // Mouse interaction ÃÂ¢ÃÂÃÂ slow approach attracts, fast swipe pushes
     const ddx = mx - cx, ddy = my - cy;
     const dist = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
     if (mouseActive && dist < 120) {
       if (mouseSpeed > 8) {
-        // Fast swipe Ã¢ÂÂ push word away
+        // Fast swipe ÃÂ¢ÃÂÃÂ push word away
         const pushF = Math.min(mouseSpeed * 0.004, 0.3);
         this.vx -= (ddx / dist) * pushF;
         this.vy -= (ddy / dist) * pushF;
       } else if (mouseSpeed < 2) {
-        // Slow/still Ã¢ÂÂ gentle attract
+        // Slow/still ÃÂ¢ÃÂÃÂ gentle attract
         this.vx += (ddx / dist) * 0.002;
         this.vy += (ddy / dist) * 0.002;
       }
@@ -235,14 +187,14 @@ class FloatingWord {
     this.x += this.vx;
     this.y += this.vy;
 
-    // Soft edge avoidance Ã¢ÂÂ gentle push away from margins
+    // Soft edge avoidance ÃÂ¢ÃÂÃÂ gentle push away from margins
     const MARGIN = 160;
     if (this.x < MARGIN) { this.vx += 0.003 * (MARGIN - this.x) / MARGIN; }
     if (this.x + this.w > VW - MARGIN) { this.vx -= 0.003 * (this.x + this.w - (VW - MARGIN)) / MARGIN; }
     if (this.y < MARGIN) { this.vy += 0.003 * (MARGIN - this.y) / MARGIN; }
     if (this.y + this.h > VH - MARGIN) { this.vy -= 0.025 * (this.y + this.h - (VH - MARGIN)) / MARGIN; }
 
-    // Hard boundary Ã¢ÂÂ keep on screen
+    // Hard boundary ÃÂ¢ÃÂÃÂ keep on screen
     if (this.x < PAD) { this.x = PAD; this.vx = Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
     if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
     if (this.y < PAD) { this.y = PAD; this.vy = Math.abs(this.vy) * 0.2; this._driftAngle = -this._driftAngle; }
@@ -252,8 +204,8 @@ class FloatingWord {
   }
 }
 
-// Ã¢ÂÂÃ¢ÂÂ RECORD PHYSICS Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-// Separate class Ã¢ÂÂ the record has its own impulse drift that is much calmer
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ RECORD PHYSICS ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+// Separate class ÃÂ¢ÃÂÃÂ the record has its own impulse drift that is much calmer
 // and fully respects user drag placement (5 s cooldown after every interaction).
 class RecordPhysics {
   constructor(el, x, y) {
@@ -347,8 +299,8 @@ class RecordPhysics {
   }
 }
 
-// Ã¢ÂÂÃ¢ÂÂ INIT Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-// Words burst from near-centre, evenly spread 120ÃÂ° apart (random base angle).
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ INIT ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+// Words burst from near-centre, evenly spread 120ÃÂÃÂ° apart (random base angle).
 const floatingWords = (() => {
   const cx   = window.innerWidth  * 0.5;
   const cy   = window.innerHeight * 0.5;
@@ -369,7 +321,7 @@ const record    = new RecordPhysics(recordEl, window.innerWidth * 0.55, window.i
 document.fonts.ready.then(() => { floatingWords.forEach(fw => fw.measure()); record.measure(); });
 window.addEventListener('resize',    () => { floatingWords.forEach(fw => fw.measure()); record.measure(); });
 
-// Ã¢ÂÂÃ¢ÂÂ RECORD VISIBILITY Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ RECORD VISIBILITY ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 function updateRecordVisibility(key) {
   const on = key === 'music';
   recordEl.classList.toggle('visible', on);
@@ -378,11 +330,11 @@ function updateRecordVisibility(key) {
   }
 }
 
-// Ã¢ÂÂÃ¢ÂÂ TONEARM Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ TONEARM ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 // Rest: arm parallel, needle clear of groove. Play: drops to outer groove then
 // sweeps toward the label over the track duration. CSS transition (1.5 s) on
-// the SVG element interpolates every angle change Ã¢ÂÂ including the slow 2 s
-// poll steps during playback Ã¢ÂÂ so the sweep reads as perfectly continuous.
+// the SVG element interpolates every angle change ÃÂ¢ÃÂÃÂ including the slow 2 s
+// poll steps during playback ÃÂ¢ÃÂÃÂ so the sweep reads as perfectly continuous.
 const TONEARM_REST  = 55;    // resting off record
 const TONEARM_OUTER = 47;   // needle at outer groove
 const TONEARM_INNER =  3;   // needle near label edge
@@ -413,13 +365,13 @@ function startTonearmSweep(isResume) {
   }, 2000);
 }
 
-// Needle stays in groove on pause Ã¢ÂÂ tonearm holds position
+// Needle stays in groove on pause ÃÂ¢ÃÂÃÂ tonearm holds position
 function pauseTonearm() {
   clearInterval(tonearmInterval);
   tonearmInterval = null;
 }
 
-// Track finished naturally Ã¢ÂÂ land at label edge, lift back to rest after 2.5s
+// Track finished naturally ÃÂ¢ÃÂÃÂ land at label edge, lift back to rest after 2.5s
 function finishTonearm() {
   clearInterval(tonearmInterval);
   tonearmInterval = null;
@@ -440,7 +392,7 @@ function stopTonearmSweep() {
   if (_el)  _el.textContent = '0:00';
 }
 
-// Ã¢ÂÂÃ¢ÂÂ SOUNDCLOUD Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ SOUNDCLOUD ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 const SC_TRACKS = [
   'https://soundcloud.com/gabd0/5-el-cronopio',
   'https://soundcloud.com/gabd0/4-huella',
@@ -539,14 +491,14 @@ scPlayBtn.addEventListener('click',   e => { e.stopPropagation(); togglePlay(); 
 scPrevBtn.addEventListener('click',   e => { e.stopPropagation(); loadTrack(scTrackIdx - 1, scPlaying); });
 scNextBtn.addEventListener('click',   e => { e.stopPropagation(); loadTrack(scTrackIdx + 1, scPlaying); });
 
-// Ã¢ÂÂÃ¢ÂÂ RAF LOOP Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
-// Soft word separation Ã¢ÂÂ push scales with actual word sizes so edges never overlap
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ RAF LOOP ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
+// Soft word separation ÃÂ¢ÃÂÃÂ push scales with actual word sizes so edges never overlap
 const REPULSE_FORCE = 0.045;
 
 (function loop(now) {
     if (document.hidden) { requestAnimationFrame(loop); return; }
   floatingWords.forEach(fw => fw.tick(mouseX, mouseY));
-  // Soft repulsion Ã¢ÂÂ min distance from actual word widths so edges never overlap
+  // Soft repulsion ÃÂ¢ÃÂÃÂ min distance from actual word widths so edges never overlap
   for (let i = 0; i < floatingWords.length; i++) {
     for (let j = i + 1; j < floatingWords.length; j++) {
       const a = floatingWords[i], b = floatingWords[j];
@@ -571,14 +523,14 @@ const REPULSE_FORCE = 0.045;
   requestAnimationFrame(loop);
 })(performance.now());
 
-// Ã¢ÂÂÃ¢ÂÂ VISIBILITY (save CPU/battery when tab hidden) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ VISIBILITY (save CPU/battery when tab hidden) ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
     record.lastTime = null;   // prevent huge dt jump on resume
   }
 });
 
-// Ã¢ÂÂÃ¢ÂÂ SCROLL Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ SCROLL ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 const scrollArrow = document.getElementById('scroll-arrow');
 window.addEventListener('scroll', () => {
   const scrolled = window.scrollY > window.innerHeight * 0.15;
@@ -607,7 +559,7 @@ if (scrollArrow) {
   }, 300000);
 }
 
-// Ã¢ÂÂÃ¢ÂÂ HERO-NAME CLICK Ã¢ÂÂ HOME Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ HERO-NAME CLICK ÃÂ¢ÃÂÃÂ HOME ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 document.querySelectorAll('.hero-name, .hero-tagline').forEach(el => {
   el.style.cursor = 'pointer';
   el.style.pointerEvents = 'all';
@@ -616,7 +568,7 @@ document.querySelectorAll('.hero-name, .hero-tagline').forEach(el => {
 
 
 
-// Ã¢ÂÂÃ¢ÂÂ PHOTO FLOATING IMAGES Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ PHOTO FLOATING IMAGES ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 class FloatingImage {
   constructor(el, x, y, angle) {
     this.el = el;
@@ -739,7 +691,7 @@ function initPhotoFloat() {
   if (!container) return;
   const cx = window.innerWidth * 0.5, cy = window.innerHeight * 0.4;
   const base = Math.random() * Math.PI * 2;
-  // Always create ALL images Ã¢ÂÂ updatePhotoFilter handles visibility
+  // Always create ALL images ÃÂ¢ÃÂÃÂ updatePhotoFilter handles visibility
   const pool = PHOTO_PLACEHOLDERS;
   const count = Math.min(pool.length, 12);
 
@@ -796,7 +748,7 @@ function updatePhotoFilter() {
   });
 }
 
-// Ã¢ÂÂÃ¢ÂÂ PHOTO TAB TOGGLE (non-exclusive) Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ PHOTO TAB TOGGLE (non-exclusive) ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 document.querySelectorAll('.photo-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('active'));
@@ -805,7 +757,7 @@ document.querySelectorAll('.photo-tab').forEach(tab => {
   });
 });
 
-// Ã¢ÂÂÃ¢ÂÂ NAV PULLDOWN Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ NAV PULLDOWN ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 const pulldownToggle = document.getElementById('pulldown-toggle');
 const pulldownMenu = document.getElementById('pulldown-menu');
 if (pulldownToggle) {
@@ -827,7 +779,7 @@ if (pulldownMenu) {
 document.addEventListener('click', () => { if (pulldownMenu) pulldownMenu.classList.remove('open');
   if (pulldownToggle) pulldownToggle.setAttribute('aria-expanded', 'false'); });
 
-// Ã¢ÂÂÃ¢ÂÂ LIGHTBOX Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ LIGHTBOX ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 const lb    = document.getElementById('lightbox');
 const lbImg = document.getElementById('lb-img');
 
@@ -845,6 +797,6 @@ document.addEventListener('click', () => { floatingImages.forEach(fi => { if (fi
 });
 
 
-// Ã¢ÂÂÃ¢ÂÂ INITIAL ROUTE Ã¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂÃ¢ÂÂ
+// ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ INITIAL ROUTE ÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂÃÂ¢ÃÂÃÂ
 const _h = location.hash.replace('#', '');
 showPage(pages[_h] ? _h : 'cv');
