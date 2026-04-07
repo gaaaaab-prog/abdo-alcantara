@@ -3,6 +3,49 @@
 // =============================================
 
 // ── PAGE ROUTING ──────────────────────────
+// ── AUTH GATE ─────────────────────────────────────
+var PROTECTED_PAGES = ['cine', 'photo'];
+var _AUTH_KEY = '_pa';
+
+function isAuthenticated() {
+  return sessionStorage.getItem(_AUTH_KEY) === '1';
+}
+function setAuthenticated() {
+  sessionStorage.setItem(_AUTH_KEY, '1');
+}
+
+function showAuthWall(targetPage) {
+  var existing = document.getElementById('auth-wall');
+  if (existing) existing.remove();
+  var wall = document.createElement('div');
+  wall.id = 'auth-wall';
+  wall.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#0e0e0d;display:flex;align-items:center;justify-content:center;';
+  wall.innerHTML = '<div style="text-align:center;width:260px;">'
+    + '<div style="font-size:0.65rem;letter-spacing:0.25em;color:#b8b8b2;text-transform:uppercase;margin-bottom:2.5rem;">Gabriel Abdo Alcântara</div>'
+    + '<form id="auth-form" style="display:flex;flex-direction:column;gap:0.75rem;">'
+    + '<input id="auth-user" type="text" placeholder="username" autocomplete="username" style="background:transparent;border:none;border-bottom:1px solid #3a3a36;color:#e8e8e0;padding:0.5rem 0;font-size:0.8rem;letter-spacing:0.05em;outline:none;text-align:center;width:100%;">'
+    + '<input id="auth-pass" type="password" placeholder="password" autocomplete="current-password" style="background:transparent;border:none;border-bottom:1px solid #3a3a36;color:#e8e8e0;padding:0.5rem 0;font-size:0.8rem;letter-spacing:0.05em;outline:none;text-align:center;width:100%;">'
+    + '<button type="submit" style="margin-top:1rem;background:transparent;border:1px solid #3a3a36;color:#b8b8b2;padding:0.6rem 1.5rem;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;">enter</button>'
+    + '<p id="auth-err" style="font-size:0.65rem;color:#c07070;letter-spacing:0.1em;min-height:1em;margin:0.25rem 0 0;"></p>'
+    + '</form></div>';
+  document.body.appendChild(wall);
+  document.getElementById('auth-user').focus();
+  document.getElementById('auth-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var u = document.getElementById('auth-user').value;
+    var p = document.getElementById('auth-pass').value;
+    if (u === 'admin' && p === 'bogota') {
+      setAuthenticated();
+      wall.remove();
+      showPage(targetPage);
+    } else {
+      document.getElementById('auth-err').textContent = 'incorrect credentials';
+      document.getElementById('auth-pass').value = '';
+      document.getElementById('auth-user').focus();
+    }
+  });
+}
+
 const pages = {
   cv:    document.getElementById('page-cv'),
   film:  document.getElementById('page-film'),
@@ -15,6 +58,11 @@ const navPulldownEl = document.getElementById('nav-pulldown');
 const photoTabsEl = document.getElementById('photo-tabs');
 
 function showPage(key) {
+  // Auth gate
+  if (PROTECTED_PAGES.indexOf(key) > -1 && !isAuthenticated()) {
+    showAuthWall(key);
+    return;
+  }
   if (!pages[key]) return;
   closeLightbox();
   Object.values(pages).forEach(p => p.classList.remove('active'));
