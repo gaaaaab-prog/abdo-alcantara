@@ -764,11 +764,49 @@ function updatePhotoFilter() {
   });
 }
 
-// ── PHOTO TAB TOGGLE (non-exclusive) ────────────
+// ── PHOTO TAB TOGGLE + DROPDOWN ────────────────
 document.querySelectorAll('.photo-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('active'));
+  tab.addEventListener('click', (e) => {
+    e.stopPropagation();
+    // Activate this tab's filter
+    document.querySelectorAll('.photo-tab').forEach(t => {
+      t.classList.remove('active');
+      t.classList.remove('dropdown-open');
+    });
+    document.querySelectorAll('.photo-dropdown').forEach(d => d.classList.remove('open'));
     tab.classList.add('active');
+    updatePhotoFilter();
+
+    // Toggle dropdown if this tab has one
+    const group = tab.closest('.photo-tab-group');
+    if (group) {
+      const dd = group.querySelector('.photo-dropdown');
+      if (dd) {
+        tab.classList.toggle('dropdown-open');
+        dd.classList.toggle('open');
+      }
+    }
+  });
+});
+
+// Close dropdowns on outside click
+document.addEventListener('click', () => {
+  document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
+  document.querySelectorAll('.photo-dropdown').forEach(d => d.classList.remove('open'));
+});
+
+// Sub-filter clicks inside dropdowns
+document.querySelectorAll('.photo-filter').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const dd = btn.closest('.photo-dropdown');
+    if (dd) {
+      dd.querySelectorAll('.photo-filter').forEach(f => f.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    // Close dropdown after selection
+    document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
+    document.querySelectorAll('.photo-dropdown').forEach(d => d.classList.remove('open'));
     updatePhotoFilter();
   });
 });
