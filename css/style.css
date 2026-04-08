@@ -613,19 +613,14 @@ body {
 }
 .float-img.enlarged {
   position: fixed;
-  width: 65vw;
-  height: 65vh;
-  left: 17.5vw !important;
-  top: 17.5vh !important;
   z-index: 170;
   box-shadow: 0 12px 60px rgba(0,0,0,0.4);
   border-radius: 6px;
   transform: none !important;
   will-change: auto;
-  background: #111;
 }
 .float-img.enlarged img {
-  object-fit: contain;
+  object-fit: cover;
   filter: grayscale(0%);
   image-rendering: high-quality;
 }

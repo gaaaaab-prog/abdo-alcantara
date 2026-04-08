@@ -677,10 +677,16 @@ class FloatingImage {
       this._enlarged = true;
       this.el.style.transition = 'none';
       this.el.classList.add('enlarged');
-      this.el.style.width = Math.round(window.innerWidth * 0.65) + 'px';
-      this.el.style.height = Math.round(window.innerHeight * 0.65) + 'px';
-      this.el.style.left = Math.round(window.innerWidth * 0.175) + 'px';
-      this.el.style.top = Math.round(window.innerHeight * 0.175) + 'px';
+      var _ar = parseFloat(this.el.dataset.ar) || 1;
+      var _maxW = window.innerWidth * 0.65;
+      var _maxH = window.innerHeight * 0.65;
+      var _ew, _eh;
+      if (_ar >= _maxW / _maxH) { _ew = _maxW; _eh = _ew / _ar; }
+      else { _eh = _maxH; _ew = _eh * _ar; }
+      this.el.style.width = Math.round(_ew) + 'px';
+      this.el.style.height = Math.round(_eh) + 'px';
+      this.el.style.left = Math.round((window.innerWidth - _ew) / 2) + 'px';
+      this.el.style.top = Math.round((window.innerHeight - _eh) / 2) + 'px';
       this.el.style.transform = 'none';
       ctr.classList.add('has-enlarged');
     }
