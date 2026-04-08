@@ -815,9 +815,12 @@ function updatePhotoFilter() {
     const tab = group.querySelector('.photo-tab');
     if (tab && tab.classList.contains('active')) {
       const type = tab.dataset.photoTab;
-      const subs = [];
-      group.querySelectorAll('.photo-filter.active').forEach(f => subs.push(f.dataset.photoFilter));
-      if (subs.length > 0) activeSubFilters[type] = subs;
+      const hasSubFilters = group.querySelectorAll('.photo-filter').length > 0;
+      if (hasSubFilters) {
+        const subs = [];
+        group.querySelectorAll('.photo-filter.active').forEach(f => subs.push(f.dataset.photoFilter));
+        activeSubFilters[type] = subs;
+      }
     }
   });
 
