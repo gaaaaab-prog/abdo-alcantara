@@ -1,50 +1,7 @@
 // =============================================
-// Gabriel Abdo AlcÃ¢ntara â Portfolio
+// Gabriel Abdo Alcântara — Portfolio
 // =============================================
 
-// ââ PAGE ROUTING ââââââââââââââââââââââââââ
-// ââ AUTH GATE âââââââââââââââââââââââââââââââââââââ
-var PROTECTED_PAGES = ['cine', 'photo'];
-var _AUTH_KEY = '_pa';
-
-function isAuthenticated() {
-  return sessionStorage.getItem(_AUTH_KEY) === '1';
-}
-function setAuthenticated() {
-  sessionStorage.setItem(_AUTH_KEY, '1');
-}
-
-function showAuthWall(targetPage) {
-  var existing = document.getElementById('auth-wall');
-  if (existing) existing.remove();
-  var wall = document.createElement('div');
-  wall.id = 'auth-wall';
-  wall.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#0e0e0d;display:flex;align-items:center;justify-content:center;';
-  wall.innerHTML = '<div style="text-align:center;width:260px;">'
-    + '<div style="font-size:0.65rem;letter-spacing:0.25em;color:#b8b8b2;text-transform:uppercase;margin-bottom:2.5rem;">Gabriel Abdo AlcÃ¢ntara</div>'
-    + '<form id="auth-form" style="display:flex;flex-direction:column;gap:0.75rem;">'
-    + '<input id="auth-user" type="text" placeholder="username" autocomplete="username" style="background:transparent;border:none;border-bottom:1px solid #3a3a36;color:#e8e8e0;padding:0.5rem 0;font-size:0.8rem;letter-spacing:0.05em;outline:none;text-align:center;width:100%;">'
-    + '<input id="auth-pass" type="password" placeholder="password" autocomplete="current-password" style="background:transparent;border:none;border-bottom:1px solid #3a3a36;color:#e8e8e0;padding:0.5rem 0;font-size:0.8rem;letter-spacing:0.05em;outline:none;text-align:center;width:100%;">'
-    + '<button type="submit" style="margin-top:1rem;background:transparent;border:1px solid #3a3a36;color:#b8b8b2;padding:0.6rem 1.5rem;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;">enter</button>'
-    + '<p id="auth-err" style="font-size:0.65rem;color:#c07070;letter-spacing:0.1em;min-height:1em;margin:0.25rem 0 0;"></p>'
-    + '</form></div>';
-  document.body.appendChild(wall);
-  document.getElementById('auth-user').focus();
-  document.getElementById('auth-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    var u = document.getElementById('auth-user').value;
-    var p = document.getElementById('auth-pass').value;
-    if (u === 'admin' && p === 'bogota') {
-      setAuthenticated();
-      wall.remove();
-      showPage(targetPage);
-    } else {
-      document.getElementById('auth-err').textContent = 'incorrect credentials';
-      document.getElementById('auth-pass').value = '';
-      document.getElementById('auth-user').focus();
-    }
-  });
-}
 
 const pages = {
   cv:    document.getElementById('page-cv'),
@@ -57,13 +14,60 @@ const floatNav = document.getElementById('float-nav');
 const navPulldownEl = document.getElementById('nav-pulldown');
 const photoTabsEl = document.getElementById('photo-tabs');
 
+// ── CINE AUTH GATE ─────────────────────────
+function checkCineAuth() {
+  return sessionStorage.getItem('cine_auth') === '1';
+}
+
+function showCineLogin(onSuccess) {
+  // Remove any existing overlay
+  const existing = document.getElementById('cine-login-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'cine-login-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML = '<div style="text-align:center;max-width:280px;">'
+    + '<p style="font-size:0.82rem;color:var(--muted);margin-bottom:24px;letter-spacing:0.05em;">This page is restricted.</p>'
+    + '<input id="cine-user" type="text" placeholder="username" autocomplete="off" style="display:block;width:100%;padding:10px 12px;margin-bottom:10px;border:1px solid var(--border);border-radius:4px;background:transparent;font-family:var(--font);font-size:0.88rem;color:var(--text);outline:none;" />'
+    + '<input id="cine-pass" type="password" placeholder="password" autocomplete="off" style="display:block;width:100%;padding:10px 12px;margin-bottom:16px;border:1px solid var(--border);border-radius:4px;background:transparent;font-family:var(--font);font-size:0.88rem;color:var(--text);outline:none;" />'
+    + '<button id="cine-submit" style="padding:9px 28px;border:1px solid var(--text);border-radius:4px;background:transparent;font-family:var(--font);font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text);cursor:pointer;transition:background 0.2s,color 0.2s;">Enter</button>'
+    + '<p id="cine-error" style="margin-top:14px;font-size:0.75rem;color:#c44;opacity:0;transition:opacity 0.3s;"></p>'
+    + '</div>';
+  document.body.appendChild(overlay);
+
+  const userEl = document.getElementById('cine-user');
+  const passEl = document.getElementById('cine-pass');
+  const errEl = document.getElementById('cine-error');
+
+  function tryLogin() {
+    if (userEl.value === 'admin' && passEl.value === 'bogota') {
+      sessionStorage.setItem('cine_auth', '1');
+      overlay.remove();
+      onSuccess();
+    } else {
+      errEl.textContent = 'Invalid credentials.';
+      errEl.style.opacity = '1';
+      passEl.value = '';
+      passEl.focus();
+    }
+  }
+
+  document.getElementById('cine-submit').addEventListener('click', tryLogin);
+  passEl.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+  userEl.addEventListener('keydown', e => { if (e.key === 'Enter') passEl.focus(); });
+  userEl.focus();
+}
+
 function showPage(key) {
-  // Auth gate
-  if (PROTECTED_PAGES.indexOf(key) > -1 && !isAuthenticated()) {
-    showAuthWall(key);
+  if (!pages[key]) return;
+
+  // Gate Cine page behind authentication
+  if (key === 'film' && !checkCineAuth()) {
+    showCineLogin(() => showPage('film'));
     return;
   }
-  if (!pages[key]) return;
+
   closeLightbox();
   Object.values(pages).forEach(p => p.classList.remove('active'));
   pages[key].classList.add('active');
@@ -77,7 +81,7 @@ function showPage(key) {
   window.scrollTo(0, 0);
   setTimeout(() => floatingWords.forEach(fw => fw.measure()), 50);
 
-  // Photo page â collapse nav, show tabs + floating images
+  // Photo page — collapse nav, show tabs + floating images
   const isPhoto = key === 'film-photo';
   const isMusic = key === 'music';
   floatNav.classList.toggle('photo-active', isPhoto);
@@ -97,7 +101,7 @@ window.addEventListener('popstate', () => {
   showPage(pages[h] ? h : 'cv');
 });
 
-// ââ MOUSE TRACKING ââââââââââââââââââââââââ
+// ── MOUSE TRACKING ────────────────────────
 let mouseX = -9999, mouseY = -9999, mouseSpeed = 0;
 let mouseActive = false, mouseIdleTimer = null;
 
@@ -114,7 +118,7 @@ document.addEventListener('touchmove', e => {
 }, { passive: true });
 document.addEventListener('touchend', () => { mouseX = -9999; mouseY = -9999; mouseSpeed = 0; });
 
-// ââ FILM TABS ââââââââââââââââââââââââââââââââââââ
+// ── FILM TABS ────────────────────────────────────
 document.querySelectorAll('.film-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.film-tab').forEach(t => t.classList.remove('active'));
@@ -126,7 +130,7 @@ document.querySelectorAll('.film-tab').forEach(tab => {
 });
 
 
-// ââ CV TABS âââââââââââââââââââââââââââââââââââ
+// ── CV TABS ───────────────────────────────────
 document.querySelectorAll('.cv-tab').forEach(tab => {
   tab.addEventListener('click', () => {
     document.querySelectorAll('.cv-tab').forEach(t => t.classList.remove('active'));
@@ -137,22 +141,22 @@ document.querySelectorAll('.cv-tab').forEach(tab => {
   });
 });
 
-// ââ PHOTO CONFIG (before showPage for TDZ safety) ââââââââââ
-// Photo images â updated automatically by the folder-sync task
+// ── PHOTO CONFIG (before showPage for TDZ safety) ──────────
+// Photo images — updated automatically by the folder-sync task
 // { src: 'images/photo/digital/rhr1talks_web/filename.jpg', type: 'digital'|'analog' }
 const PHOTO_PLACEHOLDERS = [
-  { src: 'images/photo/digital/rhr1talks_web/altman-1.jpg',  type: 'digital' },
-  { src: 'images/photo/digital/rhr1talks_web/altman-2.jpg',  type: 'digital' },
-  { src: 'images/photo/digital/rhr1talks_web/altman-3.jpg',  type: 'digital' },
-  { src: 'images/photo/digital/rhr1talks_web/altman-4.jpg',  type: 'digital' },
-  { src: 'images/photo/digital/rhr1talks_web/altman-5.jpg',  type: 'digital' },
-  { src: 'images/photo/digital/rhr1talks_web/altman-6.jpg',  type: 'digital' },
-  { src: 'images/photo/digital/rhr1talks_web/altman-7.jpg',  type: 'digital' },
-  { src: 'images/photo/digital/rhr1talks_web/altman-8.jpg',  type: 'digital' },
-  { src: 'images/photo/digital/rhr1talks_web/altman-9.jpg',  type: 'digital' },
-  { src: 'images/photo/digital/rhr1talks_web/altman-10.jpg', type: 'digital' },
-  { src: 'images/photo/digital/rhr1talks_web/altman-11.jpg', type: 'digital' },
-  { src: 'images/photo/digital/rhr1talks_web/altman-12.jpg', type: 'digital' },
+  { src: 'images/photo/digital/rhr1talks_web/altman-1.jpg',  type: 'digital', ar: 1.500 },
+  { src: 'images/photo/digital/rhr1talks_web/altman-2.jpg',  type: 'digital', ar: 0.667 },
+  { src: 'images/photo/digital/rhr1talks_web/altman-3.jpg',  type: 'digital', ar: 1.500 },
+  { src: 'images/photo/digital/rhr1talks_web/altman-4.jpg',  type: 'digital', ar: 0.667 },
+  { src: 'images/photo/digital/rhr1talks_web/altman-5.jpg',  type: 'digital', ar: 0.679 },
+  { src: 'images/photo/digital/rhr1talks_web/altman-6.jpg',  type: 'digital', ar: 1.778 },
+  { src: 'images/photo/digital/rhr1talks_web/altman-7.jpg',  type: 'digital', ar: 0.680 },
+  { src: 'images/photo/digital/rhr1talks_web/altman-8.jpg',  type: 'digital', ar: 0.568 },
+  { src: 'images/photo/digital/rhr1talks_web/altman-9.jpg',  type: 'digital', ar: 1.500 },
+  { src: 'images/photo/digital/rhr1talks_web/altman-10.jpg', type: 'digital', ar: 1.500 },
+  { src: 'images/photo/digital/rhr1talks_web/altman-11.jpg', type: 'digital', ar: 1.500 },
+  { src: 'images/photo/digital/rhr1talks_web/altman-12.jpg', type: 'digital', ar: 1.500 },
 ];
 
 const PHOTO_FRICTION = 0.9917;
@@ -160,12 +164,12 @@ const PHOTO_DRIFT   = 0.00184;
 const PHOTO_MAX_SPEED = 2.3;
 
 
-// ââ FLOATING WORD âââââââââââââââââââââââââ
-// Words burst outward from near-centre on load (~120Â° apart), decelerating
+// ── FLOATING WORD ─────────────────────────
+// Words burst outward from near-centre on load (~120° apart), decelerating
 // via friction. Drift direction rotates slowly for aimless-looking float.
 // Fast mouse swipe pushes; slow approach attracts. Soft edge avoidance +
 // inter-word repulsion keep words separated and on-screen.
-const FRICTION    = 0.991;  // terminal speed â 0.001/0.006 â 0.17 px/frame
+const FRICTION    = 0.991;  // terminal speed ≈ 0.001/0.006 ≈ 0.17 px/frame
 const DRIFT_FORCE = 0.002;  // continuous gentle push along _driftAngle
 const MAX_SPEED   = 2.5;    // high cap so the launch burst isn't clipped
 
@@ -176,13 +180,13 @@ class FloatingWord {
     this.w  = 0; this.h  = 0;
 
     // Drift direction aligned with spread angle so initial momentum and
-    // long-term force agree â no jarring direction fight during deceleration.
+    // long-term force agree — no jarring direction fight during deceleration.
     this._driftAngle      = spreadAngle;
-    // Full spin every ~2â6 minutes â change is imperceptible frame-to-frame.
+    // Full spin every ~2–6 minutes — change is imperceptible frame-to-frame.
     this._driftAngleSpeed = (Math.random() < 0.5 ? 1 : -1)
                             * (0.0003 + Math.random() * 0.0005);
 
-    // Strong outward launch â words snap apart from centre immediately.
+    // Strong outward launch — words snap apart from centre immediately.
     this.vx = Math.cos(spreadAngle) * 2.0;
     this.vy = Math.sin(spreadAngle) * 2.0;
 
@@ -195,17 +199,17 @@ class FloatingWord {
     const VW = window.innerWidth, VH = window.innerHeight, PAD = 18;
     const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
 
-    // Mouse interaction â slow approach attracts, fast swipe pushes
+    // Mouse interaction — slow approach attracts, fast swipe pushes
     const ddx = mx - cx, ddy = my - cy;
     const dist = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
     if (mouseActive && dist < 120) {
       if (mouseSpeed > 8) {
-        // Fast swipe â push word away
+        // Fast swipe — push word away
         const pushF = Math.min(mouseSpeed * 0.004, 0.3);
         this.vx -= (ddx / dist) * pushF;
         this.vy -= (ddy / dist) * pushF;
       } else if (mouseSpeed < 2) {
-        // Slow/still â gentle attract
+        // Slow/still — gentle attract
         this.vx += (ddx / dist) * 0.002;
         this.vy += (ddy / dist) * 0.002;
       }
@@ -235,14 +239,14 @@ class FloatingWord {
     this.x += this.vx;
     this.y += this.vy;
 
-    // Soft edge avoidance â gentle push away from margins
+    // Soft edge avoidance — gentle push away from margins
     const MARGIN = 160;
     if (this.x < MARGIN) { this.vx += 0.003 * (MARGIN - this.x) / MARGIN; }
     if (this.x + this.w > VW - MARGIN) { this.vx -= 0.003 * (this.x + this.w - (VW - MARGIN)) / MARGIN; }
     if (this.y < MARGIN) { this.vy += 0.003 * (MARGIN - this.y) / MARGIN; }
     if (this.y + this.h > VH - MARGIN) { this.vy -= 0.025 * (this.y + this.h - (VH - MARGIN)) / MARGIN; }
 
-    // Hard boundary â keep on screen
+    // Hard boundary — keep on screen
     if (this.x < PAD) { this.x = PAD; this.vx = Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
     if (this.x + this.w > VW - PAD) { this.x = VW - this.w - PAD; this.vx = -Math.abs(this.vx) * 0.2; this._driftAngle = Math.PI - this._driftAngle; }
     if (this.y < PAD) { this.y = PAD; this.vy = Math.abs(this.vy) * 0.2; this._driftAngle = -this._driftAngle; }
@@ -252,8 +256,8 @@ class FloatingWord {
   }
 }
 
-// ââ RECORD PHYSICS ââââââââââââââââââââââââ
-// Separate class â the record has its own impulse drift that is much calmer
+// ── RECORD PHYSICS ────────────────────────
+// Separate class — the record has its own impulse drift that is much calmer
 // and fully respects user drag placement (5 s cooldown after every interaction).
 class RecordPhysics {
   constructor(el, x, y) {
@@ -347,8 +351,8 @@ class RecordPhysics {
   }
 }
 
-// ââ INIT ââââââââââââââââââââââââââââââââââ
-// Words burst from near-centre, evenly spread 120Â° apart (random base angle).
+// ── INIT ──────────────────────────────────
+// Words burst from near-centre, evenly spread 120° apart (random base angle).
 const floatingWords = (() => {
   const cx   = window.innerWidth  * 0.5;
   const cy   = window.innerHeight * 0.5;
@@ -369,7 +373,7 @@ const record    = new RecordPhysics(recordEl, window.innerWidth * 0.55, window.i
 document.fonts.ready.then(() => { floatingWords.forEach(fw => fw.measure()); record.measure(); });
 window.addEventListener('resize',    () => { floatingWords.forEach(fw => fw.measure()); record.measure(); });
 
-// ââ RECORD VISIBILITY âââââââââââââââââââââ
+// ── RECORD VISIBILITY ─────────────────────
 function updateRecordVisibility(key) {
   const on = key === 'music';
   recordEl.classList.toggle('visible', on);
@@ -378,11 +382,11 @@ function updateRecordVisibility(key) {
   }
 }
 
-// ââ TONEARM âââââââââââââââââââââââââââââââ
+// ── TONEARM ───────────────────────────────
 // Rest: arm parallel, needle clear of groove. Play: drops to outer groove then
 // sweeps toward the label over the track duration. CSS transition (1.5 s) on
-// the SVG element interpolates every angle change â including the slow 2 s
-// poll steps during playback â so the sweep reads as perfectly continuous.
+// the SVG element interpolates every angle change — including the slow 2 s
+// poll steps during playback — so the sweep reads as perfectly continuous.
 const TONEARM_REST  = 55;    // resting off record
 const TONEARM_OUTER = 47;   // needle at outer groove
 const TONEARM_INNER =  3;   // needle near label edge
@@ -413,13 +417,13 @@ function startTonearmSweep(isResume) {
   }, 2000);
 }
 
-// Needle stays in groove on pause â tonearm holds position
+// Needle stays in groove on pause — tonearm holds position
 function pauseTonearm() {
   clearInterval(tonearmInterval);
   tonearmInterval = null;
 }
 
-// Track finished naturally â land at label edge, lift back to rest after 2.5s
+// Track finished naturally — land at label edge, lift back to rest after 2.5s
 function finishTonearm() {
   clearInterval(tonearmInterval);
   tonearmInterval = null;
@@ -440,7 +444,7 @@ function stopTonearmSweep() {
   if (_el)  _el.textContent = '0:00';
 }
 
-// ââ SOUNDCLOUD ââââââââââââââââââââââââââââ
+// ── SOUNDCLOUD ────────────────────────────
 const SC_TRACKS = [
   'https://soundcloud.com/gabd0/5-el-cronopio',
   'https://soundcloud.com/gabd0/4-huella',
@@ -539,14 +543,14 @@ scPlayBtn.addEventListener('click',   e => { e.stopPropagation(); togglePlay(); 
 scPrevBtn.addEventListener('click',   e => { e.stopPropagation(); loadTrack(scTrackIdx - 1, scPlaying); });
 scNextBtn.addEventListener('click',   e => { e.stopPropagation(); loadTrack(scTrackIdx + 1, scPlaying); });
 
-// ââ RAF LOOP ââââââââââââââââââââââââââââââ
-// Soft word separation â push scales with actual word sizes so edges never overlap
+// ── RAF LOOP ──────────────────────────────
+// Soft word separation — push scales with actual word sizes so edges never overlap
 const REPULSE_FORCE = 0.045;
 
 (function loop(now) {
     if (document.hidden) { requestAnimationFrame(loop); return; }
   floatingWords.forEach(fw => fw.tick(mouseX, mouseY));
-  // Soft repulsion â min distance from actual word widths so edges never overlap
+  // Soft repulsion — min distance from actual word widths so edges never overlap
   for (let i = 0; i < floatingWords.length; i++) {
     for (let j = i + 1; j < floatingWords.length; j++) {
       const a = floatingWords[i], b = floatingWords[j];
@@ -571,14 +575,14 @@ const REPULSE_FORCE = 0.045;
   requestAnimationFrame(loop);
 })(performance.now());
 
-// ââ VISIBILITY (save CPU/battery when tab hidden) ââââââââ
+// ── VISIBILITY (save CPU/battery when tab hidden) ────────
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) {
     record.lastTime = null;   // prevent huge dt jump on resume
   }
 });
 
-// ââ SCROLL ââââââââââââââââââââââââââââââââ
+// ── SCROLL ────────────────────────────────
 const scrollArrow = document.getElementById('scroll-arrow');
 window.addEventListener('scroll', () => {
   const scrolled = window.scrollY > window.innerHeight * 0.15;
@@ -607,7 +611,7 @@ if (scrollArrow) {
   }, 300000);
 }
 
-// ââ HERO-NAME CLICK â HOME ââââââââââââââââââ
+// ── HERO-NAME CLICK → HOME ──────────────────
 document.querySelectorAll('.hero-name, .hero-tagline').forEach(el => {
   el.style.cursor = 'pointer';
   el.style.pointerEvents = 'all';
@@ -616,12 +620,13 @@ document.querySelectorAll('.hero-name, .hero-tagline').forEach(el => {
 
 
 
-// ââ PHOTO FLOATING IMAGES ââââââââââââââââââââââ
+// ── PHOTO FLOATING IMAGES ──────────────────────
 class FloatingImage {
   constructor(el, x, y, angle) {
     this.el = el;
     this.x = x; this.y = y;
-    this.w = 72; this.h = 72;
+    this.h = 72;
+    const _ar = parseFloat(el.dataset.ar) || 1; this.w = Math.round(72 * _ar); el.style.width = this.w + 'px'; el.style.height = '72px';
     this._driftAngle = angle;
     this._driftAngleSpeed = (Math.random() < 0.5 ? 1 : -1) * (0.0003 + Math.random() * 0.0005);
     this.vx = Math.cos(angle) * 1.8;
@@ -635,11 +640,14 @@ class FloatingImage {
       this._hoverStart = 0;
       if (this._magnified && !this._enlarged) {
         this._magnified = false;
+        el.style.transition = 'none';
         el.classList.remove('magnified');
-        this.w = 72; this.h = 72;
+        this.h = 72; const _ar2 = parseFloat(el.dataset.ar) || 1; this.w = Math.round(72 * _ar2);
+        el.style.width = this.w + 'px'; el.style.height = '72px';
+        requestAnimationFrame(function() { el.style.transition = ''; });
       }
     });
-    el.addEventListener('click', () => this.toggleEnlarge());
+    el.addEventListener('click', (e) => { e.stopPropagation(); if (!this._enlarged) this.toggleEnlarge(); });
   }
 
   measure() { this.w = this.el.offsetWidth; this.h = this.el.offsetHeight; }
@@ -651,18 +659,28 @@ class FloatingImage {
       this.el.classList.remove('enlarged', 'magnified');
       this.el.style.left = '';
       this.el.style.top = '';
+      this.el.style.transition = 'none';
       this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)';
       ctr.classList.remove('has-enlarged');
-      this.w = 72; this.h = 72;
+      this.h = 72; const _ar = parseFloat(this.el.dataset.ar) || 1; this.w = Math.round(72 * _ar);
+      this.el.style.width = this.w + 'px'; this.el.style.height = '72px';
+      const _el = this.el; requestAnimationFrame(function() { _el.style.transition = ''; });
     } else {
       floatingImages.forEach(fi => {
         fi._enlarged = false; fi._magnified = false;
+        fi.el.style.transition = 'none';
         fi.el.classList.remove('enlarged', 'magnified');
+        const _a = parseFloat(fi.el.dataset.ar) || 1; fi.w = Math.round(72 * _a); fi.h = 72;
+        fi.el.style.width = fi.w + 'px'; fi.el.style.height = '72px';
+        requestAnimationFrame(function() { fi.el.style.transition = ''; });
       });
       this._enlarged = true;
+      this.el.style.transition = 'none';
       this.el.classList.add('enlarged');
-      this.el.style.left = '17.5vw';
-      this.el.style.top = '17.5vh';
+      this.el.style.width = Math.round(window.innerWidth * 0.65) + 'px';
+      this.el.style.height = Math.round(window.innerHeight * 0.65) + 'px';
+      this.el.style.left = Math.round(window.innerWidth * 0.175) + 'px';
+      this.el.style.top = Math.round(window.innerHeight * 0.175) + 'px';
       this.el.style.transform = 'none';
       ctr.classList.add('has-enlarged');
     }
@@ -675,7 +693,10 @@ class FloatingImage {
 
     if (this._hoverStart > 0 && !this._magnified && Date.now() - this._hoverStart > 850) {
       this._magnified = true;
+      this.el.style.transition = 'none';
       this.el.classList.add('magnified');
+      this.el.style.width = '280px'; this.el.style.height = '210px';
+      const _elM = this.el; requestAnimationFrame(function() { _elM.style.transition = ''; });
       setTimeout(() => { if (this.el.isConnected) this.measure(); }, 520);
     }
 
@@ -728,7 +749,6 @@ let photoAnimFrame = null;
 function getActivePhotoFilters() {
   const types = [];
   document.querySelectorAll('.photo-tab.active').forEach(t => types.push(t.dataset.photoTab));
-  if (types.length === 0) types.push('digital', 'analog');
   return { types };
 }
 
@@ -738,16 +758,18 @@ function initPhotoFloat() {
   if (!container) return;
   const cx = window.innerWidth * 0.5, cy = window.innerHeight * 0.4;
   const base = Math.random() * Math.PI * 2;
-  // Always create ALL images â updatePhotoFilter handles visibility
+  // Always create ALL images — updatePhotoFilter handles visibility
   const pool = PHOTO_PLACEHOLDERS;
   const count = Math.min(pool.length, 12);
 
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
     el.className = 'float-img';
-    el.dataset.type = pool[i].type;
+    const _s=pool[i].src.split('/'),_pi=_s.indexOf('photo'); el.dataset.type=(_pi>=0&&_s[_pi+1])||pool[i].type||'digital';
+      if(_pi>=0&&_s[_pi+2]) el.dataset.filter=_s[_pi+2];
+    el.dataset.ar = pool[i].ar || 1;
     el.innerHTML = pool[i].src
-      ? '<img src="' + pool[i].src + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" loading="lazy" />'
+      ? '<img src="' + pool[i].src + '" alt="" style="width:100%;height:100%;border-radius:inherit;" loading="lazy" />'
       : '<div style="width:100%;height:100%;background:var(--ph-bg);display:flex;align-items:center;justify-content:center;font-size:0.5rem;color:#b8b8b2;">' + pool[i].type[0].toUpperCase() + (i + 1) + '</div>';
     container.appendChild(el);
     const angle = base + (i / count) * Math.PI * 2;
@@ -787,52 +809,81 @@ function destroyPhotoFloat() {
 
 function updatePhotoFilter() {
   const af = getActivePhotoFilters();
+  // Collect active sub-filters per type
+  const activeSubFilters = {};
+  document.querySelectorAll('.photo-tab-group').forEach(group => {
+    const tab = group.querySelector('.photo-tab');
+    if (tab && tab.classList.contains('active')) {
+      const type = tab.dataset.photoTab;
+      const hasSubFilters = group.querySelectorAll('.photo-filter').length > 0;
+      if (hasSubFilters) {
+        const subs = [];
+        group.querySelectorAll('.photo-filter.active').forEach(f => subs.push(f.dataset.photoFilter));
+        activeSubFilters[type] = subs;
+      }
+    }
+  });
+
   floatingImages.forEach(fi => {
-    const match = af.types.includes(fi.el.dataset.type);
+    const type = fi.el.dataset.type;
+    const filter = fi.el.dataset.filter;
+    let match = af.types.includes(type);
+    // If this type has active sub-filters, also check sub-filter match
+    if (match && activeSubFilters[type]) {
+      match = activeSubFilters[type].includes(filter);
+    }
     fi.el.style.opacity = match ? '' : '0';
     fi.el.style.pointerEvents = match ? '' : 'none';
   });
 }
 
-// ââ PHOTO TAB TOGGLE (non-exclusive) ââââââââââââ
+// ── PHOTO TAB TOGGLE + DROPDOWN ────────────────────
 document.querySelectorAll('.photo-tab').forEach(tab => {
-  tab.addEventListener('click', e => {
+  tab.addEventListener('click', (e) => {
     e.stopPropagation();
-    const arrow = tab.querySelector('.dropdown-arrow');
-    const clickedArrow = arrow && (e.target === arrow || arrow.contains(e.target));
-    if (clickedArrow) {
-      // Arrow click: toggle dropdown only (don't toggle filter)
-      const isOpen = tab.classList.contains('dropdown-open');
-      document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
-      document.querySelectorAll('.photo-dropdown').forEach(dd => dd.classList.remove('open'));
-      if (!isOpen) {
-        tab.classList.add('dropdown-open');
-        const dd = tab.parentElement.querySelector('.photo-dropdown');
-        if (dd) dd.classList.add('open');
+    const isActive = tab.classList.contains('active');
+
+    // Toggle the filter on/off
+    tab.classList.toggle('active');
+
+    // Handle dropdown if present
+    const group = tab.closest('.photo-tab-group');
+    if (group) {
+      const dd = group.querySelector('.photo-dropdown');
+      if (dd) {
+        if (isActive) {
+          // Turning off → close dropdown
+          tab.classList.remove('dropdown-open');
+          dd.classList.remove('open');
+        } else {
+          // Turning on → open dropdown
+          tab.classList.add('dropdown-open');
+          dd.classList.add('open');
+        }
       }
-    } else {
-      // Text click: toggle filter on/off, close dropdown
-      tab.classList.toggle('active');
-      document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
-      document.querySelectorAll('.photo-dropdown').forEach(dd => dd.classList.remove('open'));
-        updatePhotoFilter();
     }
+
+    updatePhotoFilter();
   });
 });
 
+// Close dropdowns on outside click
 document.addEventListener('click', () => {
   document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
-  document.querySelectorAll('.photo-dropdown').forEach(dd => dd.classList.remove('open'));
+  document.querySelectorAll('.photo-dropdown').forEach(d => d.classList.remove('open'));
 });
 
+// Sub-filter clicks inside dropdowns
 document.querySelectorAll('.photo-filter').forEach(btn => {
-  btn.addEventListener('click', e => {
+  btn.addEventListener('click', (e) => {
     e.stopPropagation();
+    // Toggle this sub-filter on/off independently
     btn.classList.toggle('active');
+    updatePhotoFilter();
   });
 });
 
-// ââ NAV PULLDOWN ââââââââââââââââââââââââââââââââ
+// ── NAV PULLDOWN ────────────────────────────────
 const pulldownToggle = document.getElementById('pulldown-toggle');
 const pulldownMenu = document.getElementById('pulldown-menu');
 if (pulldownToggle) {
@@ -854,7 +905,7 @@ if (pulldownMenu) {
 document.addEventListener('click', () => { if (pulldownMenu) pulldownMenu.classList.remove('open');
   if (pulldownToggle) pulldownToggle.setAttribute('aria-expanded', 'false'); });
 
-// ââ LIGHTBOX ââââââââââââââââââââââââââââââ
+// ── LIGHTBOX ──────────────────────────────
 const lb    = document.getElementById('lightbox');
 const lbImg = document.getElementById('lb-img');
 
@@ -864,6 +915,7 @@ function closeLightbox()   { lb.classList.remove('open'); lbImg.src = ''; docume
 document.getElementById('lb-close').addEventListener('click', closeLightbox);
 lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+document.addEventListener('click', () => { floatingImages.forEach(fi => { if (fi._enlarged) fi.toggleEnlarge(); }); });
 
 ['film-grid', 'bts-grid'].forEach(id => {
   const g = document.getElementById(id);
@@ -871,6 +923,6 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbo
 });
 
 
-// ââ INITIAL ROUTE âââââââââââââââââââââââââ
+// ── INITIAL ROUTE ─────────────────────────
 const _h = location.hash.replace('#', '');
 showPage(pages[_h] ? _h : 'cv');
