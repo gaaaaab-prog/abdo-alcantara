@@ -766,6 +766,7 @@ function initPhotoFloat() {
     const el = document.createElement('div');
     el.className = 'float-img';
     const _s=pool[i].src.split('/'),_pi=_s.indexOf('photo'); el.dataset.type=(_pi>=0&&_s[_pi+1])||pool[i].type||'digital';
+      if(_pi>=0&&_s[_pi+2]) el.dataset.filter=_s[_pi+2];
     el.dataset.ar = pool[i].ar || 1;
     el.innerHTML = pool[i].src
       ? '<img src="' + pool[i].src + '" alt="" style="width:100%;height:100%;border-radius:inherit;" loading="lazy" />'
@@ -808,8 +809,26 @@ function destroyPhotoFloat() {
 
 function updatePhotoFilter() {
   const af = getActivePhotoFilters();
+  // Collect active sub-filters per type
+  const activeSubFilters = {};
+  document.querySelectorAll('.photo-tab-group').forEach(group => {
+    const tab = group.querySelector('.photo-tab');
+    if (tab && tab.classList.contains('active')) {
+      const type = tab.dataset.photoTab;
+      const subs = [];
+      group.querySelectorAll('.photo-filter.active').forEach(f => subs.push(f.dataset.photoFilter));
+      if (subs.length > 0) activeSubFilters[type] = subs;
+    }
+  });
+
   floatingImages.forEach(fi => {
-    const match = af.types.includes(fi.el.dataset.type);
+    const type = fi.el.dataset.type;
+    const filter = fi.el.dataset.filter;
+    let match = af.types.includes(type);
+    // If this type has active sub-filters, also check sub-filter match
+    if (match && activeSubFilters[type]) {
+      match = activeSubFilters[type].includes(filter);
+    }
     fi.el.style.opacity = match ? '' : '0';
     fi.el.style.pointerEvents = match ? '' : 'none';
   });
@@ -855,14 +874,8 @@ document.addEventListener('click', () => {
 document.querySelectorAll('.photo-filter').forEach(btn => {
   btn.addEventListener('click', (e) => {
     e.stopPropagation();
-    const dd = btn.closest('.photo-dropdown');
-    if (dd) {
-      dd.querySelectorAll('.photo-filter').forEach(f => f.classList.remove('active'));
-      btn.classList.add('active');
-    }
-    // Close dropdown after selection
-    document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
-    document.querySelectorAll('.photo-dropdown').forEach(d => d.classList.remove('open'));
+    // Toggle this sub-filter on/off independently
+    btn.classList.toggle('active');
     updatePhotoFilter();
   });
 });
