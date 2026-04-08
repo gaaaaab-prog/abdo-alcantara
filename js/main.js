@@ -926,3 +926,53 @@ document.addEventListener('click', () => { floatingImages.forEach(fi => { if (fi
 // ── INITIAL ROUTE ─────────────────────────
 const _h = location.hash.replace('#', '');
 showPage(pages[_h] ? _h : 'cv');
+
+
+/* --- Contact popup --- */
+(function(){
+  var overlay=document.createElement('div');
+  overlay.className='contact-overlay';
+  overlay.innerHTML='<div class="contact-popup">'+
+    '<button class="contact-close" aria-label="Close">&times;</button>'+
+    '<h2>Contact</h2>'+
+    '<form id="contact-form" action="https://formsubmit.co/ajax/gabri.a.alcantara@gmail.com" method="POST">'+
+      '<input type="hidden" name="_captcha" value="false">'+
+      '<input type="hidden" name="_template" value="table">'+
+      '<div class="contact-field"><label>Subject</label><input type="text" name="subject" required></div>'+
+      '<div class="contact-field"><label>Message</label><textarea name="message" required></textarea></div>'+
+      '<button type="submit">Send</button>'+
+    '</form>'+
+  '</div>';
+  document.body.appendChild(overlay);
+
+  function openContact(){overlay.classList.add('open');}
+  function closeContact(){
+    overlay.classList.remove('open');
+    var f=document.getElementById('contact-form');
+    if(f){f.reset();var s=f.querySelector('.contact-sent');if(s)s.remove();f.style.display='';}
+  }
+  overlay.querySelector('.contact-close').addEventListener('click',closeContact);
+  overlay.addEventListener('click',function(e){if(e.target===overlay)closeContact();});
+
+  document.querySelectorAll('.censored').forEach(function(el){
+    el.addEventListener('click',function(e){e.preventDefault();openContact();});
+  });
+
+  document.getElementById('contact-form').addEventListener('submit',function(e){
+    e.preventDefault();
+    var form=this;
+    var btn=form.querySelector('button[type="submit"]');
+    btn.textContent='Sending...';btn.disabled=true;
+    fetch(form.action,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({subject:form.subject.value,message:form.message.value})
+    }).then(function(r){return r.json();}).then(function(){
+      form.style.display='none';
+      var msg=document.createElement('div');msg.className='contact-sent';msg.textContent='Message sent. Thank you.';
+      form.parentNode.appendChild(msg);
+      setTimeout(closeContact,2000);
+    }).catch(function(){
+      btn.textContent='Send';btn.disabled=false;
+      alert('Could not send. Please try again.');
+    });
+  });
+})();
