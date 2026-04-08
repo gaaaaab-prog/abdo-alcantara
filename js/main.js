@@ -573,8 +573,8 @@ class FloatingImage {
   constructor(el, x, y, angle) {
     this.el = el;
     this.x = x; this.y = y;
-    this.h = 150;
-    const _ar = parseFloat(el.dataset.ar) || 1; this.w = Math.round(150 * _ar); el.style.width = this.w + 'px'; el.style.height = '150px';
+    this.h = 72;
+    const _ar = parseFloat(el.dataset.ar) || 1; this.w = Math.round(72 * _ar); el.style.width = this.w + 'px'; el.style.height = '72px';
     this._driftAngle = angle;
     this._driftAngleSpeed = (Math.random() < 0.5 ? 1 : -1) * (0.0003 + Math.random() * 0.0005);
     this.vx = Math.cos(angle) * 1.8;
@@ -590,8 +590,8 @@ class FloatingImage {
         this._magnified = false;
         el.style.transition = 'none';
         el.classList.remove('magnified');
-        this.h = 150; var _ar2 = parseFloat(el.dataset.ar) || 1; this.w = Math.round(150 * _ar2);
-        el.style.width = this.w + 'px'; el.style.height = '150px';
+        this.h = 72; var _ar2 = parseFloat(el.dataset.ar) || 1; this.w = Math.round(72 * _ar2);
+        el.style.width = this.w + 'px'; el.style.height = '72px';
         requestAnimationFrame(function() { el.style.transition = ''; });
       }
     });
@@ -610,35 +610,25 @@ class FloatingImage {
       this.el.style.transition = 'none';
       this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)';
       ctr.classList.remove('has-enlarged');
-      this.h = 150; var _ar = parseFloat(this.el.dataset.ar) || 1; this.w = Math.round(150 * _ar);
-      this.el.style.width = this.w + 'px'; this.el.style.height = '150px';
+      this.h = 72; var _ar = parseFloat(this.el.dataset.ar) || 1; this.w = Math.round(72 * _ar);
+      this.el.style.width = this.w + 'px'; this.el.style.height = '72px';
       var _el = this.el; requestAnimationFrame(function() { _el.style.transition = ''; });
     } else {
       floatingImages.forEach(fi => {
         fi._enlarged = false; fi._magnified = false;
         fi.el.style.transition = 'none';
         fi.el.classList.remove('enlarged', 'magnified');
-        var _a = parseFloat(fi.el.dataset.ar) || 1; fi.w = Math.round(150 * _a); fi.h = 150;
-        fi.el.style.width = fi.w + 'px'; fi.el.style.height = '150px';
+        var _a = parseFloat(fi.el.dataset.ar) || 1; fi.w = Math.round(72 * _a); fi.h = 72;
+        fi.el.style.width = fi.w + 'px'; fi.el.style.height = '72px';
         requestAnimationFrame(function() { fi.el.style.transition = ''; });
       });
       this._enlarged = true;
       this.el.style.transition = 'none';
       this.el.classList.add('enlarged');
-      // Size to image's native AR, fitting within 85% of viewport
-      var _img = this.el.querySelector('img');
-      var _natW = _img ? _img.naturalWidth : 1;
-      var _natH = _img ? _img.naturalHeight : 1;
-      var _iAR = _natW / _natH;
-      var _maxW = window.innerWidth * 0.85;
-      var _maxH = window.innerHeight * 0.85;
-      var _eW, _eH;
-      if (_maxW / _maxH > _iAR) { _eH = _maxH; _eW = Math.round(_eH * _iAR); }
-      else { _eW = _maxW; _eH = Math.round(_eW / _iAR); }
-      this.el.style.width = Math.round(_eW) + 'px';
-      this.el.style.height = Math.round(_eH) + 'px';
-      this.el.style.left = Math.round((window.innerWidth - _eW) / 2) + 'px';
-      this.el.style.top = Math.round((window.innerHeight - _eH) / 2) + 'px';
+      this.el.style.width = Math.round(window.innerWidth * 0.65) + 'px';
+      this.el.style.height = Math.round(window.innerHeight * 0.65) + 'px';
+      this.el.style.left = Math.round(window.innerWidth * 0.175) + 'px';
+      this.el.style.top = Math.round(window.innerHeight * 0.175) + 'px';
       this.el.style.transform = 'none';
       ctr.classList.add('has-enlarged');
     }
@@ -653,7 +643,7 @@ class FloatingImage {
       this._magnified = true;
       this.el.style.transition = 'none';
       this.el.classList.add('magnified');
-      this.el.style.width = '420px'; this.el.style.height = '315px';
+      this.el.style.width = '280px'; this.el.style.height = '210px';
       var _elM = this.el; requestAnimationFrame(function() { _elM.style.transition = ''; });
       setTimeout(() => { if (this.el.isConnected) this.measure(); }, 520);
     }
