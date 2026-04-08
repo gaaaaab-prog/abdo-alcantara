@@ -288,7 +288,14 @@
   </header>
 
   <nav class="photo-tabs" id="photo-tabs" aria-label="Photo series">
-        <button class="photo-tab active" data-photo-tab="digital">Oakland Residency</button>
+        <div class="photo-tab-group">
+          <button class="photo-tab active" data-photo-tab="digital">digital
+            <svg class="dropdown-arrow" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <div class="photo-dropdown" id="photo-dropdown-digital">
+            <button class="photo-filter active" data-photo-filter="rhr1talks_web">Oakland Residency</button>
+          </div>
+        </div>
         <button class="photo-tab" data-photo-tab="analog">analog</button>
       </nav>
 
