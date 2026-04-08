@@ -625,10 +625,20 @@ class FloatingImage {
       this._enlarged = true;
       this.el.style.transition = 'none';
       this.el.classList.add('enlarged');
-      this.el.style.width = Math.round(window.innerWidth * 0.65) + 'px';
-      this.el.style.height = Math.round(window.innerHeight * 0.65) + 'px';
-      this.el.style.left = Math.round(window.innerWidth * 0.175) + 'px';
-      this.el.style.top = Math.round(window.innerHeight * 0.175) + 'px';
+      // Size to image's native AR, fitting within 85% of viewport
+      var _img = this.el.querySelector('img');
+      var _natW = _img ? _img.naturalWidth : 1;
+      var _natH = _img ? _img.naturalHeight : 1;
+      var _iAR = _natW / _natH;
+      var _maxW = window.innerWidth * 0.85;
+      var _maxH = window.innerHeight * 0.85;
+      var _eW, _eH;
+      if (_maxW / _maxH > _iAR) { _eH = _maxH; _eW = Math.round(_eH * _iAR); }
+      else { _eW = _maxW; _eH = Math.round(_eW / _iAR); }
+      this.el.style.width = Math.round(_eW) + 'px';
+      this.el.style.height = Math.round(_eH) + 'px';
+      this.el.style.left = Math.round((window.innerWidth - _eW) / 2) + 'px';
+      this.el.style.top = Math.round((window.innerHeight - _eH) / 2) + 'px';
       this.el.style.transform = 'none';
       ctr.classList.add('has-enlarged');
     }
