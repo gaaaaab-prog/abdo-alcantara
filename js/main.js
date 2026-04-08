@@ -157,6 +157,17 @@ const PHOTO_PLACEHOLDERS = [
   { src: 'images/photo/analog/2023_rhr_bw35/zoetrope_web-1.jpg', type: 'analog', ar: 1.508 },
   { src: 'images/photo/analog/2023_rhr_bw35/zoetrope_web-2.jpg', type: 'analog', ar: 1.508 },
   { src: 'images/photo/analog/2023_rhr_bw35/zoetrope_web-3.jpg', type: 'analog', ar: 1.508 },
+  { src: 'images/photo/analog/2025_bm_polaroids/WEB_bm_polaroid-1.jpg', type: 'analog', ar: 0.805 },
+  { src: 'images/photo/analog/2025_bm_polaroids/WEB_bm_polaroid-2.jpg', type: 'analog', ar: 0.810 },
+  { src: 'images/photo/analog/2025_bm_polaroids/WEB_bm_polaroid-3.jpg', type: 'analog', ar: 0.811 },
+  { src: 'images/photo/analog/2025_bm_polaroids/WEB_bm_polaroid-4.jpg', type: 'analog', ar: 1.245 },
+  { src: 'images/photo/analog/2025_bm_polaroids/WEB_bm_polaroid-5.jpg', type: 'analog', ar: 1.244 },
+  { src: 'images/photo/analog/2025_bm_polaroids/WEB_bm_polaroid-6.jpg', type: 'analog', ar: 1.244 },
+  { src: 'images/photo/analog/2025_bm_polaroids/WEB_bm_polaroid-7.jpg', type: 'analog', ar: 1.245 },
+  { src: 'images/photo/analog/2025_bm_polaroids/WEB_bm_polaroid-8.jpg', type: 'analog', ar: 1.244 },
+  { src: 'images/photo/analog/2025_bm_polaroids/WEB_bm_polaroid-9.jpg', type: 'analog', ar: 1.249 },
+  { src: 'images/photo/analog/2025_bm_polaroids/WEB_bm_polaroid-10.jpg', type: 'analog', ar: 0.803 },
+  { src: 'images/photo/analog/2025_bm_polaroids/WEB_bm_polaroid-11.jpg', type: 'analog', ar: 1.247 },
 ];
 
 const PHOTO_FRICTION = 0.9917;
@@ -766,7 +777,7 @@ function initPhotoFloat() {
   const base = Math.random() * Math.PI * 2;
   // Always create ALL images — updatePhotoFilter handles visibility
   const pool = PHOTO_PLACEHOLDERS;
-  const count = Math.min(pool.length, 12);
+  const count = Math.min(pool.length, 23);
 
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
