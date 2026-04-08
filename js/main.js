@@ -642,22 +642,8 @@ class FloatingImage {
     this._driftAngleSpeed = (Math.random() < 0.5 ? 1 : -1) * (0.0003 + Math.random() * 0.0005);
     this.vx = Math.cos(angle) * 1.8;
     this.vy = Math.sin(angle) * 1.8;
-    this._hoverStart = 0;
-    this._magnified = false;
     this._enlarged = false;
     el.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0)';
-    el.addEventListener('mouseenter', () => { this._hoverStart = Date.now(); });
-    el.addEventListener('mouseleave', () => {
-      this._hoverStart = 0;
-      if (this._magnified && !this._enlarged) {
-        this._magnified = false;
-        el.style.transition = 'none';
-        el.classList.remove('magnified');
-        this.h = 72; const _ar2 = parseFloat(el.dataset.ar) || 1; this.w = Math.round(72 * _ar2);
-        el.style.width = this.w + 'px'; el.style.height = '72px';
-        requestAnimationFrame(function() { el.style.transition = ''; });
-      }
-    });
     el.addEventListener('click', (e) => { e.stopPropagation(); if (!this._enlarged) this.toggleEnlarge(); });
   }
 
@@ -666,8 +652,8 @@ class FloatingImage {
   toggleEnlarge() {
     const ctr = document.getElementById('photo-float-container');
     if (this._enlarged) {
-      this._enlarged = false; this._magnified = false;
-      this.el.classList.remove('enlarged', 'magnified');
+      this._enlarged = false;
+      this.el.classList.remove('enlarged');
       this.el.style.left = '';
       this.el.style.top = '';
       this.el.style.transition = 'none';
@@ -678,9 +664,9 @@ class FloatingImage {
       const _el = this.el; requestAnimationFrame(function() { _el.style.transition = ''; });
     } else {
       floatingImages.forEach(fi => {
-        fi._enlarged = false; fi._magnified = false;
+        fi._enlarged = false;
         fi.el.style.transition = 'none';
-        fi.el.classList.remove('enlarged', 'magnified');
+        fi.el.classList.remove('enlarged');
         const _a = parseFloat(fi.el.dataset.ar) || 1; fi.w = Math.round(72 * _a); fi.h = 72;
         fi.el.style.width = fi.w + 'px'; fi.el.style.height = '72px';
         requestAnimationFrame(function() { fi.el.style.transition = ''; });
@@ -707,15 +693,6 @@ class FloatingImage {
     if (this._enlarged) return;
     const VW = window.innerWidth, VH = window.innerHeight;
     const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
-
-    if (this._hoverStart > 0 && !this._magnified && Date.now() - this._hoverStart > 850) {
-      this._magnified = true;
-      this.el.style.transition = 'none';
-      this.el.classList.add('magnified');
-      this.el.style.width = '280px'; this.el.style.height = '210px';
-      const _elM = this.el; requestAnimationFrame(function() { _elM.style.transition = ''; });
-      setTimeout(() => { if (this.el.isConnected) this.measure(); }, 520);
-    }
 
     const ddx = mx - cx, ddy = my - cy;
     const dist = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
