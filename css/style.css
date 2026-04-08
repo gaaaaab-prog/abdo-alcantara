@@ -625,7 +625,7 @@ body {
   background: #111;
 }
 .float-img.enlarged img {
-  object-fit: contain !important;
+  object-fit: contain;
   filter: grayscale(0%);
   image-rendering: high-quality;
 }
