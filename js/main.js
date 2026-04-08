@@ -14,8 +14,60 @@ const floatNav = document.getElementById('float-nav');
 const navPulldownEl = document.getElementById('nav-pulldown');
 const photoTabsEl = document.getElementById('photo-tabs');
 
+// ── CINE AUTH GATE ─────────────────────────
+function checkCineAuth() {
+  return sessionStorage.getItem('cine_auth') === '1';
+}
+
+function showCineLogin(onSuccess) {
+  // Remove any existing overlay
+  const existing = document.getElementById('cine-login-overlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'cine-login-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;';
+  overlay.innerHTML = '<div style="text-align:center;max-width:280px;">'
+    + '<p style="font-size:0.82rem;color:var(--muted);margin-bottom:24px;letter-spacing:0.05em;">This page is restricted.</p>'
+    + '<input id="cine-user" type="text" placeholder="username" autocomplete="off" style="display:block;width:100%;padding:10px 12px;margin-bottom:10px;border:1px solid var(--border);border-radius:4px;background:transparent;font-family:var(--font);font-size:0.88rem;color:var(--text);outline:none;" />'
+    + '<input id="cine-pass" type="password" placeholder="password" autocomplete="off" style="display:block;width:100%;padding:10px 12px;margin-bottom:16px;border:1px solid var(--border);border-radius:4px;background:transparent;font-family:var(--font);font-size:0.88rem;color:var(--text);outline:none;" />'
+    + '<button id="cine-submit" style="padding:9px 28px;border:1px solid var(--text);border-radius:4px;background:transparent;font-family:var(--font);font-size:0.78rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--text);cursor:pointer;transition:background 0.2s,color 0.2s;">Enter</button>'
+    + '<p id="cine-error" style="margin-top:14px;font-size:0.75rem;color:#c44;opacity:0;transition:opacity 0.3s;"></p>'
+    + '</div>';
+  document.body.appendChild(overlay);
+
+  const userEl = document.getElementById('cine-user');
+  const passEl = document.getElementById('cine-pass');
+  const errEl = document.getElementById('cine-error');
+
+  function tryLogin() {
+    if (userEl.value === 'admin' && passEl.value === 'bogota') {
+      sessionStorage.setItem('cine_auth', '1');
+      overlay.remove();
+      onSuccess();
+    } else {
+      errEl.textContent = 'Invalid credentials.';
+      errEl.style.opacity = '1';
+      passEl.value = '';
+      passEl.focus();
+    }
+  }
+
+  document.getElementById('cine-submit').addEventListener('click', tryLogin);
+  passEl.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+  userEl.addEventListener('keydown', e => { if (e.key === 'Enter') passEl.focus(); });
+  userEl.focus();
+}
+
 function showPage(key) {
   if (!pages[key]) return;
+
+  // Gate Cine page behind authentication
+  if (key === 'film' && !checkCineAuth()) {
+    showCineLogin(() => showPage('film'));
+    return;
+  }
+
   closeLightbox();
   Object.values(pages).forEach(p => p.classList.remove('active'));
   pages[key].classList.add('active');
