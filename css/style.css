@@ -586,8 +586,8 @@ body {
   position: absolute;
   left: 0;
   top: 0;
-  width: 72px;
-  height: 72px;
+  width: 150px;
+  height: 150px;
   pointer-events: all;
   cursor: pointer;
   border-radius: 3px;
@@ -603,11 +603,13 @@ body {
   display: block;
   filter: grayscale(100%);
   transition: filter 0.4s;
+  image-rendering: auto;
+  -webkit-image-rendering: auto;
 }
 .float-img:hover img { filter: grayscale(0%); }
 .float-img.magnified {
-  width: 280px;
-  height: 210px;
+  width: 420px;
+  height: 315px;
   z-index: 160;
   box-shadow: 0 8px 40px rgba(0,0,0,0.25);
 }
