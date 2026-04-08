@@ -604,7 +604,8 @@ body {
   filter: grayscale(100%);
   transition: filter 0.4s;
 }
-.float-img:hover img { filter: grayscale(0%); }.float-img.enlarged {
+.float-img:hover img { filter: grayscale(0%); }
+.float-img[data-filter="2025_bm_polaroids"] img { filter: grayscale(0%); }.float-img.enlarged {
   position: fixed;
   z-index: 170;
   box-shadow: 0 12px 60px rgba(0,0,0,0.4);
