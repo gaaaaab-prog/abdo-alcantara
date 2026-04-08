@@ -588,9 +588,11 @@ class FloatingImage {
       this._hoverStart = 0;
       if (this._magnified && !this._enlarged) {
         this._magnified = false;
+        el.style.transition = 'none';
         el.classList.remove('magnified');
         this.h = 72; var _ar2 = parseFloat(el.dataset.ar) || 1; this.w = Math.round(72 * _ar2);
         el.style.width = this.w + 'px'; el.style.height = '72px';
+        requestAnimationFrame(function() { el.style.transition = ''; });
       }
     });
     el.addEventListener('click', (e) => { e.stopPropagation(); if (!this._enlarged) this.toggleEnlarge(); });
@@ -605,22 +607,28 @@ class FloatingImage {
       this.el.classList.remove('enlarged', 'magnified');
       this.el.style.left = '';
       this.el.style.top = '';
+      this.el.style.transition = 'none';
       this.el.style.transform = 'translate3d(' + this.x + 'px,' + this.y + 'px,0)';
       ctr.classList.remove('has-enlarged');
       this.h = 72; var _ar = parseFloat(this.el.dataset.ar) || 1; this.w = Math.round(72 * _ar);
       this.el.style.width = this.w + 'px'; this.el.style.height = '72px';
+      var _el = this.el; requestAnimationFrame(function() { _el.style.transition = ''; });
     } else {
       floatingImages.forEach(fi => {
         fi._enlarged = false; fi._magnified = false;
+        fi.el.style.transition = 'none';
         fi.el.classList.remove('enlarged', 'magnified');
         var _a = parseFloat(fi.el.dataset.ar) || 1; fi.w = Math.round(72 * _a); fi.h = 72;
         fi.el.style.width = fi.w + 'px'; fi.el.style.height = '72px';
+        requestAnimationFrame(function() { fi.el.style.transition = ''; });
       });
       this._enlarged = true;
+      this.el.style.transition = 'none';
       this.el.classList.add('enlarged');
-      this.el.style.width = '65vw'; this.el.style.height = '65vh';
-      this.el.style.left = '17.5vw';
-      this.el.style.top = '17.5vh';
+      this.el.style.width = Math.round(window.innerWidth * 0.65) + 'px';
+      this.el.style.height = Math.round(window.innerHeight * 0.65) + 'px';
+      this.el.style.left = Math.round(window.innerWidth * 0.175) + 'px';
+      this.el.style.top = Math.round(window.innerHeight * 0.175) + 'px';
       this.el.style.transform = 'none';
       ctr.classList.add('has-enlarged');
     }
@@ -633,8 +641,10 @@ class FloatingImage {
 
     if (this._hoverStart > 0 && !this._magnified && Date.now() - this._hoverStart > 850) {
       this._magnified = true;
+      this.el.style.transition = 'none';
       this.el.classList.add('magnified');
       this.el.style.width = '280px'; this.el.style.height = '210px';
+      var _elM = this.el; requestAnimationFrame(function() { _elM.style.transition = ''; });
       setTimeout(() => { if (this.el.isConnected) this.measure(); }, 520);
     }
 
