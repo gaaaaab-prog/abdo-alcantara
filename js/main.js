@@ -749,7 +749,6 @@ let photoAnimFrame = null;
 function getActivePhotoFilters() {
   const types = [];
   document.querySelectorAll('.photo-tab.active').forEach(t => types.push(t.dataset.photoTab));
-  if (types.length === 0) types.push('digital', 'analog');
   return { types };
 }
 
@@ -816,31 +815,38 @@ function updatePhotoFilter() {
   });
 }
 
-// ── PHOTO TAB TOGGLE + DROPDOWN ────────────────
+// ── PHOTO TAB TOGGLE + DROPDOWN ────────────────────
 document.querySelectorAll('.photo-tab').forEach(tab => {
   tab.addEventListener('click', (e) => {
     e.stopPropagation();
-    const wasOpen = tab.classList.contains('dropdown-open');
-    // Activate this tab's filter
-    document.querySelectorAll('.photo-tab').forEach(t => {
-      t.classList.remove('active');
-      t.classList.remove('dropdown-open');
-    });
-    document.querySelectorAll('.photo-dropdown').forEach(d => d.classList.remove('open'));
-    tab.classList.add('active');
-    updatePhotoFilter();
-
-    // Toggle dropdown if this tab has one
+    const wasActive = tab.classList.contains('active');
+    const wasDropdownOpen = tab.classList.contains('dropdown-open');
     const group = tab.closest('.photo-tab-group');
-    if (group) {
-      const dd = group.querySelector('.photo-dropdown');
-      if (dd) {
-        if (!wasOpen) {
-          tab.classList.add('dropdown-open');
-          dd.classList.add('open');
-        }
+    const dd = group ? group.querySelector('.photo-dropdown') : null;
+
+    if (dd) {
+      // Tab with dropdown (e.g. "digital")
+      if (!wasActive) {
+        // Activate + open dropdown
+        tab.classList.add('active');
+        tab.classList.add('dropdown-open');
+        dd.classList.add('open');
+      } else if (wasDropdownOpen) {
+        // Active + dropdown open → deactivate + close
+        tab.classList.remove('active');
+        tab.classList.remove('dropdown-open');
+        dd.classList.remove('open');
+      } else {
+        // Active + dropdown closed → open dropdown (stay active)
+        tab.classList.add('dropdown-open');
+        dd.classList.add('open');
       }
+    } else {
+      // Simple tab (e.g. "analog") — just toggle
+      tab.classList.toggle('active');
     }
+
+    updatePhotoFilter();
   });
 });
 
