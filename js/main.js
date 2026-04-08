@@ -819,31 +819,26 @@ function updatePhotoFilter() {
 document.querySelectorAll('.photo-tab').forEach(tab => {
   tab.addEventListener('click', (e) => {
     e.stopPropagation();
-    const wasActive = tab.classList.contains('active');
-    const wasDropdownOpen = tab.classList.contains('dropdown-open');
-    const group = tab.closest('.photo-tab-group');
-    const dd = group ? group.querySelector('.photo-dropdown') : null;
+    const isActive = tab.classList.contains('active');
 
-    if (dd) {
-      // Tab with dropdown (e.g. "digital")
-      if (!wasActive) {
-        // Activate + open dropdown
-        tab.classList.add('active');
-        tab.classList.add('dropdown-open');
-        dd.classList.add('open');
-      } else if (wasDropdownOpen) {
-        // Active + dropdown open → deactivate + close
-        tab.classList.remove('active');
-        tab.classList.remove('dropdown-open');
-        dd.classList.remove('open');
-      } else {
-        // Active + dropdown closed → open dropdown (stay active)
-        tab.classList.add('dropdown-open');
-        dd.classList.add('open');
+    // Toggle the filter on/off
+    tab.classList.toggle('active');
+
+    // Handle dropdown if present
+    const group = tab.closest('.photo-tab-group');
+    if (group) {
+      const dd = group.querySelector('.photo-dropdown');
+      if (dd) {
+        if (isActive) {
+          // Turning off → close dropdown
+          tab.classList.remove('dropdown-open');
+          dd.classList.remove('open');
+        } else {
+          // Turning on → open dropdown
+          tab.classList.add('dropdown-open');
+          dd.classList.add('open');
+        }
       }
-    } else {
-      // Simple tab (e.g. "analog") — just toggle
-      tab.classList.toggle('active');
     }
 
     updatePhotoFilter();
