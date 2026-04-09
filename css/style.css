@@ -576,6 +576,7 @@ body {
 
 /* ── FLOATING IMAGES ───────────────────────────── */
 .photo-float-container {
+  contain: layout style paint;
   position: fixed;
   inset: 0;
   z-index: 150;
@@ -621,6 +622,7 @@ body {
 .photo-float-container.has-enlarged .float-img:not(.enlarged) {
   opacity: 0.2;
   pointer-events: none;
+  will-change: auto;
 }
 
 /* ── PHOTO LIST (scroll-down catalog) ──────────── */
