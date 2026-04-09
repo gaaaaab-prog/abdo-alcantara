@@ -206,8 +206,8 @@ class FloatingWord {
 
   measure() { this.w = this.el.offsetWidth; this.h = this.el.offsetHeight; }
 
-  tick(mx, my) {
-    const VW = window.innerWidth, VH = window.innerHeight, PAD = 18;
+  tick(mx, my, VW, VH) {
+    const PAD = 18;
     const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
 
     // Mouse interaction — slow approach attracts, fast swipe pushes
@@ -560,7 +560,8 @@ const REPULSE_FORCE = 0.045;
 
 (function loop(now) {
     if (document.hidden) { requestAnimationFrame(loop); return; }
-  floatingWords.forEach(fw => fw.tick(mouseX, mouseY));
+  const _mVW = window.innerWidth, _mVH = window.innerHeight;
+  floatingWords.forEach(fw => fw.tick(mouseX, mouseY, _mVW, _mVH));
   // Soft repulsion — min distance from actual word widths so edges never overlap
   for (let i = 0; i < floatingWords.length; i++) {
     for (let j = i + 1; j < floatingWords.length; j++) {
@@ -689,9 +690,8 @@ class FloatingImage {
     }
   }
 
-  tick(mx, my) {
-    if (this._enlarged) return;
-    const VW = window.innerWidth, VH = window.innerHeight;
+  tick(mx, my, VW, VH) {
+    if (this._enlarged || this.el.style.opacity === '0') return;
     const cx = this.x + this.w * 0.5, cy = this.y + this.h * 0.5;
 
     const ddx = mx - cx, ddy = my - cy;
@@ -770,27 +770,37 @@ function initPhotoFloat() {
     floatingImages.push(new FloatingImage(el, cx + (Math.random() - 0.5) * 40, cy + (Math.random() - 0.5) * 30, angle));
   }
 
-  setTimeout(() => { floatingImages.forEach(fi => fi.measure()); updatePhotoFilter(); }, 100);
+  setTimeout(() => { floatingImages.forEach(fi => fi.measure()); updatePhotoFilter(); floatingImages.forEach((fi, idx) => { const img = fi.el.querySelector('img[data-src]'); if (img) setTimeout(() => { img.src = img.dataset.src; }, idx * 80); }); }, 100);
 
+  let _pf = 0;
   (function photoLoop() {
-      if (document.hidden) { photoAnimFrame = requestAnimationFrame(photoLoop); return; }
-    floatingImages.forEach(fi => fi.tick(mouseX, mouseY));
-    for (let i = 0; i < floatingImages.length; i++) {
-      for (let j = i + 1; j < floatingImages.length; j++) {
-        const a = floatingImages[i], b = floatingImages[j];
-        if (a._enlarged || b._enlarged) continue;
-        const dx = (b.x + b.w * 0.5) - (a.x + a.w * 0.5);
-        const dy = (b.y + b.h * 0.5) - (a.y + a.h * 0.5);
-        const d = Math.sqrt(dx * dx + dy * dy) || 1;
-        const md = (a.w + b.w) * 0.5 + 20;
-        if (d < md) {
-          const nx = dx / d, ny = dy / d, f = 0.03 * (1 - d / md);
-          a.vx -= nx * f; a.vy -= ny * f;
-          b.vx += nx * f; b.vy += ny * f;
+      if (document.hidden) {
+    photoAnimFrame = requestAnimationFrame(photoLoop);
+    return;
+      }
+      const _VW = window.innerWidth, _VH = window.innerHeight;
+      for (let i = 0; i < floatingImages.length; i++) floatingImages[i].tick(mouseX, mouseY, _VW, _VH);
+      if (++_pf & 1) {
+        for (let i = 0; i < floatingImages.length; i++) {
+          const a = floatingImages[i];
+          if (a._enlarged || a.el.style.opacity === '0') continue;
+          for (let j = i + 1; j < floatingImages.length; j++) {
+            const b = floatingImages[j];
+            if (b._enlarged || b.el.style.opacity === '0') continue;
+            const dx = (b.x + b.w * 0.5) - (a.x + a.w * 0.5);
+            const dy = (b.y + b.h * 0.5) - (a.y + a.h * 0.5);
+            const dSq = dx * dx + dy * dy;
+            const md = (a.w + b.w) * 0.5 + 20;
+            if (dSq < md * md) {
+              const d = Math.sqrt(dSq) || 1;
+              const nx = dx / d, ny = dy / d, f = 0.03 * (1 - d / md);
+              a.vx -= nx * f; a.vy -= ny * f;
+              b.vx += nx * f; b.vy += ny * f;
+            }
+          }
         }
       }
-    }
-    photoAnimFrame = requestAnimationFrame(photoLoop);
+      photoAnimFrame = requestAnimationFrame(photoLoop);
   })();
 }
 
