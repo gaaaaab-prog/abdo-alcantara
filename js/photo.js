@@ -165,4 +165,9 @@ photoTabs.forEach(tab => {
 document.querySelectorAll('.photo-filter').forEach(btn => {
   btn.addEventListener('click', e => { e.stopPropagation(); btn.classList.toggle('active'); updatePhotoFilter(); });
 });
+// Self-init: if photo page is already active (e.g. page loaded with #film-photo hash),
+// showPage() in app.js ran before this script loaded, so initPhotoFloat was never called.
+if (document.getElementById('page-film-photo')?.classList.contains('active')) {
+  window.initPhotoFloat();
+}
 })();
