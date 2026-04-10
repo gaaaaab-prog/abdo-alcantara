@@ -161,7 +161,7 @@ document.querySelectorAll('.film-tab').forEach(tab => {
     document.querySelectorAll('.film-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.film-tab-content').forEach(c => c.classList.remove('active'));
     tab.classList.add('active');
-    const target = document.getElementById('film-tab-' + tab.dataset.filmTab);
+    const target = document.getElementById('tab-' + tab.dataset.filmTab);
     if (target) target.classList.add('active');
   });
 });

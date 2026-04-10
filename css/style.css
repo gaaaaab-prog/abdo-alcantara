@@ -517,7 +517,6 @@ body {
 
 .float-img {
   position: absolute; left: 0; top: 0;
-  width: 72px; height: 72px;
   pointer-events: all; cursor: pointer;
   border-radius: 3px; overflow: hidden;
   will-change: transform;
@@ -580,9 +579,9 @@ body {
 
 /* ── PHOTO PAGE NAV HIDDEN STATE ──────────────── */
 
-#float-nav.photo-active .nav-word { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-#float-nav.photo-active .record-el { opacity: 0; pointer-events: none; }
+#float-nav.photo-active .nav-word,
 #float-nav.music-active .nav-word { opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+#float-nav.photo-active .record-el { opacity: 0; pointer-events: none; }
 
 /* ── CINE AUTH OVERLAY ────────────────────────── */
 
@@ -618,20 +617,17 @@ body {
 
 @media (max-width: 680px) {
   .page-hero { padding: 0 24px 48px; }
-  .cv-body { padding: 0 24px 80px; }
-  .music-body { padding: 0 24px 80px; }
+  .cv-body, .music-body, .photo-list-body { padding: 0 24px 80px; }
   .film-body { padding: 0 3px 80px; }
   .tab-bar { padding: 0 21px; }
   .tab { padding: 10px 14px 8px; font-size: 0.65rem; }
-  .film-tab-intro { padding: 0 21px; }
-  .film-projects { padding: 0 21px; }
+  .film-tab-intro, .film-projects { padding: 0 21px; }
   .film-project { grid-template-columns: 1fr; gap: 16px; }
   .bm-featured { padding: 0 21px 20px; }
   .cv-block { grid-template-columns: 1fr; gap: 10px 0; }
   .nav-word { font-size: clamp(2.8rem, 15vw, 5rem); }
   .record-el { width: clamp(140px, 40vw, 220px); height: clamp(140px, 40vw, 220px); }
   .sc-player { width: 200px; bottom: 16px; right: 16px; }
-  .photo-list-body { padding: 0 24px 80px; }
   .photo-list-item { grid-template-columns: 40px 1fr; gap: 4px 12px; }
   .photo-list-format, .photo-list-notes { display: none; }
   .scroll-arrow { right: 24px; bottom: 24px; }

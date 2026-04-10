@@ -134,6 +134,8 @@ window.initPhotoFloat = function() {
     el.dataset.type = (pi >= 0 && parts[pi + 1]) || ph.type || 'digital';
     if (pi >= 0 && parts[pi + 2]) el.dataset.filter = parts[pi + 2];
     el.dataset.ar = ph.ar || 1;
+    const initW = Math.round(THUMB_HEIGHT * (ph.ar || 1));
+    el.style.width = `${initW}px`; el.style.height = `${THUMB_HEIGHT}px`;
     el.innerHTML = `<img src="${ph.src}" alt="" style="width:100%;height:100%;border-radius:inherit;" loading="lazy" onerror="this.style.display='none'" />`;
     photoContainer.appendChild(el);
     const angle = base + (i / count) * Math.PI * 2;
