@@ -137,7 +137,7 @@ window.initPhotoFloat = function() {
     el.innerHTML = `<img src="${ph.src}" alt="" style="width:100%;height:100%;border-radius:inherit;" loading="lazy" onerror="this.style.display='none'" />`;
     photoContainer.appendChild(el);
     const angle = base + (i / count) * Math.PI * 2;
-    const margin = 160, rx = margin + Math.random() * (window.innerWidth - margin * 2), ry = margin + Math.random() * (window.innerHeight - 260 - margin);
+    const margin = 160, rx = margin + Math.random() * Math.max(0, window.innerWidth - margin * 2), ry = margin + Math.random() * Math.max(0, window.innerHeight - 260 - margin);
     window.floatingImages.push(new FloatingImage(el, rx, ry, angle, ph.full));
   }
   setTimeout(() => { window.floatingImages.forEach(fi => fi.measure()); updatePhotoFilter(); }, 100);
