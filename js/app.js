@@ -1,45 +1,25 @@
-// =============================================
-// Gabriel Abdo Alcantara — Portfolio
-// app.js — Core: nav, physics, routing, shared utilities
-// =============================================
+const FRICTION = 0.991, DRIFT_FORCE = 0.002, MAX_SPEED = 2.5;
+const MOUSE_RADIUS = 120, PUSH_THRESHOLD = 8, ATTRACT_THRESHOLD = 2;
+const PUSH_FORCE_MAX = 0.3, ATTRACT_FORCE = 0.002;
+const EDGE_MARGIN = 160, EDGE_PAD = 18, BOTTOM_PAD = 130;
+const CENTER_GRAVITY = 0.0006, EDGE_PUSH_SOFT = 0.003, EDGE_PUSH_BOTTOM = 0.025;
+const BOUNCE_DAMPING = 0.2, IDLE_TIMEOUT = 5000;
+const REPULSE_FORCE = 0.045, REPULSE_BUFFER = 40;
+const REPULSE_HARD_THRESHOLD = 0.85, REPULSE_HARD_PUSH = 0.12;
+const IDLE_FRAMES_LIMIT = 120;
 
-// ── NAMED CONSTANTS ─────────────────────────
-const FRICTION       = 0.991;
-const DRIFT_FORCE    = 0.002;
-const MAX_SPEED      = 2.5;
-const MOUSE_RADIUS   = 120;
-const PUSH_THRESHOLD = 8;
-const ATTRACT_THRESHOLD = 2;
-const PUSH_FORCE_MAX = 0.3;
-const ATTRACT_FORCE  = 0.002;
-const EDGE_MARGIN    = 160;
-const EDGE_PAD       = 18;
-const BOTTOM_PAD     = 130;
-const CENTER_GRAVITY  = 0.0006;
-const EDGE_PUSH_SOFT  = 0.003;
-const EDGE_PUSH_BOTTOM = 0.025;
-const BOUNCE_DAMPING  = 0.2;
-const IDLE_TIMEOUT    = 5000;
-const REPULSE_FORCE   = 0.045;
-const REPULSE_BUFFER  = 40;
-const REPULSE_HARD_THRESHOLD = 0.85;
-const REPULSE_HARD_PUSH = 0.12;
-
-// ── DOM REFS ────────────────────────────────
-const pages        = { cv: document.getElementById('page-cv'), film: document.getElementById('page-film'), music: document.getElementById('page-music'), 'film-photo': document.getElementById('page-film-photo') };
-const navWords     = document.querySelectorAll('.nav-word');
-const floatNav     = document.getElementById('float-nav');
+const pages = { cv: document.getElementById('page-cv'), film: document.getElementById('page-film'), music: document.getElementById('page-music'), 'film-photo': document.getElementById('page-film-photo') };
+const navWords = document.querySelectorAll('.nav-word');
+const floatNav = document.getElementById('float-nav');
 const navPulldownEl = document.getElementById('nav-pulldown');
-const photoTabsEl  = document.getElementById('photo-tabs');
-const scrollArrow  = document.getElementById('scroll-arrow');
-const lb           = document.getElementById('lightbox');
-const lbImg        = document.getElementById('lb-img');
-const recordEl     = document.getElementById('record');
+const photoTabsEl = document.getElementById('photo-tabs');
+const scrollArrow = document.getElementById('scroll-arrow');
+const lb = document.getElementById('lightbox');
+const lbImg = document.getElementById('lb-img');
+const recordEl = document.getElementById('record');
 
-// ── MOUSE TRACKING ──────────────────────────
 let mouseX = -9999, mouseY = -9999, mouseSpeed = 0;
 let mouseActive = false, mouseIdleTimer = null;
-
 document.addEventListener('mousemove', e => {
   const dx = e.clientX - mouseX, dy = e.clientY - mouseY;
   mouseX = e.clientX; mouseY = e.clientY;
@@ -56,28 +36,19 @@ document.addEventListener('touchmove', e => {
 }, { passive: true });
 document.addEventListener('touchend', () => { mouseX = -9999; mouseY = -9999; mouseSpeed = 0; });
 
-// ── UNIFIED PHYSICS: tickEntity ─────────────
-// Shared by FloatingWord and FloatingImage — eliminates ~60 lines of duplication.
-// `cfg` provides per-type constants: { friction, drift, maxSpeed, centerY }
 function tickEntity(ent, cfg) {
   const VW = window.innerWidth, VH = window.innerHeight;
   const cx = ent.x + ent.w * 0.5, cy = ent.y + ent.h * 0.5;
-
-  // Mouse interaction
   const ddx = mouseX - cx, ddy = mouseY - cy;
   const dist = Math.sqrt(ddx * ddx + ddy * ddy) || 1;
   if (mouseActive && dist < MOUSE_RADIUS) {
     if (mouseSpeed > PUSH_THRESHOLD) {
       const pf = Math.min(mouseSpeed * 0.004, PUSH_FORCE_MAX);
-      ent.vx -= (ddx / dist) * pf;
-      ent.vy -= (ddy / dist) * pf;
+      ent.vx -= (ddx / dist) * pf; ent.vy -= (ddy / dist) * pf;
     } else if (mouseSpeed < ATTRACT_THRESHOLD) {
-      ent.vx += (ddx / dist) * ATTRACT_FORCE;
-      ent.vy += (ddy / dist) * ATTRACT_FORCE;
+      ent.vx += (ddx / dist) * ATTRACT_FORCE; ent.vy += (ddy / dist) * ATTRACT_FORCE;
     }
   }
-
-  // Drift rotation + rare nudge
   ent._driftAngle += ent._driftAngleSpeed;
   if (Math.random() < 0.0005) {
     ent._driftAngleSpeed += (Math.random() - 0.5) * 0.0002;
@@ -85,53 +56,37 @@ function tickEntity(ent, cfg) {
   }
   ent.vx += Math.cos(ent._driftAngle) * cfg.drift;
   ent.vy += Math.sin(ent._driftAngle) * cfg.drift;
-
-  // Center gravity
   const gcx = VW * 0.5 - cx, gcy = VH * (cfg.centerY || 0.42) - cy;
   const gd = Math.sqrt(gcx * gcx + gcy * gcy) || 1;
-  ent.vx += (gcx / gd) * CENTER_GRAVITY;
-  ent.vy += (gcy / gd) * CENTER_GRAVITY;
-
-  // Speed cap + friction
+  ent.vx += (gcx / gd) * CENTER_GRAVITY; ent.vy += (gcy / gd) * CENTER_GRAVITY;
   const spd = Math.sqrt(ent.vx * ent.vx + ent.vy * ent.vy);
   if (spd > cfg.maxSpeed) { const r = cfg.maxSpeed / spd; ent.vx *= r; ent.vy *= r; }
-  ent.vx *= cfg.friction;
-  ent.vy *= cfg.friction;
-  ent.x += ent.vx;
-  ent.y += ent.vy;
-
-  // Soft edge avoidance
+  ent.vx *= cfg.friction; ent.vy *= cfg.friction;
+  ent.x += ent.vx; ent.y += ent.vy;
   if (ent.x < EDGE_MARGIN) ent.vx += EDGE_PUSH_SOFT * (EDGE_MARGIN - ent.x) / EDGE_MARGIN;
   if (ent.x + ent.w > VW - EDGE_MARGIN) ent.vx -= EDGE_PUSH_SOFT * (ent.x + ent.w - (VW - EDGE_MARGIN)) / EDGE_MARGIN;
   if (ent.y < EDGE_MARGIN) ent.vy += EDGE_PUSH_SOFT * (EDGE_MARGIN - ent.y) / EDGE_MARGIN;
   if (ent.y + ent.h > VH - EDGE_MARGIN) ent.vy -= EDGE_PUSH_BOTTOM * (ent.y + ent.h - (VH - EDGE_MARGIN)) / EDGE_MARGIN;
-
-  // Hard boundary
   if (ent.x < EDGE_PAD) { ent.x = EDGE_PAD; ent.vx = Math.abs(ent.vx) * BOUNCE_DAMPING; ent._driftAngle = Math.PI - ent._driftAngle; }
   if (ent.x + ent.w > VW - EDGE_PAD) { ent.x = VW - ent.w - EDGE_PAD; ent.vx = -Math.abs(ent.vx) * BOUNCE_DAMPING; ent._driftAngle = Math.PI - ent._driftAngle; }
   if (ent.y < EDGE_PAD) { ent.y = EDGE_PAD; ent.vy = Math.abs(ent.vy) * BOUNCE_DAMPING; ent._driftAngle = -ent._driftAngle; }
   if (ent.y + ent.h > VH - BOTTOM_PAD) { ent.y = VH - ent.h - BOTTOM_PAD; ent.vy = -Math.abs(ent.vy) * BOUNCE_DAMPING; ent._driftAngle = -ent._driftAngle; }
-
   ent.el.style.transform = `translate3d(${ent.x}px,${ent.y}px,0)`;
 }
-
 const NAV_CONFIG = { friction: FRICTION, drift: DRIFT_FORCE, maxSpeed: MAX_SPEED, centerY: 0.42 };
 
-// ── FLOATING WORD ───────────────────────────
 class FloatingWord {
-  constructor(el, x, y, spreadAngle) {
+  constructor(el, x, y, angle) {
     this.el = el; this.x = x; this.y = y; this.w = 0; this.h = 0;
-    this._driftAngle = spreadAngle;
+    this._driftAngle = angle;
     this._driftAngleSpeed = (Math.random() < 0.5 ? 1 : -1) * (0.0003 + Math.random() * 0.0005);
-    this.vx = Math.cos(spreadAngle) * 2.0;
-    this.vy = Math.sin(spreadAngle) * 2.0;
+    this.vx = Math.cos(angle) * 2.0; this.vy = Math.sin(angle) * 2.0;
     el.style.transform = `translate3d(${x}px,${y}px,0)`;
   }
   measure() { this.w = this.el.offsetWidth; this.h = this.el.offsetHeight; }
   tick() { tickEntity(this, NAV_CONFIG); }
 }
 
-// ── FLOATING WORDS INIT ─────────────────────
 const floatingWords = (() => {
   const cx = window.innerWidth * 0.5, cy = window.innerHeight * 0.5;
   const base = Math.random() * Math.PI * 2, n = navWords.length;
@@ -139,35 +94,27 @@ const floatingWords = (() => {
     new FloatingWord(el, cx + (Math.random() - 0.5) * 20, cy + (Math.random() - 0.5) * 15, base + (i / n) * Math.PI * 2)
   );
 })();
-
 document.fonts.ready.then(() => { floatingWords.forEach(fw => fw.measure()); });
 window.addEventListener('resize', () => { floatingWords.forEach(fw => fw.measure()); });
 
-// ── RECORD VISIBILITY ───────────────────────
 let recordVisible = false;
 function updateRecordVisibility(key) {
   recordVisible = (key === 'music');
   recordEl.classList.toggle('visible', recordVisible);
 }
 
-// ── UNIFIED RAF LOOP ────────────────────────
 const extraTicks = [];
-let loopRunning = false;
-
+let loopRunning = false, idleFrames = 0;
 function registerTick(fn) { if (!extraTicks.includes(fn)) extraTicks.push(fn); }
 function unregisterTick(fn) { const i = extraTicks.indexOf(fn); if (i >= 0) extraTicks.splice(i, 1); }
-
 function wakeLoop() {
+  idleFrames = 0;
   if (!loopRunning) { loopRunning = true; requestAnimationFrame(loop); }
 }
 
 function loop(now) {
   if (document.hidden) { loopRunning = false; return; }
-
-  const VW = window.innerWidth, VH = window.innerHeight;
   floatingWords.forEach(fw => fw.tick());
-
-  // Inter-word repulsion
   for (let i = 0; i < floatingWords.length; i++) {
     for (let j = i + 1; j < floatingWords.length; j++) {
       const a = floatingWords[i], b = floatingWords[j];
@@ -188,48 +135,37 @@ function loop(now) {
       }
     }
   }
-
-  // Record + any registered tick callbacks (photo collisions, etc.)
   extraTicks.forEach(fn => fn(now));
-
-  // Keep looping — idle detection: if all words barely moving, slow to ~10fps
-  loopRunning = true;
+  if (!mouseActive) {
+    let maxVSq = 0;
+    for (const fw of floatingWords) {
+      const v = fw.vx * fw.vx + fw.vy * fw.vy;
+      if (v > maxVSq) maxVSq = v;
+    }
+    if (maxVSq < 0.002) idleFrames++; else idleFrames = 0;
+  } else { idleFrames = 0; }
+  if (idleFrames > IDLE_FRAMES_LIMIT) { loopRunning = false; return; }
   requestAnimationFrame(loop);
 }
-
-// Visibility resume — prevent huge dt jump
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) wakeLoop();
-});
-
-// Start the loop
+document.addEventListener('visibilitychange', () => { if (!document.hidden) wakeLoop(); });
 wakeLoop();
 
-// ── CINE AUTH GATE ──────────────────────────
 function checkCineAuth() { return sessionStorage.getItem('cine_auth') === '1'; }
-
 function showCineLogin(onSuccess) {
   const existing = document.getElementById('cine-login-overlay');
   if (existing) existing.remove();
   const overlay = document.getElementById('cine-auth-template').cloneNode(true);
-  overlay.id = 'cine-login-overlay';
-  overlay.style.display = '';
+  overlay.id = 'cine-login-overlay'; overlay.style.display = '';
   document.body.appendChild(overlay);
-
   const userEl = overlay.querySelector('.cine-user');
   const passEl = overlay.querySelector('.cine-pass');
-  const errEl  = overlay.querySelector('.cine-error');
-
+  const errEl = overlay.querySelector('.cine-error');
   function tryLogin() {
     if (userEl.value === 'admin' && passEl.value === 'bogota') {
-      sessionStorage.setItem('cine_auth', '1');
-      overlay.remove();
-      onSuccess();
+      sessionStorage.setItem('cine_auth', '1'); overlay.remove(); onSuccess();
     } else {
-      errEl.textContent = 'Invalid credentials.';
-      errEl.style.opacity = '1';
-      passEl.value = '';
-      passEl.focus();
+      errEl.textContent = 'Invalid credentials.'; errEl.style.opacity = '1';
+      passEl.value = ''; passEl.focus();
     }
   }
   overlay.querySelector('.cine-submit').addEventListener('click', tryLogin);
@@ -238,82 +174,61 @@ function showCineLogin(onSuccess) {
   userEl.focus();
 }
 
-// ── PAGE ROUTING ────────────────────────────
 let bobInterval = null;
-
 function showPage(key) {
   if (!pages[key]) return;
   if (key === 'film' && !checkCineAuth()) { showCineLogin(() => showPage('film')); return; }
-
   closeLightbox();
   Object.values(pages).forEach(p => p.classList.remove('active'));
   pages[key].classList.add('active');
-
   navWords.forEach(w => {
     const on = w.dataset.page === key;
     w.classList.toggle('active', on);
     w.classList.toggle('inactive', !on);
   });
-
   updateRecordVisibility(key);
   history.pushState(null, '', key === 'cv' ? window.location.pathname : '#' + key);
   window.scrollTo(0, 0);
-
-  const isPhoto = key === 'film-photo';
-  const isMusic = key === 'music';
+  const isPhoto = key === 'film-photo', isMusic = key === 'music';
   floatNav.classList.toggle('photo-active', isPhoto);
   floatNav.classList.toggle('music-active', isMusic);
   navPulldownEl.classList.toggle('visible', isPhoto || isMusic);
   photoTabsEl.classList.toggle('visible', isPhoto);
-
-  // Photo page init/destroy (defined in photo.js, registered via hooks)
   if (typeof window.initPhotoFloat === 'function' && typeof window.destroyPhotoFloat === 'function') {
     if (isPhoto) window.initPhotoFloat(); else window.destroyPhotoFloat();
   }
-
-  // Hide scroll arrow on photo page
   if (scrollArrow) scrollArrow.style.display = isPhoto ? 'none' : '';
-
-  // Music page: initialize SC if needed (defined in music.js)
   if (isMusic && typeof window.initSC === 'function') window.initSC();
-
   wakeLoop();
 }
 
-// Nav word clicks + hover fix (Q-16: let CSS :hover handle brightness)
 navWords.forEach(w => {
   w.addEventListener('click', () => showPage(w.dataset.page));
+  w.addEventListener('mouseenter', () => w.classList.remove('inactive'));
+  w.addEventListener('mouseleave', () => { if (!w.classList.contains('active')) w.classList.add('inactive'); });
 });
-
 window.addEventListener('popstate', () => {
   const h = location.hash.replace('#', '');
   showPage(pages[h] ? h : 'cv');
 });
 
-// ── FILM TABS (generic) ─────────────────────
-function initTabs(tabSel, prefix) {
-  document.querySelectorAll(tabSel).forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll(tabSel).forEach(t => t.classList.remove('active'));
-      document.querySelectorAll(`.${prefix}content`).forEach(c => c.classList.remove('active'));
-      tab.classList.add('active');
-      const target = document.getElementById(`${prefix.replace('-', '-')}` + tab.dataset.filmTab);
-      if (target) target.classList.add('active');
-    });
+document.querySelectorAll('.film-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.film-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.film-tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    const target = document.getElementById('film-tab-' + tab.dataset.filmTab);
+    if (target) target.classList.add('active');
   });
-}
-initTabs('.film-tab', 'film-tab-');
+});
 
-// ── SCROLL HANDLING ─────────────────────────
 window.addEventListener('scroll', () => {
   const scrolled = window.scrollY > window.innerHeight * 0.15;
   floatNav.classList.toggle('scrolled', scrolled);
-
   if (scrollArrow) {
     if (window.scrollY > 40) scrollArrow.classList.remove('visible');
     else scrollArrow.classList.add('visible');
   }
-
   if (navPulldownEl && !floatNav.classList.contains('photo-active') && !floatNav.classList.contains('music-active')) {
     navPulldownEl.classList.toggle('visible', scrolled);
   }
@@ -324,22 +239,14 @@ if (scrollArrow) {
   scrollArrow.addEventListener('click', () => {
     window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' });
   });
-  // Bobbing — only when visible (P-12)
-  function startBob() {
-    if (bobInterval) return;
-    bobInterval = setInterval(() => {
-      if (!scrollArrow.classList.contains('visible')) { clearInterval(bobInterval); bobInterval = null; return; }
-      scrollArrow.classList.remove('bobbing');
-      void scrollArrow.offsetWidth;
-      scrollArrow.classList.add('bobbing');
-    }, 300000);
-  }
-  startBob();
+  bobInterval = setInterval(() => {
+    if (!scrollArrow.classList.contains('visible')) { clearInterval(bobInterval); bobInterval = null; return; }
+    scrollArrow.classList.remove('bobbing'); void scrollArrow.offsetWidth; scrollArrow.classList.add('bobbing');
+  }, 300000);
 }
 
-// ── NAV PULLDOWN ────────────────────────────
 const pulldownToggle = document.getElementById('pulldown-toggle');
-const pulldownMenu   = document.getElementById('pulldown-menu');
+const pulldownMenu = document.getElementById('pulldown-menu');
 if (pulldownToggle) {
   pulldownToggle.addEventListener('click', e => {
     e.stopPropagation();
@@ -357,25 +264,20 @@ if (pulldownMenu) {
   });
 }
 
-// ── LIGHTBOX ────────────────────────────────
 function openLightbox(src) { lbImg.src = src; lb.classList.add('open'); document.body.style.overflow = 'hidden'; }
 function closeLightbox() { lb.classList.remove('open'); lbImg.src = ''; document.body.style.overflow = ''; }
-
 document.getElementById('lb-close').addEventListener('click', closeLightbox);
 lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
-
 ['film-grid', 'bts-grid'].forEach(id => {
   const g = document.getElementById(id);
   if (g) g.addEventListener('click', e => { const img = e.target.closest('img'); if (img) openLightbox(img.src); });
 });
 
-// ── HERO CLICK → HOME ──────────────────────
 document.querySelectorAll('.hero-name, .hero-tagline').forEach(el => {
   el.addEventListener('click', () => showPage('cv'));
 });
 
-// ── CONTACT OVERLAY ─────────────────────────
 const contactOverlay = document.querySelector('.contact-overlay');
 if (contactOverlay) {
   function openContact() { contactOverlay.classList.add('open'); }
@@ -386,15 +288,12 @@ if (contactOverlay) {
   }
   contactOverlay.querySelector('.contact-close').addEventListener('click', closeContact);
   contactOverlay.addEventListener('click', e => { if (e.target === contactOverlay) closeContact(); });
-
   document.querySelectorAll('.censored').forEach(el => {
     el.addEventListener('click', e => { e.preventDefault(); openContact(); });
   });
-
   document.getElementById('contact-form').addEventListener('submit', function(e) {
     e.preventDefault();
-    const form = this;
-    const btn = form.querySelector('button[type="submit"]');
+    const form = this, btn = form.querySelector('button[type="submit"]');
     btn.textContent = 'Sending...'; btn.disabled = true;
     fetch(form.action, {
       method: 'POST',
@@ -409,25 +308,19 @@ if (contactOverlay) {
   });
 }
 
-// ── SINGLE DOCUMENT CLICK HANDLER ───────────
 document.addEventListener('click', () => {
-  // Close enlarged photos
   if (typeof window.floatingImages !== 'undefined') {
     window.floatingImages.forEach(fi => { if (fi._enlarged) fi.toggleEnlarge(); });
   }
-  // Close photo dropdowns
   document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
   document.querySelectorAll('.photo-dropdown').forEach(d => d.classList.remove('open'));
-  // Close pulldown
   if (pulldownMenu) pulldownMenu.classList.remove('open');
   if (pulldownToggle) pulldownToggle.setAttribute('aria-expanded', 'false');
 });
 
-// ── INITIAL ROUTE ───────────────────────────
 const _h = location.hash.replace('#', '');
 showPage(pages[_h] ? _h : 'cv');
 
-// ── EXPORTS (for music.js and photo.js) ─────
 window.App = {
   mouseX: () => mouseX, mouseY: () => mouseY,
   mouseSpeed: () => mouseSpeed, mouseActive: () => mouseActive,
