@@ -1,6 +1,8 @@
 // =============================================
 // photo.js — Floating images, filters, photo page
 // =============================================
+(function() {
+'use strict';
 
 // ── PHOTO CONSTANTS ─────────────────────────
 const PHOTO_FRICTION   = 0.9917;
@@ -284,3 +286,5 @@ document.querySelectorAll('.photo-filter').forEach(btn => {
     updatePhotoFilter();
   });
 });
+
+})();

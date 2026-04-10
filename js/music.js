@@ -1,6 +1,8 @@
 // =============================================
 // music.js — Record physics, tonearm, SoundCloud
 // =============================================
+(function() {
+'use strict';
 
 // ── RECORD PHYSICS ──────────────────────────
 const RECORD_MAX_SPEED = 0.45;
@@ -131,7 +133,7 @@ function setTonearmAngle(deg) { tonearmSvg.style.transform = `rotate(${deg}deg)`
 
 function startTonearmSweep(isResume) {
   clearInterval(tonearmInterval);
-  clearTimeout(tonearmFinishTimer);
+  cleatTimeout(tonearmFinishTimer);
   if (!isResume) {
     scWidget.getCurrentSound(s => { scDuration = s && s.duration ? s.duration : 0; setTonearmAngle(TONEARM_OUTER); });
   }
@@ -291,3 +293,5 @@ tonearmEl.addEventListener('click', e => { e.stopPropagation(); togglePlay(); })
 scPlayBtn.addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
 scPrevBtn.addEventListener('click', e => { e.stopPropagation(); loadTrack(scTrackIdx - 1, scPlaying); });
 scNextBtn.addEventListener('click', e => { e.stopPropagation(); loadTrack(scTrackIdx + 1, scPlaying); });
+
+})();
