@@ -3,7 +3,6 @@
 const PHOTO_FRICTION = 0.9917, PHOTO_DRIFT = 0.00184, PHOTO_MAX_SPEED = 2.3;
 const THUMB_HEIGHT = 72, ENLARGE_RATIO = 0.65, COLLISION_BUFFER = 20, COLLISION_FORCE = 0.03;
 const PHOTO_CONFIG = { friction: PHOTO_FRICTION, drift: PHOTO_DRIFT, maxSpeed: PHOTO_MAX_SPEED, centerY: 0.42 };
-
 const PHOTO_PLACEHOLDERS = [
   { src: 'images/photo/thumb/digital/rhr1talks_web/altman-1.jpg', full: 'images/photo/full/digital/rhr1talks_web/altman-1.jpg', type: 'digital', ar: 0.667 },
   { src: 'images/photo/thumb/digital/rhr1talks_web/altman-2.jpg', full: 'images/photo/full/digital/rhr1talks_web/altman-2.jpg', type: 'digital', ar: 0.667 },
@@ -29,16 +28,12 @@ const PHOTO_PLACEHOLDERS = [
   { src: 'images/photo/thumb/analog/2025_bm_polaroids/WEB_bm_polaroid-10.jpg', full: 'images/photo/full/analog/2025_bm_polaroids/WEB_bm_polaroid-10.jpg', type: 'analog', ar: 0.803 },
   { src: 'images/photo/thumb/analog/2025_bm_polaroids/WEB_bm_polaroid-11.jpg', full: 'images/photo/full/analog/2025_bm_polaroids/WEB_bm_polaroid-11.jpg', type: 'analog', ar: 1.247 },
 ];
-
 const photoContainer = document.getElementById('photo-float-container');
-const photoTabGroups = document.querySelectorAll('.photo-tab-group');
-const photoTabs = document.querySelectorAll('.photo-tab');
-
+const photoTabGroups = document.querySelectorAll('.photo-tab-group'), photoTabs = document.querySelectorAll('.photo-tab');
 class FloatingImage {
   constructor(el, x, y, angle, fullSrc) {
     this.el = el; this.x = x; this.y = y;
-    this.ar = parseFloat(el.dataset.ar) || 1;
-    this.fullSrc = fullSrc;
+    this.ar = parseFloat(el.dataset.ar) || 1; this.fullSrc = fullSrc;
     this.h = THUMB_HEIGHT; this.w = Math.round(THUMB_HEIGHT * this.ar);
     el.style.width = `${this.w}px`; el.style.height = `${THUMB_HEIGHT}px`;
     this._driftAngle = angle;
@@ -59,11 +54,9 @@ class FloatingImage {
   }
   toggleEnlarge() {
     if (this._enlarged) {
-      this._shrink(this);
-      this.el.style.left = ''; this.el.style.top = '';
+      this._shrink(this); this.el.style.left = ''; this.el.style.top = '';
       this.el.style.transform = `translate3d(${this.x}px,${this.y}px,0)`;
-      photoContainer.classList.remove('has-enlarged');
-      return;
+      photoContainer.classList.remove('has-enlarged'); return;
     }
     window.floatingImages.forEach(fi => { if (fi._enlarged) this._shrink(fi); });
     this._enlarged = true; this.el.style.transition = 'none'; this.el.classList.add('enlarged');
@@ -83,23 +76,16 @@ class FloatingImage {
     App.tickEntity(this, PHOTO_CONFIG);
   }
 }
-
 window.floatingImages = [];
 let collisionTickRegistered = false, collisionFrame = 0;
-
-function getActivePhotoTypes() {
+function updatePhotoFilter() {
   const types = [];
   photoTabs.forEach(t => { if (t.classList.contains('active')) types.push(t.dataset.photoTab); });
-  return types;
-}
-function updatePhotoFilter() {
-  const types = getActivePhotoTypes();
   const activeSubFilters = {};
   photoTabGroups.forEach(group => {
     const tab = group.querySelector('.photo-tab');
     if (tab && tab.classList.contains('active')) {
-      const type = tab.dataset.photoTab;
-      const subs = group.querySelectorAll('.photo-filter');
+      const type = tab.dataset.photoTab, subs = group.querySelectorAll('.photo-filter');
       if (subs.length > 0) {
         const active = [];
         group.querySelectorAll('.photo-filter.active').forEach(f => active.push(f.dataset.photoFilter));
@@ -115,7 +101,6 @@ function updatePhotoFilter() {
     fi.el.style.pointerEvents = match ? '' : 'none';
   });
 }
-
 function photoCollisionTick(now) {
   const imgs = window.floatingImages;
   if (!imgs.length) return;
@@ -127,30 +112,24 @@ function photoCollisionTick(now) {
       for (let j = i + 1; j < imgs.length; j++) {
         const b = imgs[j];
         if (b._enlarged || b.el.style.opacity === '0') continue;
-        const dx = (b.x + b.w * 0.5) - (a.x + a.w * 0.5);
-        const dy = (b.y + b.h * 0.5) - (a.y + a.h * 0.5);
-        const dSq = dx * dx + dy * dy;
-        const md = (a.w + b.w) * 0.5 + COLLISION_BUFFER;
+        const dx = (b.x + b.w * 0.5) - (a.x + a.w * 0.5), dy = (b.y + b.h * 0.5) - (a.y + a.h * 0.5);
+        const dSq = dx * dx + dy * dy, md = (a.w + b.w) * 0.5 + COLLISION_BUFFER;
         if (dSq < md * md) {
-          const d = Math.sqrt(dSq) || 1;
-          const nx = dx / d, ny = dy / d;
+          const d = Math.sqrt(dSq) || 1, nx = dx / d, ny = dy / d;
           const f = COLLISION_FORCE * (1 - d / md);
-          a.vx -= nx * f; a.vy -= ny * f;
-          b.vx += nx * f; b.vy += ny * f;
+          a.vx -= nx * f; a.vy -= ny * f; b.vx += nx * f; b.vy += ny * f;
         }
       }
     }
   }
 }
-
 window.initPhotoFloat = function() {
   window.destroyPhotoFloat();
   if (!photoContainer) return;
   const cx = window.innerWidth * 0.5, cy = window.innerHeight * 0.4;
   const base = Math.random() * Math.PI * 2, count = PHOTO_PLACEHOLDERS.length;
   for (let i = 0; i < count; i++) {
-    const ph = PHOTO_PLACEHOLDERS[i];
-    const el = document.createElement('div');
+    const ph = PHOTO_PLACEHOLDERS[i], el = document.createElement('div');
     el.className = 'float-img';
     const parts = ph.src.split('/'), pi = parts.indexOf('thumb');
     el.dataset.type = (pi >= 0 && parts[pi + 1]) || ph.type || 'digital';
@@ -164,26 +143,19 @@ window.initPhotoFloat = function() {
   setTimeout(() => { window.floatingImages.forEach(fi => fi.measure()); updatePhotoFilter(); }, 100);
   if (!collisionTickRegistered) { App.registerTick(photoCollisionTick); collisionTickRegistered = true; }
 };
-
 window.destroyPhotoFloat = function() {
   if (photoContainer) photoContainer.innerHTML = '';
   window.floatingImages = [];
   if (collisionTickRegistered) { App.unregisterTick(photoCollisionTick); collisionTickRegistered = false; }
   collisionFrame = 0;
 };
-
 photoTabs.forEach(tab => {
   tab.addEventListener('click', e => {
-    e.stopPropagation();
-    const isActive = tab.classList.contains('active');
-    tab.classList.toggle('active');
+    e.stopPropagation(); tab.classList.toggle('active');
     const group = tab.closest('.photo-tab-group');
     if (group) {
       const dd = group.querySelector('.photo-dropdown');
-      if (dd) {
-        if (isActive) { tab.classList.remove('dropdown-open'); dd.classList.remove('open'); }
-        else { tab.classList.add('dropdown-open'); dd.classList.add('open'); }
-      }
+      if (dd) { const open = tab.classList.contains('active'); tab.classList.toggle('dropdown-open', open); dd.classList.toggle('open', open); }
     }
     updatePhotoFilter();
   });
