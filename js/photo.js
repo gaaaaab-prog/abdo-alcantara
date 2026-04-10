@@ -38,7 +38,7 @@ class FloatingImage {
     el.style.width = `${this.w}px`; el.style.height = `${THUMB_HEIGHT}px`;
     this._driftAngle = angle;
     this._driftAngleSpeed = (Math.random() < 0.5 ? 1 : -1) * (0.0003 + Math.random() * 0.0005);
-    this.vx = Math.cos(angle) * 1.8; this.vy = Math.sin(angle) * 1.8;
+    this.vx = 0; this.vy = 0;
     this._enlarged = false;
     el.style.transform = `translate3d(${x}px,${y}px,0)`;
     el.addEventListener('click', e => { e.stopPropagation(); if (!this._enlarged) this.toggleEnlarge(); });
@@ -126,7 +126,6 @@ function photoCollisionTick(now) {
 window.initPhotoFloat = function() {
   window.destroyPhotoFloat();
   if (!photoContainer) return;
-  const cx = window.innerWidth * 0.5, cy = window.innerHeight * 0.4;
   const base = Math.random() * Math.PI * 2, count = PHOTO_PLACEHOLDERS.length;
   for (let i = 0; i < count; i++) {
     const ph = PHOTO_PLACEHOLDERS[i], el = document.createElement('div');
@@ -138,7 +137,8 @@ window.initPhotoFloat = function() {
     el.innerHTML = `<img src="${ph.src}" alt="" style="width:100%;height:100%;border-radius:inherit;" loading="lazy" onerror="this.style.display='none'" />`;
     photoContainer.appendChild(el);
     const angle = base + (i / count) * Math.PI * 2;
-    window.floatingImages.push(new FloatingImage(el, cx + (Math.random() - 0.5) * 40, cy + (Math.random() - 0.5) * 30, angle, ph.full));
+    const margin = 160, rx = margin + Math.random() * (window.innerWidth - margin * 2), ry = margin + Math.random() * (window.innerHeight - 260 - margin);
+    window.floatingImages.push(new FloatingImage(el, rx, ry, angle, ph.full));
   }
   setTimeout(() => { window.floatingImages.forEach(fi => fi.measure()); updatePhotoFilter(); }, 100);
   if (!collisionTickRegistered) { App.registerTick(photoCollisionTick); collisionTickRegistered = true; }
