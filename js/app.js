@@ -192,7 +192,14 @@ function openLightbox(src) { lbImg.src = src; lb.classList.add('open'); document
 function closeLightbox() { lb.classList.remove('open'); lbImg.src = ''; document.body.style.overflow = ''; }
 document.getElementById('lb-close').addEventListener('click', closeLightbox);
 lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  closeLightbox();
+  const co = document.querySelector('.contact-overlay.open');
+  if (co) { co.classList.remove('open'); const f = document.getElementById('contact-form'); if (f) { f.reset(); const s = f.querySelector('.contact-sent'); if (s) s.remove(); f.style.display = ''; } }
+  if (typeof window.floatingImages !== 'undefined') window.floatingImages.forEach(fi => { if (fi._enlarged) fi.toggleEnlarge(); });
+  const cl = document.getElementById('cine-login-overlay'); if (cl) cl.remove();
+});
 ['film-grid', 'bts-grid'].forEach(id => {
   const g = document.getElementById(id);
   if (g) g.addEventListener('click', e => { const img = e.target.closest('img'); if (img) openLightbox(img.src); });
