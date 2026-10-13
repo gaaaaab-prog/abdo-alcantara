@@ -113,6 +113,7 @@ const scPlayBtn = document.getElementById('sc-play'), scPrevBtn = document.getEl
 const scNextBtn = document.getElementById('sc-next'), scCloseBtn = document.getElementById('sc-close');
 const scIframe = document.getElementById('sc-iframe'), archiveEl = document.getElementById('music-archive');
 let iconPlay = null, iconPause = null;
+function onWidgetReady() { scReady = true; if (scPendingPlay) { scPendingPlay = false; scWidget.play(); } }
 function trackLabel(idx) { return `${SC_TRACKS[idx].title} - (soundcloud)`; }
 function syncArchive() {
   if (!archiveEl) return;
@@ -144,7 +145,7 @@ window.initSC = function() {
   script.onload = function() {
     try {
       scWidget = SC.Widget(scIframe);
-      scWidget.bind(SC.Widget.Events.READY, () => { scReady = true; if (scPendingPlay) { scPendingPlay = false; scWidget.play(); } });
+      scWidget.bind(SC.Widget.Events.READY, onWidgetReady);
       scWidget.bind(SC.Widget.Events.PLAY, () => {
         scPlaying = true; clearTimeout(scPauseTimer);
         scWidget.getCurrentSound(s => { scTrackName.textContent = s ? `${s.title} - (soundcloud)` : trackLabel(scTrackIdx); });
@@ -165,7 +166,8 @@ function loadTrack(idx, autoPlay) {
   scReady = false; scPlaying = false; if (autoPlay) scPendingPlay = true;
   scTrackName.textContent = trackLabel(scTrackIdx);
   syncArchive();
-  scWidget.load(SC_TRACKS[scTrackIdx].url, SC_OPTS);
+  // READY does not re-fire after load(); the new widget signals readiness via `callback`.
+  scWidget.load(SC_TRACKS[scTrackIdx].url, { ...SC_OPTS, callback: onWidgetReady });
 }
 function togglePlay() {
   if (!scWidget) return;
