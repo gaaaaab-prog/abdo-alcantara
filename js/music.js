@@ -96,6 +96,7 @@ function stopTonearmSweep() {
   if (scProgressBar) scProgressBar.style.width = '0%';
   if (scElapsedEl) scElapsedEl.textContent = '0:00';
 }
+// Single source of truth for the archive: the Music page list is rendered from this.
 const SC_TRACKS = [
   { url: 'https://soundcloud.com/gabd0/5-el-cronopio', title: '5' },
   { url: 'https://soundcloud.com/gabd0/4-huella', title: '4 - huella' },
@@ -103,18 +104,41 @@ const SC_TRACKS = [
   { url: 'https://soundcloud.com/gabd0/gabdo23-wav', title: '2' },
   { url: 'https://soundcloud.com/gabd0/gabdo1-vinyl-mix', title: '1' },
 ];
+const SC_OPTS = { auto_play: false, hide_related: true, show_comments: false, show_user: false, show_reposts: false, show_teaser: false, visual: true };
+const scEmbedUrl = url => 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(url) + '&' + Object.entries(SC_OPTS).map(([k, v]) => `${k}=${v}`).join('&');
 let scWidget = null, scReady = false, scPlaying = false, scPendingPlay = false, scTrackIdx = 0;
 let scPauseTimer = null, scInitialized = false;
 const scPlayerEl = document.getElementById('sc-player'), scTrackName = document.getElementById('sc-track-name');
 const scPlayBtn = document.getElementById('sc-play'), scPrevBtn = document.getElementById('sc-prev');
 const scNextBtn = document.getElementById('sc-next'), scCloseBtn = document.getElementById('sc-close');
-const scIframe = document.getElementById('sc-iframe');
+const scIframe = document.getElementById('sc-iframe'), archiveEl = document.getElementById('music-archive');
 let iconPlay = null, iconPause = null;
+function trackLabel(idx) { return `${SC_TRACKS[idx].title} - (soundcloud)`; }
+function syncArchive() {
+  if (!archiveEl) return;
+  archiveEl.querySelectorAll('.music-entry').forEach((el, i) => el.classList.toggle('active', i === scTrackIdx));
+}
+if (archiveEl) {
+  archiveEl.replaceChildren(...SC_TRACKS.map((t, i) => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'music-entry'; b.dataset.track = i;
+    const num = document.createElement('span'), title = document.createElement('span'), meta = document.createElement('span');
+    num.className = 'me-num'; num.textContent = String(SC_TRACKS.length - i).padStart(2, '0');
+    title.className = 'me-title'; title.textContent = t.title;
+    meta.className = 'me-meta'; meta.textContent = 'soundcloud';
+    b.append(num, title, meta);
+    return b;
+  }));
+  archiveEl.addEventListener('click', e => {
+    const b = e.target.closest('[data-track]');
+    if (b) { e.stopPropagation(); playTrack(Number(b.dataset.track)); }
+  });
+  syncArchive();
+}
 window.initSC = function() {
   if (scInitialized) return;
   scInitialized = true;
-  const dataSrc = scIframe.getAttribute('data-src');
-  if (dataSrc && !scIframe.src.includes('soundcloud.com')) scIframe.src = dataSrc;
+  if (!scIframe.src.includes('soundcloud.com')) scIframe.src = scEmbedUrl(SC_TRACKS[scTrackIdx].url);
   const script = document.createElement('script');
   script.src = 'https://w.soundcloud.com/player/api.js';
   script.onload = function() {
@@ -123,7 +147,7 @@ window.initSC = function() {
       scWidget.bind(SC.Widget.Events.READY, () => { scReady = true; if (scPendingPlay) { scPendingPlay = false; scWidget.play(); } });
       scWidget.bind(SC.Widget.Events.PLAY, () => {
         scPlaying = true; clearTimeout(scPauseTimer);
-        scWidget.getCurrentSound(s => { scTrackName.textContent = `${s ? s.title : SC_TRACKS[scTrackIdx].title} - (soundcloud)`; });
+        scWidget.getCurrentSound(s => { scTrackName.textContent = s ? `${s.title} - (soundcloud)` : trackLabel(scTrackIdx); });
         syncPlayer();
       });
       scWidget.bind(SC.Widget.Events.PAUSE, () => {
@@ -139,13 +163,25 @@ function loadTrack(idx, autoPlay) {
   if (!scWidget) return;
   scTrackIdx = ((idx % SC_TRACKS.length) + SC_TRACKS.length) % SC_TRACKS.length;
   scReady = false; scPlaying = false; if (autoPlay) scPendingPlay = true;
-  scTrackName.textContent = `${SC_TRACKS[scTrackIdx].title} - (soundcloud)`;
-  scWidget.load(SC_TRACKS[scTrackIdx].url, { auto_play: false, hide_related: true, show_comments: false, show_user: false, show_reposts: false, show_teaser: false, visual: true });
+  scTrackName.textContent = trackLabel(scTrackIdx);
+  syncArchive();
+  scWidget.load(SC_TRACKS[scTrackIdx].url, SC_OPTS);
 }
 function togglePlay() {
   if (!scWidget) return;
   if (!scReady) { scPendingPlay = true; return; }
   scPlaying ? scWidget.pause() : scWidget.play();
+}
+// Archive entry click: play that track (first click also boots the widget on that track).
+function playTrack(idx) {
+  scPlayerEl.classList.add('visible'); clearTimeout(scPauseTimer);
+  if (!scInitialized) {
+    scTrackIdx = idx; scPendingPlay = true;
+    scTrackName.textContent = trackLabel(idx); syncArchive();
+    window.initSC(); return;
+  }
+  if (idx === scTrackIdx) { togglePlay(); return; }
+  loadTrack(idx, true);
 }
 function syncPlayer(reason) {
   if (!iconPlay && scPlayBtn) { iconPlay = scPlayBtn.querySelector('.icon-play'); iconPause = scPlayBtn.querySelector('.icon-pause'); }
@@ -161,10 +197,7 @@ function syncPlayer(reason) {
 }
 recordEl.addEventListener('click', () => {
   if (record._didDrag) { record._didDrag = false; return; }
-  if (!scInitialized && typeof window.initSC === 'function') window.initSC();
-  scPlayerEl.classList.add('visible');
-  scTrackName.textContent = `${SC_TRACKS[scTrackIdx].title} - (soundcloud)`;
-  togglePlay();
+  playTrack(scTrackIdx);
 });
 scCloseBtn.addEventListener('click', e => {
   e.stopPropagation(); clearTimeout(scPauseTimer);
