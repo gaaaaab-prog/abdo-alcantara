@@ -209,6 +209,9 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 }
 .music-entry:hover { background: rgba(0,0,0,0.015); }
 .music-entry.active .me-title { font-weight: 600; }
+.music-entry.unavailable { cursor: default; }
+.music-entry.unavailable:hover { background: none; }
+.music-entry.unavailable .me-title { color: var(--muted); }
 
 .me-num { font-size: 0.66rem; color: var(--muted); letter-spacing: 0.07em; }
 .me-title { font-size: 0.95rem; font-weight: 500; }
@@ -607,8 +610,9 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 }
 
 @media (max-width: 680px) {
-  .site-brand { top: 20px; right: 20px; }
+  .site-brand { top: 20px; right: 20px; font-size: 1.35rem; }
   .nav-pulldown { top: 16px; left: 16px; }
+  .photo-tabs { top: 58px; gap: 8px; } /* below the brand so they don't collide on narrow screens */
   .page-hero { padding: 0 24px 48px; }
   .page-body { padding: 0 24px 80px; }
   .page-body--wide { padding: 0 3px 80px; }
