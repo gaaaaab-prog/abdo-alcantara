@@ -44,7 +44,7 @@ body {
 .site-brand {
   position: fixed;
   top: 28px;
-  left: 40px;
+  right: 40px;
   z-index: 250;
   font-family: var(--font);
   font-size: clamp(1.6rem, 3.2vw, 2.8rem);
@@ -648,7 +648,7 @@ body {
   .photo-list-item { grid-template-columns: 40px 1fr; gap: 4px 12px; }
   .photo-list-format, .photo-list-notes { display: none; }
   .scroll-arrow { right: 24px; bottom: 24px; }
-  .site-brand { top: 20px; left: 20px; }
+  .site-brand { top: 20px; right: 20px; }
 }
 
 @media (max-width: 420px) {
