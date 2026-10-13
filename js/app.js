@@ -129,17 +129,21 @@ function showCineLogin(onSuccess) {
   userEl.addEventListener('keydown', e => { if (e.key === 'Enter') passEl.focus(); });
   userEl.focus();
 }
-let bobInterval = null;
-function showPage(key) {
+let bobInterval = null, currentKey = null;
+const urlFor = key => key === DEFAULT_PAGE ? location.pathname + location.search : '#' + key;
+// history: 'push' for user navigation, 'replace' for first load, 'none' when responding to Back/Forward
+function showPage(key, historyMode = 'push') {
   if (!pages[key]) return;
-  if (key === 'film' && sessionStorage.getItem('cine_auth') !== '1') { showCineLogin(() => showPage('film')); return; }
+  if (key === 'film' && sessionStorage.getItem('cine_auth') !== '1') { showCineLogin(() => showPage('film', historyMode)); return; }
   closeLightbox();
   Object.values(pages).forEach(p => p.classList.remove('active'));
   pages[key].classList.add('active');
   navWords.forEach(w => { const on = w.dataset.page === key; w.classList.toggle('active', on); w.classList.toggle('inactive', !on); });
   recordVisible = (key === 'music'); recordEl.classList.toggle('visible', recordVisible);
-  history.pushState(null, '', key === DEFAULT_PAGE ? window.location.pathname : '#' + key);
-  window.scrollTo(0, 0);
+  if (historyMode === 'replace') history.replaceState(null, '', urlFor(key));
+  else if (historyMode === 'push' && key !== currentKey) history.pushState(null, '', urlFor(key));
+  currentKey = key;
+  window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   const isPhoto = key === 'film-photo', isMusic = key === 'music';
   floatNav.classList.toggle('photo-active', isPhoto); floatNav.classList.toggle('music-active', isMusic);
   navPulldownEl.classList.toggle('visible', isPhoto || isMusic);
@@ -156,7 +160,21 @@ navWords.forEach(w => {
   w.addEventListener('mouseenter', () => w.classList.remove('inactive'));
   w.addEventListener('mouseleave', () => { if (!w.classList.contains('active')) w.classList.add('inactive'); });
 });
-window.addEventListener('popstate', () => { const h = location.hash.replace('#', ''); showPage(pages[h] ? h : DEFAULT_PAGE); });
+window.addEventListener('popstate', () => { const h = location.hash.replace('#', ''); showPage(pages[h] ? h : DEFAULT_PAGE, 'none'); });
+// Cancelling the Cine login: put the URL back to the page actually showing (or show the default on first load).
+function cancelCineLogin() {
+  const cl = document.getElementById('cine-login-overlay');
+  if (!cl) return;
+  cl.remove();
+  if (currentKey) history.replaceState(null, '', urlFor(currentKey)); else showPage(DEFAULT_PAGE, 'replace');
+}
+// Skip link: focus the active page's content instead of changing the hash (which would trigger routing).
+const skipLink = document.querySelector('.skip-link');
+if (skipLink) skipLink.addEventListener('click', e => {
+  e.preventDefault();
+  const main = document.querySelector('.page.active .page-body');
+  if (main) { main.setAttribute('tabindex', '-1'); main.focus(); main.scrollIntoView(); }
+});
 // Generic tabs: any .tab-bar switches sibling .tab-panel[data-panel] within the same .page
 document.querySelectorAll('.tab-bar').forEach(bar => {
   const scope = bar.closest('.page') || document;
@@ -198,7 +216,7 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
   closeLightbox();
   if (typeof window.floatingImages !== 'undefined') window.floatingImages.forEach(fi => { if (fi._enlarged) fi.toggleEnlarge(); });
-  const cl = document.getElementById('cine-login-overlay'); if (cl) cl.remove();
+  cancelCineLogin();
 });
 ['film-grid', 'bts-grid'].forEach(id => {
   const g = document.getElementById(id);
@@ -213,7 +231,7 @@ document.addEventListener('click', () => {
   if (pulldownToggle) pulldownToggle.setAttribute('aria-expanded', 'false');
 });
 const _h = location.hash.replace('#', '');
-showPage(pages[_h] ? _h : DEFAULT_PAGE);
+showPage(pages[_h] ? _h : DEFAULT_PAGE, 'replace');
 window.App = {
   mouseX: () => mouseX, mouseY: () => mouseY, mouseSpeed: () => mouseSpeed, mouseActive: () => mouseActive,
   tickEntity, NAV_CONFIG, showPage, wakeLoop, registerTick, unregisterTick,
