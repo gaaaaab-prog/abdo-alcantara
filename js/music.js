@@ -104,27 +104,64 @@ const SC_TRACKS = [
   { url: 'https://soundcloud.com/gabd0/gabdo23-wav', title: '2' },
   { url: 'https://soundcloud.com/gabd0/gabdo1-vinyl-mix', title: '1' },
 ];
+const N = SC_TRACKS.length;
 const SC_OPTS = { auto_play: false, hide_related: true, show_comments: false, show_user: false, show_reposts: false, show_teaser: false, visual: true };
 const scEmbedUrl = url => 'https://w.soundcloud.com/player/?url=' + encodeURIComponent(url) + '&' + Object.entries(SC_OPTS).map(([k, v]) => `${k}=${v}`).join('&');
-let scWidget = null, scReady = false, scPlaying = false, scPendingPlay = false, scTrackIdx = 0;
+const wrap = i => ((i % N) + N) % N;
+let scWidget = null, scReady = false, scPlaying = false, scPendingPlay = false;
+let scTrackIdx = 0;     // track the UI is pointing at
+let scLoadedIdx = -1;   // track actually loaded in the widget
+let scDir = 1;          // direction to skip in if a track can't be loaded
 let scPauseTimer = null, scInitialized = false;
+const unavailable = new Set();
 const scPlayerEl = document.getElementById('sc-player'), scTrackName = document.getElementById('sc-track-name');
 const scPlayBtn = document.getElementById('sc-play'), scPrevBtn = document.getElementById('sc-prev');
 const scNextBtn = document.getElementById('sc-next'), scCloseBtn = document.getElementById('sc-close');
 const scIframe = document.getElementById('sc-iframe'), archiveEl = document.getElementById('music-archive');
-let iconPlay = null, iconPause = null;
-function onWidgetReady() { scReady = true; if (scPendingPlay) { scPendingPlay = false; scWidget.play(); } }
+const iconPlay = scPlayBtn.querySelector('.icon-play'), iconPause = scPlayBtn.querySelector('.icon-pause');
 function trackLabel(idx) { return `${SC_TRACKS[idx].title} - (soundcloud)`; }
+function nextPlayable(from, dir) {
+  for (let k = 0; k < N; k++) { const i = wrap(from + dir * k); if (!unavailable.has(i)) return i; }
+  return -1;
+}
 function syncArchive() {
   if (!archiveEl) return;
-  archiveEl.querySelectorAll('.music-entry').forEach((el, i) => el.classList.toggle('active', i === scTrackIdx));
+  archiveEl.querySelectorAll('.music-entry').forEach((el, i) => {
+    const off = unavailable.has(i);
+    el.classList.toggle('active', i === scTrackIdx && !off);
+    el.classList.toggle('unavailable', off);
+    el.disabled = off;
+    el.querySelector('.me-meta').textContent = off ? 'unavailable' : 'soundcloud';
+  });
+}
+function setTrack(idx) { scTrackIdx = idx; scTrackName.textContent = trackLabel(idx); syncArchive(); }
+// Called once by READY on first load, and by load()'s callback after every track change
+// (SoundCloud does not re-fire READY after load()).
+function onWidgetReady() {
+  scWidget.getCurrentSound(sound => {
+    if (!sound) { // private, deleted, or not embeddable
+      unavailable.add(scLoadedIdx);
+      const next = nextPlayable(scLoadedIdx, scDir);
+      if (next < 0) { scPendingPlay = false; scTrackName.textContent = 'No tracks available'; syncArchive(); return; }
+      setTrack(next); loadIntoWidget(next);
+      return;
+    }
+    if (scLoadedIdx !== scTrackIdx) { loadIntoWidget(scTrackIdx); return; } // user picked another track while loading
+    scReady = true;
+    if (scPendingPlay) { scPendingPlay = false; scWidget.play(); }
+  });
+}
+function loadIntoWidget(idx) {
+  scReady = false; scPlaying = false; scLoadedIdx = idx;
+  stopTonearmSweep(); // reset duration/progress so the new track's length is used
+  scWidget.load(SC_TRACKS[idx].url, { ...SC_OPTS, callback: onWidgetReady });
 }
 if (archiveEl) {
   archiveEl.replaceChildren(...SC_TRACKS.map((t, i) => {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'music-entry'; b.dataset.track = i;
     const num = document.createElement('span'), title = document.createElement('span'), meta = document.createElement('span');
-    num.className = 'me-num'; num.textContent = String(SC_TRACKS.length - i).padStart(2, '0');
+    num.className = 'me-num'; num.textContent = String(N - i).padStart(2, '0');
     title.className = 'me-title'; title.textContent = t.title;
     meta.className = 'me-meta'; meta.textContent = 'soundcloud';
     b.append(num, title, meta);
@@ -132,14 +169,15 @@ if (archiveEl) {
   }));
   archiveEl.addEventListener('click', e => {
     const b = e.target.closest('[data-track]');
-    if (b) { e.stopPropagation(); playTrack(Number(b.dataset.track)); }
+    if (b && !b.disabled) playTrack(Number(b.dataset.track));
   });
   syncArchive();
 }
 window.initSC = function() {
   if (scInitialized) return;
   scInitialized = true;
-  if (!scIframe.src.includes('soundcloud.com')) scIframe.src = scEmbedUrl(SC_TRACKS[scTrackIdx].url);
+  scLoadedIdx = scTrackIdx;
+  scIframe.src = scEmbedUrl(SC_TRACKS[scTrackIdx].url);
   const script = document.createElement('script');
   script.src = 'https://w.soundcloud.com/player/api.js';
   script.onload = function() {
@@ -155,40 +193,37 @@ window.initSC = function() {
         scPlaying = false; syncPlayer('pause');
         scPauseTimer = setTimeout(() => scPlayerEl.classList.remove('visible'), 120000);
       });
-      scWidget.bind(SC.Widget.Events.FINISH, () => { scPlaying = false; syncPlayer('finish'); loadTrack((scTrackIdx + 1) % SC_TRACKS.length, true); });
+      scWidget.bind(SC.Widget.Events.FINISH, () => { scPlaying = false; syncPlayer('finish'); step(1, true); });
     } catch (e) { console.warn('SoundCloud widget init failed:', e); }
   };
+  script.onerror = () => console.warn('SoundCloud API failed to load');
   document.body.appendChild(script);
 };
-function loadTrack(idx, autoPlay) {
-  if (!scWidget) return;
-  scTrackIdx = ((idx % SC_TRACKS.length) + SC_TRACKS.length) % SC_TRACKS.length;
-  scReady = false; scPlaying = false; if (autoPlay) scPendingPlay = true;
-  scTrackName.textContent = trackLabel(scTrackIdx);
-  syncArchive();
-  // READY does not re-fire after load(); the new widget signals readiness via `callback`.
-  scWidget.load(SC_TRACKS[scTrackIdx].url, { ...SC_OPTS, callback: onWidgetReady });
+// Switch to track idx; autoPlay starts it once loaded.
+function selectTrack(idx, autoPlay, dir) {
+  scDir = dir || 1;
+  idx = nextPlayable(wrap(idx), scDir);
+  if (idx < 0) return;
+  setTrack(idx);
+  if (autoPlay) scPendingPlay = true;
+  if (!scInitialized) { window.initSC(); return; }
+  if (!scWidget) return; // API still loading; READY will load scTrackIdx
+  loadIntoWidget(idx);
 }
+function step(dir, autoPlay) { selectTrack(scTrackIdx + dir, autoPlay, dir); }
 function togglePlay() {
-  if (!scWidget) return;
-  if (!scReady) { scPendingPlay = true; return; }
+  if (!scWidget || !scReady) { scPendingPlay = true; if (!scInitialized) window.initSC(); return; }
   scPlaying ? scWidget.pause() : scWidget.play();
 }
-// Archive entry click: play that track (first click also boots the widget on that track).
+// Archive entry / record click: play that track, or toggle if it's already current.
 function playTrack(idx) {
   scPlayerEl.classList.add('visible'); clearTimeout(scPauseTimer);
-  if (!scInitialized) {
-    scTrackIdx = idx; scPendingPlay = true;
-    scTrackName.textContent = trackLabel(idx); syncArchive();
-    window.initSC(); return;
-  }
-  if (idx === scTrackIdx) { togglePlay(); return; }
-  loadTrack(idx, true);
+  if (idx === scTrackIdx && scInitialized && !unavailable.has(idx)) { togglePlay(); return; }
+  selectTrack(idx, true, 1);
 }
 function syncPlayer(reason) {
-  if (!iconPlay && scPlayBtn) { iconPlay = scPlayBtn.querySelector('.icon-play'); iconPause = scPlayBtn.querySelector('.icon-pause'); }
-  if (iconPlay) iconPlay.style.display = scPlaying ? 'none' : '';
-  if (iconPause) iconPause.style.display = scPlaying ? '' : 'none';
+  iconPlay.style.display = scPlaying ? 'none' : '';
+  iconPause.style.display = scPlaying ? '' : 'none';
   record.setPlaying(scPlaying);
   if (scPlaying) startTonearmSweep(scDuration > 0);
   else if (reason === 'finish') {
@@ -202,12 +237,12 @@ recordEl.addEventListener('click', () => {
   playTrack(scTrackIdx);
 });
 scCloseBtn.addEventListener('click', e => {
-  e.stopPropagation(); clearTimeout(scPauseTimer);
+  e.stopPropagation(); clearTimeout(scPauseTimer); scPendingPlay = false;
   if (scWidget && scPlaying) scWidget.pause();
   scPlayerEl.classList.remove('visible');
 });
 tonearmEl.addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
 scPlayBtn.addEventListener('click', e => { e.stopPropagation(); togglePlay(); });
-scPrevBtn.addEventListener('click', e => { e.stopPropagation(); loadTrack(scTrackIdx - 1, scPlaying); });
-scNextBtn.addEventListener('click', e => { e.stopPropagation(); loadTrack(scTrackIdx + 1, scPlaying); });
+scPrevBtn.addEventListener('click', e => { e.stopPropagation(); step(-1, scPlaying || scPendingPlay); });
+scNextBtn.addEventListener('click', e => { e.stopPropagation(); step(1, scPlaying || scPendingPlay); });
 })();
