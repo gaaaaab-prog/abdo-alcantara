@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MusicaNossa</title>
+  <meta name="description" content="MusicaNossa — music playback and archive by Gabriel Abdo Alcantara." />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <link rel="canonical" href="https://abdo-alcantara.com/portfolio.html" />
   <meta name="theme-color" content="#0f0f0f" />
@@ -13,29 +16,27 @@
                  font-src 'self' https://fonts.gstatic.com;
                  frame-src https://w.soundcloud.com;
                  img-src 'self' data:;
-                 connect-src 'self' https://formsubmit.co;" />
+                 connect-src 'self';" />
   <meta property="og:title" content="MusicaNossa" />
-  <meta property="og:description" content="Filmmaker Â· Director of Photography Â· Photographer â Southern California" />
+  <meta property="og:description" content="MusicaNossa — music playback and archive by Gabriel Abdo Alcantara." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://abdo-alcantara.com/portfolio.html" />
   <meta property="og:image" content="https://abdo-alcantara.com/images/og-preview.jpg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MusicaNossa</title>
-  <meta name="description" content="Filmmaker Â· Director of Photography Â· Photographer â Southern California" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=63" />
+  <link rel="stylesheet" href="css/style.css?v=64" />
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to main content</a>
 
-  <span class="site-brand" aria-hidden="true">MusicaNossa</span>
+  <button class="site-brand" id="site-brand" type="button" aria-label="MusicaNossa — home">MusicaNossa</button>
 
+  <!-- ── FLOATING NAV ───────────────────────────── -->
   <nav id="float-nav" aria-label="Main navigation">
-    <button class="nav-word active" data-page="cv">Sobre</button>
-    <button class="nav-word" data-page="film">Cine</button>
+    <button class="nav-word active" data-page="sobre">Sobre</button>
     <button class="nav-word" data-page="music">Music</button>
+    <button class="nav-word" data-page="film">Cine</button>
     <button class="nav-word" data-page="film-photo">Photo</button>
 
     <div class="record-el" id="record">
@@ -57,44 +58,54 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <div class="pulldown-menu" id="pulldown-menu">
-      <button data-page="cv">Sobre</button>
-      <button data-page="film">Cine</button>
+      <button data-page="sobre">Sobre</button>
       <button data-page="music">Music</button>
+      <button data-page="film">Cine</button>
       <button data-page="film-photo">Photo</button>
     </div>
   </div>
 
-  <!-- ââ CV PAGE ââââââââââââââââââââââââââââââââ -->
-  <div id="page-cv" class="page active">
+  <!-- ── SOBRE (default) ────────────────────────── -->
+  <div id="page-sobre" class="page active">
     <header class="page-hero">
       <h1 class="hero-name">Sobre</h1>
     </header>
-    <main class="cv-body" id="main-content">
-      <div class="cv-tab-content active" id="cv-tab-resume">
-        <section class="resume-section">
-          <div class="resume-text">
-            <p>Em breve.</p>
-          </div>
-        </section>
-      </div>
+    <main class="page-body" id="main-content">
+      <section class="resume-section">
+        <div class="resume-text">
+          <p>Em breve.</p>
+        </div>
+      </section>
     </main>
   </div>
 
-    <!-- ââ CINE PAGE ââââââââââââââââââââââââââââââ -->
+  <!-- ── MUSIC (primary) ────────────────────────── -->
+  <div id="page-music" class="page">
+    <header class="page-hero">
+      <h1 class="hero-name">Music</h1>
+      <div class="hero-tagline">Archive</div>
+    </header>
+    <main class="page-body">
+      <!-- Rendered by music.js from SC_TRACKS -->
+      <div class="music-list" id="music-archive" aria-label="Track archive"></div>
+    </main>
+  </div>
+
+  <!-- ── CINE (to be merged into Music) ─────────── -->
   <div id="page-film" class="page">
     <header class="page-hero">
       <h1 class="hero-name">Cine</h1>
       <div class="hero-tagline">Motion &amp; Light</div>
     </header>
-    <main class="film-body">
+    <main class="page-body page-body--wide">
       <nav class="tab-bar" aria-label="Film categories">
-        <button class="tab film-tab active" data-film-tab="freelance">Freelance</button>
-        <button class="tab film-tab" data-film-tab="events">Events</button>
-        <button class="tab film-tab" data-film-tab="burning-man">Burning Man</button>
-        <button class="tab film-tab" data-film-tab="filmmaking">Filmmaking</button>
+        <button class="tab active" data-tab="freelance">Freelance</button>
+        <button class="tab" data-tab="events">Events</button>
+        <button class="tab" data-tab="burning-man">Burning Man</button>
+        <button class="tab" data-tab="filmmaking">Filmmaking</button>
       </nav>
 
-      <div class="film-tab-content active" id="tab-freelance">
+      <div class="tab-panel active" data-panel="freelance">
         <div class="film-projects">
           <article class="film-project">
             <div class="fp-media"><div class="fp-video-ph">Video</div></div>
@@ -102,7 +113,7 @@
               <h2 class="fp-title">Project Title</h2>
               <p class="fp-role">Director of Photography</p>
               <p class="fp-desc">Brief description of the project, creative direction, and technical approach.</p>
-              <span class="fp-meta">Short Film Â· 2024</span>
+              <span class="fp-meta">Short Film · 2024</span>
             </div>
           </article>
           <article class="film-project">
@@ -111,22 +122,22 @@
               <h2 class="fp-title">Project Title</h2>
               <p class="fp-role">Cinematographer</p>
               <p class="fp-desc">Overview of the visual concept and production context.</p>
-              <span class="fp-meta">Music Video Â· 2024</span>
+              <span class="fp-meta">Music Video · 2024</span>
             </div>
           </article>
           <article class="film-project">
             <div class="fp-media"><div class="fp-video-ph">Video</div></div>
             <div class="fp-info">
               <h2 class="fp-title">Project Title</h2>
-              <p class="fp-role">Director Â· DP</p>
+              <p class="fp-role">Director · DP</p>
               <p class="fp-desc">Description of the project scope and your creative involvement.</p>
-              <span class="fp-meta">Commercial Â· 2023</span>
+              <span class="fp-meta">Commercial · 2023</span>
             </div>
           </article>
         </div>
       </div>
 
-      <div class="film-tab-content" id="tab-events">
+      <div class="tab-panel" data-panel="events">
         <p class="film-tab-intro">Event photography and coverage across Los Angeles and beyond.</p>
         <div class="film-grid" id="film-grid">
           <div class="fi tall"><div class="ph">01</div></div>
@@ -141,7 +152,7 @@
         </div>
       </div>
 
-      <div class="film-tab-content" id="tab-burning-man">
+      <div class="tab-panel" data-panel="burning-man">
         <p class="film-tab-intro">Documentation of art, people, and moments on the playa.</p>
         <div class="bm-featured">
           <div class="fp-video-ph bm-video">Featured Video</div>
@@ -162,13 +173,13 @@
         </div>
       </div>
 
-      <div class="film-tab-content" id="tab-filmmaking">
-        <div class="cv-body cv-body--flush">
+      <div class="tab-panel" data-panel="filmmaking">
+        <div class="cv-sheet">
           <section class="cv-block">
             <h2 class="label-upper cv-label">Bio</h2>
             <div class="cv-text">
               <p>Gabe is a filmmaker and Director of Photography based in Southern California. Born in Sao Paulo, Brazil, he grew up across Bogota, Buenos Aires, and Sao Paulo before completing his education in Los Angeles.</p>
-              <p>He holds a BFA in Cine from Chapman University, with a minor in Design & Fabrication. Currently, Gabriel is co-directing and serving as Director of Photography on <em>Carnival Cosmology</em> â a documentary about the San Francisco Cacophony Society, produced alongside Mia since November 2023.</p>
+              <p>He holds a BFA in Cine from Chapman University, with a minor in Design &amp; Fabrication. Currently, Gabriel is co-directing and serving as Director of Photography on <em>Carnival Cosmology</em> — a documentary about the San Francisco Cacophony Society, produced alongside Mia since November 2023.</p>
             </div>
           </section>
           <section class="cv-block">
@@ -176,8 +187,8 @@
             <div class="cv-entries">
               <div class="cv-entry">
                 <span class="cv-entry-title">Carnival Cosmology</span>
-                <span class="cv-entry-role">Director of Photography Â· Co-Director</span>
-                <span class="cv-entry-meta">Documentary Â· In Post-Production Â· 2023âPresent</span>
+                <span class="cv-entry-role">Director of Photography · Co-Director</span>
+                <span class="cv-entry-meta">Documentary · In Post-Production · 2023–Present</span>
               </div>
             </div>
           </section>
@@ -187,7 +198,7 @@
               <div class="cv-entry">
                 <span class="cv-entry-title">Chapman University</span>
                 <span class="cv-entry-role">BFA, Cine (Film Production)</span>
-                <span class="cv-entry-meta">Minor: Design & Fabrication Â· Orange, CA Â· 2019â2023</span>
+                <span class="cv-entry-meta">Minor: Design &amp; Fabrication · Orange, CA · 2019–2023</span>
               </div>
             </div>
           </section>
@@ -200,7 +211,7 @@
               </div>
               <div class="skill-col">
                 <h3 class="label-upper skill-col-title">Lighting</h3>
-                <ul><li>Lighting Design</li><li>Gaffer Experience</li><li>LED & Practical</li></ul>
+                <ul><li>Lighting Design</li><li>Gaffer Experience</li><li>LED &amp; Practical</li></ul>
               </div>
               <div class="skill-col">
                 <h3 class="label-upper skill-col-title">Post</h3>
@@ -215,8 +226,8 @@
           <section class="cv-block">
             <h2 class="label-upper cv-label">Contact</h2>
             <div class="cv-contact-links">
-              <a href="https://www.instagram.com/gabdo.alcantara" target="_blank" rel="noopener noreferrer">Instagram â</a>
-              <a href="https://www.linkedin.com/in/gabriel-abdo-alcantara" target="_blank" rel="noopener noreferrer">LinkedIn â</a>
+              <a href="https://www.instagram.com/gabdo.alcantara" target="_blank" rel="noopener noreferrer">Instagram ↗</a>
+              <a href="https://www.linkedin.com/in/gabriel-abdo-alcantara" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
             </div>
           </section>
         </div>
@@ -224,7 +235,7 @@
     </main>
   </div>
 
-  <!-- ââ PHOTO PAGE âââââââââââââââââââââââââââââ -->
+  <!-- ── PHOTO ──────────────────────────────────── -->
   <div id="page-film-photo" class="page">
     <header class="page-hero">
       <h1 class="hero-name">Photo</h1>
@@ -250,7 +261,7 @@
       </div>
     </nav>
     <div class="photo-float-container" id="photo-float-container"></div>
-    <main class="photo-list-body">
+    <main class="page-body">
       <div class="photo-list-group">
         <h2 class="label-upper photo-list-group-title">Burning Man</h2>
         <div class="photo-list-item">
@@ -317,27 +328,7 @@
     </main>
   </div>
 
-  <!-- ââ MUSIC PAGE âââââââââââââââââââââââââââââ -->
-  <div id="page-music" class="page">
-    <header class="page-hero">
-      <h1 class="hero-name">Music</h1>
-      <div class="hero-tagline">Audio Engineering &amp; Sound</div>
-    </header>
-    <main class="music-body">
-      <div class="music-list">
-        <div class="music-entry">
-          <span class="me-num">01</span>
-          <div class="me-info">
-            <div class="me-title">Carnival Cosmology</div>
-            <div class="me-role">Audio Engineering Â· Sound Design</div>
-            <div class="me-meta">Documentary Â· 2023âPresent</div>
-          </div>
-          <div class="me-action"></div>
-        </div>
-      </div>
-    </main>
-  </div>
-
+  <!-- ── GLOBAL UI ──────────────────────────────── -->
   <button id="scroll-arrow" class="scroll-arrow" aria-label="Scroll down">
     <svg width="16" height="28" viewBox="0 0 16 28" fill="none" aria-hidden="true"><line x1="8" y1="0" x2="8" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M1 16l7 8 7-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
@@ -347,7 +338,6 @@
     <img id="lb-img" src="" alt="Expanded image" />
   </div>
 
-  <!-- SC Player UI -->
   <div id="sc-player" class="sc-player">
     <button class="sc-close" id="sc-close" aria-label="Close player">&times;</button>
     <div class="sc-track-name" id="sc-track-name">&mdash;</div>
@@ -369,14 +359,10 @@
     </div>
   </div>
 
-  <!-- SC iframe: deferred (data-src, not src) -->
-  <iframe id="sc-iframe"
-          data-src="https://w.soundcloud.com/player/?url=https%3A//soundcloud.com/gabd0%2F5-el-cronopio&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=true"
-          allow="autoplay"
-          class="sc-iframe-hidden"
-          title="SoundCloud Player"></iframe>
+  <!-- SoundCloud iframe: src is set by music.js on first Music interaction -->
+  <iframe id="sc-iframe" allow="autoplay" class="sc-iframe-hidden" title="SoundCloud Player"></iframe>
 
-  <!-- Cine auth gate (hidden template, cloned by JS) -->
+  <!-- Cine auth gate (hidden template, cloned by app.js) -->
   <div id="cine-auth-template" class="cine-login-overlay" style="display:none">
     <div class="cine-login-inner">
       <p>This page is restricted.</p>
@@ -387,24 +373,8 @@
     </div>
   </div>
 
-  <!-- Contact overlay (in HTML, toggled by JS) -->
-  <div class="contact-overlay">
-    <div class="contact-popup">
-      <button class="contact-close" aria-label="Close">&times;</button>
-      <h2>Contact</h2>
-      <form id="contact-form" action="https://formsubmit.co/ajax/gabri.a.alcantara@gmail.com" method="POST">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="hidden" name="_template" value="table">
-        <div class="contact-field"><label>Subject</label><input type="text" name="subject" required></div>
-        <div class="contact-field"><label>Message</label><textarea name="message" required></textarea></div>
-        <button type="submit">Send</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- SC API loaded dynamically by music.js on first Music visit -->
-  <script src="js/app.js?v=63"></script>
-  <script src="js/music.js?v=63"></script>
-  <script src="js/photo.js?v=63"></script>
+  <script src="js/app.js?v=64"></script>
+  <script src="js/music.js?v=64"></script>
+  <script src="js/photo.js?v=64"></script>
 </body>
 </html>
