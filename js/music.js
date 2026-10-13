@@ -117,7 +117,8 @@ const unavailable = new Set();
 const scPlayerEl = document.getElementById('sc-player'), scTrackName = document.getElementById('sc-track-name');
 const scPlayBtn = document.getElementById('sc-play'), scPrevBtn = document.getElementById('sc-prev');
 const scNextBtn = document.getElementById('sc-next'), scCloseBtn = document.getElementById('sc-close');
-const scIframe = document.getElementById('sc-iframe'), archiveEl = document.getElementById('music-archive');
+const archiveEl = document.getElementById('music-archive');
+let scIframe = document.getElementById('sc-iframe'), scApiLoaded = false;
 const iconPlay = scPlayBtn.querySelector('.icon-play'), iconPause = scPlayBtn.querySelector('.icon-pause');
 function trackLabel(idx) { return `${SC_TRACKS[idx].title} - (soundcloud)`; }
 function nextPlayable(from, dir) {
@@ -135,8 +136,7 @@ function syncArchive() {
   });
 }
 function setTrack(idx) { scTrackIdx = idx; scTrackName.textContent = trackLabel(idx); syncArchive(); }
-// Called once by READY on first load, and by load()'s callback after every track change
-// (SoundCloud does not re-fire READY after load()).
+// Fired by READY each time a widget is mounted.
 function onWidgetReady() {
   scWidget.getCurrentSound(sound => {
     if (!sound) { // private, deleted, or not embeddable
@@ -151,10 +151,30 @@ function onWidgetReady() {
     if (scPendingPlay) { scPendingPlay = false; scWidget.play(); }
   });
 }
+// Each track gets a freshly created iframe. Setting src on an existing iframe, or calling
+// widget.load(), adds an entry to the tab's history, which made the Back button appear dead.
+// A new iframe's first load doesn't, and READY fires for every mount.
 function loadIntoWidget(idx) {
   scReady = false; scPlaying = false; scLoadedIdx = idx;
-  stopTonearmSweep(); // reset duration/progress so the new track's length is used
-  scWidget.load(SC_TRACKS[idx].url, { ...SC_OPTS, callback: onWidgetReady });
+  syncPlayer(); // stop record/tonearm and reset duration/progress for the new track
+  const f = document.createElement('iframe');
+  f.id = 'sc-iframe'; f.className = 'sc-iframe-hidden'; f.title = 'SoundCloud Player'; f.allow = 'autoplay';
+  f.src = scEmbedUrl(SC_TRACKS[idx].url);
+  scIframe.replaceWith(f); scIframe = f;
+  try {
+    scWidget = SC.Widget(f);
+    scWidget.bind(SC.Widget.Events.READY, onWidgetReady);
+    scWidget.bind(SC.Widget.Events.PLAY, () => {
+      scPlaying = true; clearTimeout(scPauseTimer);
+      scWidget.getCurrentSound(s => { scTrackName.textContent = s ? `${s.title} - (soundcloud)` : trackLabel(scTrackIdx); });
+      syncPlayer();
+    });
+    scWidget.bind(SC.Widget.Events.PAUSE, () => {
+      scPlaying = false; syncPlayer('pause');
+      scPauseTimer = setTimeout(() => scPlayerEl.classList.remove('visible'), 120000);
+    });
+    scWidget.bind(SC.Widget.Events.FINISH, () => { scPlaying = false; syncPlayer('finish'); step(1, true); });
+  } catch (e) { console.warn('SoundCloud widget init failed:', e); }
 }
 if (archiveEl) {
   archiveEl.replaceChildren(...SC_TRACKS.map((t, i) => {
@@ -176,26 +196,9 @@ if (archiveEl) {
 window.initSC = function() {
   if (scInitialized) return;
   scInitialized = true;
-  scLoadedIdx = scTrackIdx;
-  scIframe.src = scEmbedUrl(SC_TRACKS[scTrackIdx].url);
   const script = document.createElement('script');
   script.src = 'https://w.soundcloud.com/player/api.js';
-  script.onload = function() {
-    try {
-      scWidget = SC.Widget(scIframe);
-      scWidget.bind(SC.Widget.Events.READY, onWidgetReady);
-      scWidget.bind(SC.Widget.Events.PLAY, () => {
-        scPlaying = true; clearTimeout(scPauseTimer);
-        scWidget.getCurrentSound(s => { scTrackName.textContent = s ? `${s.title} - (soundcloud)` : trackLabel(scTrackIdx); });
-        syncPlayer();
-      });
-      scWidget.bind(SC.Widget.Events.PAUSE, () => {
-        scPlaying = false; syncPlayer('pause');
-        scPauseTimer = setTimeout(() => scPlayerEl.classList.remove('visible'), 120000);
-      });
-      scWidget.bind(SC.Widget.Events.FINISH, () => { scPlaying = false; syncPlayer('finish'); step(1, true); });
-    } catch (e) { console.warn('SoundCloud widget init failed:', e); }
-  };
+  script.onload = () => { scApiLoaded = true; loadIntoWidget(scTrackIdx); };
   script.onerror = () => console.warn('SoundCloud API failed to load');
   document.body.appendChild(script);
 };
@@ -207,7 +210,7 @@ function selectTrack(idx, autoPlay, dir) {
   setTrack(idx);
   if (autoPlay) scPendingPlay = true;
   if (!scInitialized) { window.initSC(); return; }
-  if (!scWidget) return; // API still loading; READY will load scTrackIdx
+  if (!scApiLoaded) return; // API still loading; it mounts scTrackIdx when ready
   loadIntoWidget(idx);
 }
 function step(dir, autoPlay) { selectTrack(scTrackIdx + dir, autoPlay, dir); }
