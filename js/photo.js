@@ -62,14 +62,18 @@ class FloatingImage {
     this._enlarged = true; this.el.style.transition = 'none'; this.el.classList.add('enlarged');
     const img = this.el.querySelector('img');
     if (img && this.fullSrc) { img.dataset.thumb = img.src; img.src = this.fullSrc; }
+    this._layout();
+    this.el.style.transform = 'none';
+    photoContainer.classList.add('has-enlarged');
+  }
+  // Size and centre the enlarged photo for the current viewport (also re-run on resize).
+  _layout() {
     const maxW = window.innerWidth * ENLARGE_RATIO, maxH = window.innerHeight * ENLARGE_RATIO;
     let ew, eh;
     if (this.ar >= maxW / maxH) { ew = maxW; eh = ew / this.ar; } else { eh = maxH; ew = eh * this.ar; }
     this.el.style.width = `${Math.round(ew)}px`; this.el.style.height = `${Math.round(eh)}px`;
     this.el.style.left = `${Math.round((window.innerWidth - ew) / 2)}px`;
     this.el.style.top = `${Math.round((window.innerHeight - eh) / 2)}px`;
-    this.el.style.transform = 'none';
-    photoContainer.classList.add('has-enlarged');
   }
   tick() {
     if (this._enlarged || this.el.style.opacity === '0') return;
@@ -77,6 +81,7 @@ class FloatingImage {
   }
 }
 window.floatingImages = [];
+window.addEventListener('resize', () => window.floatingImages.forEach(fi => { if (fi._enlarged) fi._layout(); }));
 let collisionTickRegistered = false, collisionFrame = 0;
 function updatePhotoFilter() {
   const types = [];
@@ -97,6 +102,7 @@ function updatePhotoFilter() {
     const type = fi.el.dataset.type, filter = fi.el.dataset.filter;
     let match = types.includes(type);
     if (match && activeSubFilters[type]) match = activeSubFilters[type].includes(filter);
+    if (!match && fi._enlarged) fi.toggleEnlarge(); // don't leave a hidden photo enlarged
     fi.el.style.opacity = match ? '' : '0';
     fi.el.style.pointerEvents = match ? '' : 'none';
   });
@@ -146,7 +152,7 @@ window.initPhotoFloat = function() {
   if (!collisionTickRegistered) { App.registerTick(photoCollisionTick); collisionTickRegistered = true; }
 };
 window.destroyPhotoFloat = function() {
-  if (photoContainer) photoContainer.innerHTML = '';
+  if (photoContainer) { photoContainer.innerHTML = ''; photoContainer.classList.remove('has-enlarged'); }
   window.floatingImages = [];
   if (collisionTickRegistered) { App.unregisterTick(photoCollisionTick); collisionTickRegistered = false; }
   collisionFrame = 0;
