@@ -81,7 +81,9 @@ body.scrolled .nav-word,
 body.scrolled .record-el,
 #float-nav.photo-active .nav-word,
 #float-nav.music-active .nav-word,
-#float-nav.photo-active .record-el {
+#float-nav.album-active .nav-word,
+#float-nav.photo-active .record-el,
+#float-nav.album-active .record-el {
   opacity: 0; pointer-events: none;
   transition: opacity 0.25s ease;
 }
@@ -535,7 +537,6 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
   filter: grayscale(100%); transition: filter 0.4s;
 }
 .float-img:hover img { filter: grayscale(0%); }
-.float-img[data-filter="2025_bm_polaroids"] img { filter: grayscale(0%); }
 
 .float-img.enlarged {
   position: fixed; z-index: 170;
@@ -548,34 +549,72 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
   opacity: 0.2; pointer-events: none; will-change: auto;
 }
 
-/* ── PHOTO LIST ───────────────────────────────── */
+/* ── RECORD ARCHIVE (floating covers) ─────────── */
+/* Square covers that flip to the reverse side when enlarged. Physics/size match the old photos. */
 
-.photo-list-group { padding: 48px 0 0; }
+.photo-tabs[hidden] { display: none; }
 
-.photo-list-group-title {
-  margin-bottom: 16px; padding-bottom: 10px;
-  border-bottom: 1px solid var(--border);
+.float-img.record { overflow: visible; box-shadow: none; background: none; perspective: 900px; }
+.float-img.record.enlarged { box-shadow: none; }
+
+.record-inner {
+  position: relative; width: 100%; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.float-img.enlarged .record-inner,
+.album-cover.flipped .record-inner { transform: rotateY(180deg); }
+
+.record-face {
+  position: absolute; inset: 0; overflow: hidden;
+  border-radius: 3px; background: #d6d6d0;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.record-back { transform: rotateY(180deg); background: #c6c6c0; }
+.float-img.enlarged .record-face { box-shadow: 0 12px 60px rgba(0,0,0,0.3); border-radius: 4px; }
+.record-face img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.record-hint {
+  position: absolute; top: 100%; left: 0; right: 0; margin-top: 14px;
+  text-align: center; font-size: 0.7rem; font-weight: 500;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+  opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+}
+.float-img.enlarged .record-hint { opacity: 1; transition-delay: 0.35s; }
+
+.me-artist { color: var(--muted); font-weight: 400; margin-left: 8px; }
+
+/* ── RECORD PAGE (#album/<id>) ────────────────── */
+
+.page-body.album-page { padding-top: 112px; min-height: 100vh; }
+
+.album-back {
+  background: none; border: none; padding: 0; margin-bottom: 40px;
+  font: inherit; font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--muted); cursor: pointer; transition: color 0.2s;
+}
+.album-back:hover { color: var(--text); }
+
+.album { display: grid; grid-template-columns: minmax(200px, 300px) 1fr; gap: 0 48px; align-items: start; }
+
+.album-cover {
+  width: 100%; aspect-ratio: 1; padding: 0; border: none; background: none;
+  perspective: 1200px; cursor: pointer;
 }
 
-.photo-list-item {
-  display: grid; grid-template-columns: 56px 1fr 1fr 1fr;
-  gap: 0 24px; align-items: center;
-  padding: 14px 0; border-bottom: 1px solid rgba(0,0,0,0.04);
-  transition: background 0.15s;
-}
-.photo-list-item:hover { background: rgba(0,0,0,0.015); }
+.album-kicker { margin-bottom: 10px; }
+.album-title { font-size: clamp(1.6rem, 3.2vw, 2.4rem); font-weight: 500; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 6px; }
+.album-artist { font-size: 1rem; color: var(--muted); margin-bottom: 28px; }
 
-.photo-list-thumb {
-  width: 56px; height: 40px; border-radius: 2px;
-  background: var(--ph-bg); overflow: hidden;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.5rem; color: #b8b8b2;
-}
-.photo-list-thumb img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); }
+.album-facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 18px 24px; }
+.album-facts dt { margin-bottom: 4px; }
+.album-facts dd { font-size: 0.9rem; }
 
-.photo-list-location { font-size: 0.87rem; color: var(--text); }
-.photo-list-format { font-size: 0.82rem; color: var(--muted); }
-.photo-list-notes { font-size: 0.82rem; color: var(--muted); font-style: italic; }
+.album-section { grid-column: 1 / -1; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+.album-section h2 { margin-bottom: 14px; }
+.album-section audio { width: 100%; }
+.album-empty { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
 
 /* ── CINE AUTH OVERLAY ────────────────────────── */
 
@@ -625,8 +664,9 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
   .nav-word { font-size: clamp(2.8rem, 15vw, 5rem); }
   .record-el { width: clamp(140px, 40vw, 220px); height: clamp(140px, 40vw, 220px); }
   .sc-player { width: 200px; bottom: 16px; right: 16px; }
-  .photo-list-item { grid-template-columns: 40px 1fr; gap: 4px 12px; }
-  .photo-list-format, .photo-list-notes { display: none; }
+  .page-body.album-page { padding-top: 88px; }
+  .album { grid-template-columns: 1fr; gap: 28px 0; }
+  .album-cover { max-width: 280px; }
   .scroll-arrow { right: 24px; bottom: 24px; }
 }
 
@@ -634,8 +674,7 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
   .film-grid { grid-template-columns: 1fr; }
   .skills-grid { grid-template-columns: 1fr 1fr; }
   .music-entry { grid-template-columns: 32px 1fr auto; gap: 0 16px; }
-  .photo-list-item { grid-template-columns: 1fr; gap: 2px; }
-  .photo-list-thumb { display: none; }
+  .me-artist { display: block; margin: 2px 0 0; }
 }
 
 /* ── ACCESSIBILITY ────────────────────────────── */
