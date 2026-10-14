@@ -413,6 +413,27 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 }
 .sc-close:hover { color: rgba(240,237,230,0.85); }
 
+/* ── NOW PLAYING (archive tracks) ─────────────── */
+/* Same card as the SoundCloud player; only one of the two is ever visible (they pause each other). */
+.np-player { width: 290px; padding: 12px 14px 8px; }
+.np-top { display: flex; gap: 11px; align-items: center; margin: 0 18px 10px 0; min-width: 0; }
+.np-cover { flex: 0 0 42px; width: 42px; height: 42px; padding: 0; border: none; border-radius: 3px; overflow: hidden; background: rgba(255,255,255,0.08); cursor: pointer; }
+.np-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.np-cover:focus-visible { outline: 2px solid rgba(240,237,230,0.9); outline-offset: 2px; }
+.np-text { min-width: 0; }
+.np-title { font-size: 0.74rem; font-weight: 500; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-sub { font-size: 0.66rem; line-height: 1.3; opacity: 0.55; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.np-progress { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.np-time { font-size: 10px; opacity: 0.5; font-variant-numeric: tabular-nums; min-width: 28px; }
+.np-time:last-child { text-align: right; }
+#np-seek { flex: 1; -webkit-appearance: none; appearance: none; height: 14px; background: transparent; cursor: pointer; margin: 0; }
+#np-seek::-webkit-slider-runnable-track { height: 2px; background: rgba(255,255,255,0.22); border-radius: 1px; }
+#np-seek::-moz-range-track { height: 2px; background: rgba(255,255,255,0.22); border-radius: 1px; }
+#np-seek::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; margin-top: -4px; border-radius: 50%; background: #f0ede6; }
+#np-seek::-moz-range-thumb { width: 10px; height: 10px; border: none; border-radius: 50%; background: #f0ede6; }
+#np-seek:focus-visible { outline: 2px solid rgba(240,237,230,0.9); outline-offset: 2px; }
+.np-player .sc-btn:disabled { opacity: 0.3; cursor: default; }
+
 /* ── LIGHTBOX ─────────────────────────────────── */
 
 .lightbox {
@@ -702,6 +723,7 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
   .nav-word { font-size: clamp(2.8rem, 15vw, 5rem); }
   .record-el { width: clamp(140px, 40vw, 220px); height: clamp(140px, 40vw, 220px); }
   .sc-player { width: 200px; bottom: 16px; right: 16px; }
+  .np-player { width: auto; left: 16px; right: 16px; }
   .page-body.album-page { padding-top: 88px; }
   .album { grid-template-columns: 1fr; grid-template-areas: "cover" "meta"; gap: 28px 0; }
   .album-cover { max-width: 280px; }
