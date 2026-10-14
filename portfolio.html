@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=66" />
+  <link rel="stylesheet" href="css/style.css?v=68" />
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -238,95 +238,25 @@
   </div>
 
   <!-- ── PHOTO ──────────────────────────────────── -->
+  <!-- Record archive: floating covers + list. Data and rendering live in js/photo.js (ARCHIVE). -->
   <div id="page-film-photo" class="page">
     <header class="page-hero">
       <h1 class="hero-name">Photo</h1>
-      <div class="hero-tagline">Stills</div>
+      <div class="hero-tagline">Records</div>
     </header>
-    <nav class="photo-tabs" id="photo-tabs" aria-label="Photo series">
-      <div class="photo-tab-group">
-        <button class="photo-tab active" data-photo-tab="digital">digital
-          <svg class="dropdown-arrow" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </button>
-        <div class="photo-dropdown" id="photo-dropdown-digital">
-          <button class="photo-filter active" data-photo-filter="rhr1talks_web">Oakland Residency</button>
-        </div>
-      </div>
-      <div class="photo-tab-group">
-        <button class="photo-tab active" data-photo-tab="analog">analog
-          <svg class="dropdown-arrow" viewBox="0 0 10 10" fill="none" aria-hidden="true"><path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </button>
-        <div class="photo-dropdown" id="photo-dropdown-analog">
-          <button class="photo-filter active" data-photo-filter="2023_rhr_bw35">Oakland</button>
-          <button class="photo-filter active" data-photo-filter="2025_bm_polaroids">Polaroid</button>
-        </div>
-      </div>
-    </nav>
+    <!-- Filters (artist / style / media / year) return once the archive's file structure is wired in -->
+    <nav class="photo-tabs" id="photo-tabs" aria-label="Archive filters" hidden></nav>
     <div class="photo-float-container" id="photo-float-container"></div>
     <main class="page-body">
-      <div class="photo-list-group">
-        <h2 class="label-upper photo-list-group-title">Burning Man</h2>
-        <div class="photo-list-item">
-          <div class="photo-list-thumb">01</div>
-          <span class="photo-list-location">Black Rock City, NV</span>
-          <span class="photo-list-format">Digital / Sony A7III</span>
-          <span class="photo-list-notes">sunrise, deep playa</span>
-        </div>
-        <div class="photo-list-item">
-          <div class="photo-list-thumb">02</div>
-          <span class="photo-list-location">Black Rock City, NV</span>
-          <span class="photo-list-format">Film / Mamiya 645</span>
-          <span class="photo-list-notes">art car, night</span>
-        </div>
-        <div class="photo-list-item">
-          <div class="photo-list-thumb">03</div>
-          <span class="photo-list-location">Black Rock City, NV</span>
-          <span class="photo-list-format">Digital / Sony A7III</span>
-          <span class="photo-list-notes">temple, golden hour</span>
-        </div>
-      </div>
-      <div class="photo-list-group">
-        <h2 class="label-upper photo-list-group-title">Fashion</h2>
-        <div class="photo-list-item">
-          <div class="photo-list-thumb">04</div>
-          <span class="photo-list-location">Los Angeles, CA</span>
-          <span class="photo-list-format">Digital / Sony A7III</span>
-          <span class="photo-list-notes">studio, editorial</span>
-        </div>
-        <div class="photo-list-item">
-          <div class="photo-list-thumb">05</div>
-          <span class="photo-list-location">Los Angeles, CA</span>
-          <span class="photo-list-format">Film / Mamiya 645</span>
-          <span class="photo-list-notes">location, natural light</span>
-        </div>
-        <div class="photo-list-item">
-          <div class="photo-list-thumb">06</div>
-          <span class="photo-list-location">Sao Paulo, BR</span>
-          <span class="photo-list-format">Digital / Sony A7III</span>
-          <span class="photo-list-notes">street, candid</span>
-        </div>
-      </div>
-      <div class="photo-list-group">
-        <h2 class="label-upper photo-list-group-title">Portrait</h2>
-        <div class="photo-list-item">
-          <div class="photo-list-thumb">07</div>
-          <span class="photo-list-location">Los Angeles, CA</span>
-          <span class="photo-list-format">Film / Mamiya 645</span>
-          <span class="photo-list-notes">available light, interior</span>
-        </div>
-        <div class="photo-list-item">
-          <div class="photo-list-thumb">08</div>
-          <span class="photo-list-location">Buenos Aires, AR</span>
-          <span class="photo-list-format">Digital / Sony A7III</span>
-          <span class="photo-list-notes">environmental portrait</span>
-        </div>
-        <div class="photo-list-item">
-          <div class="photo-list-thumb">09</div>
-          <span class="photo-list-location">Bogota, CO</span>
-          <span class="photo-list-format">Film / Mamiya 645</span>
-          <span class="photo-list-notes">overcast, rooftop</span>
-        </div>
-      </div>
+      <div class="music-list" id="archive-list" aria-label="Record archive"></div>
+    </main>
+  </div>
+
+  <!-- ── RECORD PAGE (#album/<id>) ─────────────── -->
+  <div id="page-album" class="page">
+    <main class="page-body album-page">
+      <button type="button" class="album-back" id="album-back">← Archive</button>
+      <article class="album" id="album-view"></article>
     </main>
   </div>
 
@@ -375,8 +305,8 @@
     </div>
   </div>
 
-  <script src="js/app.js?v=66"></script>
+  <script src="js/app.js?v=68"></script>
   <script src="js/music.js?v=67"></script>
-  <script src="js/photo.js?v=66"></script>
+  <script src="js/photo.js?v=68"></script>
 </body>
 </html>
