@@ -4,6 +4,9 @@
 // each floating item is now a square record cover that flips to its reverse side when enlarged.
 const PHOTO_FRICTION = 0.9917, PHOTO_DRIFT = 0.00184, PHOTO_MAX_SPEED = 2.3;
 const THUMB_HEIGHT = 72, COLLISION_BUFFER = 20, COLLISION_FORCE = 0.03;
+// Desktop (wider than the 900px breakpoint) shows the floating covers 10% larger.
+const DESKTOP_MQ = window.matchMedia('(min-width: 901px)');
+const thumbSize = () => Math.round(THUMB_HEIGHT * (DESKTOP_MQ.matches ? 1.1 : 1));
 const ENLARGE_FRACTION = 0.34, ENLARGE_MIN = 180, ENLARGE_MAX = 300; // "slightly" enlarged square
 const INFO_GAP = 32, INFO_MIN_W = 200, INFO_MAX_W = 260; // details panel beside the enlarged cover
 const PHOTO_CONFIG = { friction: PHOTO_FRICTION, drift: PHOTO_DRIFT, maxSpeed: PHOTO_MAX_SPEED, centerY: 0.42 };
@@ -53,8 +56,9 @@ function openAlbum(id) { App.showPage('album', 'push', id); }
 class FloatingImage {
   constructor(el, x, y, angle, rec) {
     this.el = el; this.x = x; this.y = y; this.rec = rec;
-    this.ar = 1; this.h = THUMB_HEIGHT; this.w = THUMB_HEIGHT;
-    el.style.width = `${THUMB_HEIGHT}px`; el.style.height = `${THUMB_HEIGHT}px`;
+    const t = thumbSize();
+    this.ar = 1; this.h = t; this.w = t;
+    el.style.width = `${t}px`; el.style.height = `${t}px`;
     this._driftAngle = angle;
     this._driftAngleSpeed = (Math.random() < 0.5 ? 1 : -1) * (0.0003 + Math.random() * 0.0005);
     this.vx = 0; this.vy = 0;
@@ -66,8 +70,9 @@ class FloatingImage {
   measure() { this.w = this.el.offsetWidth; this.h = this.el.offsetHeight; }
   _shrink(fi) {
     fi._enlarged = false; fi.el.style.transition = 'none'; fi.el.classList.remove('enlarged');
-    fi.w = THUMB_HEIGHT; fi.h = THUMB_HEIGHT;
-    fi.el.style.width = `${THUMB_HEIGHT}px`; fi.el.style.height = `${THUMB_HEIGHT}px`;
+    const t = thumbSize();
+    fi.w = t; fi.h = t;
+    fi.el.style.width = `${t}px`; fi.el.style.height = `${t}px`;
     requestAnimationFrame(() => { fi.el.style.transition = ''; });
   }
   toggleEnlarge() {
@@ -116,6 +121,10 @@ class FloatingImage {
 }
 window.floatingImages = [];
 window.addEventListener('resize', () => window.floatingImages.forEach(fi => { if (fi._enlarged) fi._layout(); }));
+DESKTOP_MQ.addEventListener('change', () => {
+  const t = thumbSize();
+  window.floatingImages.forEach(fi => { if (!fi._enlarged) { fi.w = t; fi.h = t; fi.el.style.width = `${t}px`; fi.el.style.height = `${t}px`; } });
+});
 let collisionTickRegistered = false, collisionFrame = 0;
 function photoCollisionTick() {
   const imgs = window.floatingImages;
