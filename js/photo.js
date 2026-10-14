@@ -202,7 +202,6 @@ window.renderAlbum = function(id) {
       <h1 class="album-title">${esc(rec.title)}</h1>
       <p class="album-artist">${esc(rec.artist)}</p>
       <dl class="album-facts">${facts}</dl>
-      ${rec.discogs ? `<a class="album-link label-upper" href="${esc(rec.discogs)}" target="_blank" rel="noopener noreferrer">Discogs ↗</a>` : ''}
     </div>
     ${rec.back ? `<button type="button" class="album-cover" aria-label="Flip cover">${cardHTML(rec, false)}</button>`
       : `<div class="album-cover album-cover--static">${cardHTML(rec, false)}</div>`}
