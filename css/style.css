@@ -574,6 +574,14 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 .record-back { transform: rotateY(180deg); background: #c6c6c0; }
 .float-img.enlarged .record-face { box-shadow: 0 12px 60px rgba(0,0,0,0.3); border-radius: 4px; }
 .record-face img { width: 100%; height: 100%; object-fit: cover; display: block; }
+/* Reverse side when there's no back scan yet: the basics, printed like a sleeve back. */
+.record-back-text {
+  position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px;
+  padding: 11%; text-align: left; color: #2b2b28; font-size: 0.8rem; line-height: 1.3;
+}
+.rbt-title { font-weight: 600; font-size: 1.05em; }
+.rbt-artist { color: #45453f; }
+.rbt-meta { margin-top: 6px; font-size: 0.82em; letter-spacing: 0.04em; color: #5d5d56; }
 
 .record-hint {
   position: absolute; top: 100%; left: 0; right: 0; margin-top: 14px;
@@ -615,6 +623,14 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 .album-section h2 { margin-bottom: 14px; }
 .album-section audio { width: 100%; }
 .album-empty { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
+.album-link { display: inline-block; margin-top: 24px; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.album-link:hover { color: var(--text); }
+
+.tracklist { list-style: none; margin: 0; padding: 0; columns: 2 280px; column-gap: 48px; }
+.tracklist li { display: flex; gap: 14px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; break-inside: avoid; }
+.tr-pos { flex: 0 0 2.2em; color: var(--muted); font-size: 0.8rem; padding-top: 1px; }
+.tr-title { flex: 1; }
+.tr-dur { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
 
 /* ── CINE AUTH OVERLAY ────────────────────────── */
 
