@@ -5,7 +5,7 @@ const EDGE_PUSH_SOFT = 0.003, EDGE_PUSH_BOTTOM = 0.025, BOUNCE_DAMPING = 0.2;
 const REPULSE_FORCE = 0.045, REPULSE_BUFFER = 40, REPULSE_HARD_THRESHOLD = 0.85, REPULSE_HARD_PUSH = 0.12;
 const NAV_CONFIG = { friction: FRICTION, drift: DRIFT_FORCE, maxSpeed: MAX_SPEED, centerY: 0.42 };
 const DEFAULT_PAGE = 'sobre';
-const pages = { sobre: document.getElementById('page-sobre'), music: document.getElementById('page-music'), film: document.getElementById('page-film'), 'film-photo': document.getElementById('page-film-photo') };
+const pages = { sobre: document.getElementById('page-sobre'), music: document.getElementById('page-music'), film: document.getElementById('page-film'), 'film-photo': document.getElementById('page-film-photo'), album: document.getElementById('page-album') };
 const navWords = document.querySelectorAll('.nav-word');
 const floatNav = document.getElementById('float-nav'), navPulldownEl = document.getElementById('nav-pulldown');
 const photoTabsEl = document.getElementById('photo-tabs'), scrollArrow = document.getElementById('scroll-arrow');
@@ -129,10 +129,15 @@ function showCineLogin(onSuccess) {
   userEl.addEventListener('keydown', e => { if (e.key === 'Enter') passEl.focus(); });
   userEl.focus();
 }
-let bobInterval = null, currentKey = null;
-const urlFor = key => key === DEFAULT_PAGE ? location.pathname + location.search : '#' + key;
+let bobInterval = null, currentKey = null, currentParam = null;
+// Hash format: #page or #page/param (e.g. #album/r01)
+const urlFor = (key, param) => key === DEFAULT_PAGE ? location.pathname + location.search : '#' + key + (param ? '/' + param : '');
+function parseHash() {
+  const [k, ...rest] = location.hash.replace('#', '').split('/');
+  return pages[k] ? { key: k, param: rest.join('/') || null } : { key: DEFAULT_PAGE, param: null };
+}
 // history: 'push' for user navigation, 'replace' for first load, 'none' when responding to Back/Forward
-function showPage(key, historyMode = 'push') {
+function showPage(key, historyMode = 'push', param = null) {
   if (!pages[key]) return;
   if (key === 'film' && sessionStorage.getItem('cine_auth') !== '1') { showCineLogin(() => showPage('film', historyMode)); return; }
   closeLightbox();
@@ -140,19 +145,21 @@ function showPage(key, historyMode = 'push') {
   pages[key].classList.add('active');
   navWords.forEach(w => { const on = w.dataset.page === key; w.classList.toggle('active', on); w.classList.toggle('inactive', !on); });
   recordVisible = (key === 'music'); recordEl.classList.toggle('visible', recordVisible);
-  if (historyMode === 'replace') history.replaceState(null, '', urlFor(key));
-  else if (historyMode === 'push' && key !== currentKey) history.pushState(null, '', urlFor(key));
-  currentKey = key;
+  if (historyMode === 'replace') history.replaceState(null, '', urlFor(key, param));
+  else if (historyMode === 'push' && (key !== currentKey || param !== currentParam)) history.pushState(null, '', urlFor(key, param));
+  currentKey = key; currentParam = param;
+  if (key !== 'album') document.title = 'MusicaNossa';
   window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  const isPhoto = key === 'film-photo', isMusic = key === 'music';
-  floatNav.classList.toggle('photo-active', isPhoto); floatNav.classList.toggle('music-active', isMusic);
-  navPulldownEl.classList.toggle('visible', isPhoto || isMusic);
+  const isPhoto = key === 'film-photo', isMusic = key === 'music', isAlbum = key === 'album';
+  floatNav.classList.toggle('photo-active', isPhoto); floatNav.classList.toggle('music-active', isMusic); floatNav.classList.toggle('album-active', isAlbum);
+  navPulldownEl.classList.toggle('visible', isPhoto || isMusic || isAlbum);
   photoTabsEl.classList.toggle('visible', isPhoto);
   if (typeof window.initPhotoFloat === 'function' && typeof window.destroyPhotoFloat === 'function') {
     if (isPhoto) window.initPhotoFloat(); else window.destroyPhotoFloat();
   }
-  if (scrollArrow) scrollArrow.style.display = isPhoto ? 'none' : '';
+  if (scrollArrow) scrollArrow.style.display = isPhoto || isAlbum ? 'none' : '';
   if (isMusic && typeof window.initSC === 'function') window.initSC();
+  if (isAlbum && typeof window.renderAlbum === 'function') window.renderAlbum(param);
   wakeLoop();
 }
 navWords.forEach(w => {
@@ -160,13 +167,13 @@ navWords.forEach(w => {
   w.addEventListener('mouseenter', () => w.classList.remove('inactive'));
   w.addEventListener('mouseleave', () => { if (!w.classList.contains('active')) w.classList.add('inactive'); });
 });
-window.addEventListener('popstate', () => { const h = location.hash.replace('#', ''); showPage(pages[h] ? h : DEFAULT_PAGE, 'none'); });
+window.addEventListener('popstate', () => { const { key, param } = parseHash(); showPage(key, 'none', param); });
 // Cancelling the Cine login: put the URL back to the page actually showing (or show the default on first load).
 function cancelCineLogin() {
   const cl = document.getElementById('cine-login-overlay');
   if (!cl) return;
   cl.remove();
-  if (currentKey) history.replaceState(null, '', urlFor(currentKey)); else showPage(DEFAULT_PAGE, 'replace');
+  if (currentKey) history.replaceState(null, '', urlFor(currentKey, currentParam)); else showPage(DEFAULT_PAGE, 'replace');
 }
 // Skip link: focus the active page's content instead of changing the hash (which would trigger routing).
 const skipLink = document.querySelector('.skip-link');
@@ -189,7 +196,7 @@ window.addEventListener('scroll', () => {
   const scrolled = window.scrollY > window.innerHeight * 0.15;
   document.body.classList.toggle('scrolled', scrolled);
   if (scrollArrow) scrollArrow.classList.toggle('visible', window.scrollY <= 40);
-  if (navPulldownEl && !floatNav.classList.contains('photo-active') && !floatNav.classList.contains('music-active'))
+  if (navPulldownEl && !['photo-active', 'music-active', 'album-active'].some(c => floatNav.classList.contains(c)))
     navPulldownEl.classList.toggle('visible', scrolled);
 }, { passive: true });
 if (scrollArrow) {
@@ -230,8 +237,7 @@ document.addEventListener('click', () => {
   if (pulldownMenu) pulldownMenu.classList.remove('open');
   if (pulldownToggle) pulldownToggle.setAttribute('aria-expanded', 'false');
 });
-const _h = location.hash.replace('#', '');
-showPage(pages[_h] ? _h : DEFAULT_PAGE, 'replace');
+{ const { key, param } = parseHash(); showPage(key, 'replace', param); }
 window.App = {
   mouseX: () => mouseX, mouseY: () => mouseY, mouseSpeed: () => mouseSpeed, mouseActive: () => mouseActive,
   tickEntity, NAV_CONFIG, showPage, wakeLoop, registerTick, unregisterTick,
