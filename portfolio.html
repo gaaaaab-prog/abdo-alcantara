@@ -4,22 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MusicaNossa</title>
-  <meta name="description" content="MusicaNossa — music playback and archive by Gabriel Abdo Alcantara." />
+  <meta name="description" content="MusicaNossa — record archive and music by Gabriel Abdo Alcantara." />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <link rel="canonical" href="https://musicanossa.net/portfolio.html" />
   <meta name="theme-color" content="#0f0f0f" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self';
-                 script-src 'self' 'unsafe-inline' https://w.soundcloud.com;
+                 script-src 'self' 'unsafe-inline';
                  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
                  font-src 'self' https://fonts.gstatic.com;
-                 frame-src https://w.soundcloud.com;
                  img-src 'self' data:;
                  media-src 'self' https://audio.musicanossa.net;
                  connect-src 'self';" />
   <meta property="og:title" content="MusicaNossa" />
-  <meta property="og:description" content="MusicaNossa — music playback and archive by Gabriel Abdo Alcantara." />
+  <meta property="og:description" content="MusicaNossa — record archive and music by Gabriel Abdo Alcantara." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://musicanossa.net/portfolio.html" />
   <meta property="og:image" content="https://musicanossa.net/images/og-preview.png" />
@@ -28,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=74" />
+  <link rel="stylesheet" href="css/style.css?v=75" />
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -38,22 +37,10 @@
   <!-- ── FLOATING NAV ───────────────────────────── -->
   <nav id="float-nav" aria-label="Main navigation">
     <button class="nav-word active" data-page="sobre">Sobre</button>
-    <button class="nav-word" data-page="music">Music</button>
+    <button class="nav-word" data-page="selos">Selos</button>
     <button class="nav-word" data-page="film">Cine</button>
     <button class="nav-word" data-page="film-photo">Acervo</button>
 
-    <div class="record-el" id="record">
-      <div class="record-vinyl" id="record-vinyl"></div>
-      <div class="tonearm-el" id="tonearm">
-        <svg viewBox="0 0 280 70" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M 200 34 C 160 33 100 37 55 47" stroke="#aaa" stroke-width="3" stroke-linecap="round"/>
-          <line x1="55" y1="47" x2="18" y2="56" stroke="#aaa" stroke-width="2.5" stroke-linecap="round"/>
-          <circle cx="18" cy="56" r="2.5" fill="#bbb"/>
-          <circle cx="200" cy="34" r="5.5" fill="#2e2e2e" stroke="#666" stroke-width="1.5"/>
-          <circle cx="200" cy="34" r="2" fill="#888"/>
-        </svg>
-      </div>
-    </div>
   </nav>
 
   <div class="nav-pulldown" id="nav-pulldown">
@@ -62,7 +49,7 @@
     </button>
     <div class="pulldown-menu" id="pulldown-menu">
       <button data-page="sobre">Sobre</button>
-      <button data-page="music">Music</button>
+      <button data-page="selos">Selos</button>
       <button data-page="film">Cine</button>
       <button data-page="film-photo">Acervo</button>
     </div>
@@ -82,19 +69,21 @@
     </main>
   </div>
 
-  <!-- ── MUSIC (primary) ────────────────────────── -->
-  <div id="page-music" class="page">
+  <!-- ── SELOS ──────────────────────────────────── -->
+  <div id="page-selos" class="page">
     <header class="page-hero">
-      <h1 class="hero-name">Music</h1>
-      <div class="hero-tagline">Archive</div>
+      <h1 class="hero-name">Selos</h1>
     </header>
     <main class="page-body">
-      <!-- Rendered by music.js from SC_TRACKS -->
-      <div class="music-list" id="music-archive" aria-label="Track archive"></div>
+      <section class="resume-section">
+        <div class="resume-text">
+          <p>Em breve.</p>
+        </div>
+      </section>
     </main>
   </div>
 
-  <!-- ── CINE (to be merged into Music) ─────────── -->
+  <!-- ── CINE ───────────────────────────────────── -->
   <div id="page-film" class="page">
     <header class="page-hero">
       <h1 class="hero-name">Cine</h1>
@@ -238,7 +227,7 @@
     </main>
   </div>
 
-  <!-- ── PHOTO ──────────────────────────────────── -->
+  <!-- ── ACERVO ─────────────────────────────────── -->
   <!-- Record archive: floating covers + list. Data: js/archive-data.js (generated); rendering: js/photo.js. -->
   <div id="page-film-photo" class="page">
     <header class="page-hero">
@@ -249,7 +238,7 @@
     <nav class="photo-tabs" id="photo-tabs" aria-label="Archive filters" hidden></nav>
     <div class="photo-float-container" id="photo-float-container"></div>
     <main class="page-body">
-      <div class="music-list" id="archive-list" aria-label="Record archive"></div>
+      <div class="archive-list" id="archive-list" aria-label="Record archive"></div>
     </main>
   </div>
 
@@ -271,30 +260,9 @@
     <img id="lb-img" src="" alt="Expanded image" />
   </div>
 
-  <div id="sc-player" class="sc-player">
-    <button class="sc-close" id="sc-close" aria-label="Close player">&times;</button>
-    <div class="sc-track-name" id="sc-track-name">&mdash;</div>
-    <div class="sc-progress-row">
-      <span id="sc-elapsed">0:00</span>
-      <div class="sc-progress-wrap"><div id="sc-progress-bar"></div></div>
-    </div>
-    <div class="sc-controls">
-      <button class="sc-btn" id="sc-prev" aria-label="Previous">
-        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="3" height="14" rx="1"/><path d="M7 10L17 3v14z"/></svg>
-      </button>
-      <button class="sc-btn sc-btn-main" id="sc-play" aria-label="Play / Pause">
-        <svg class="icon-play" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5 3l14 7-14 7z"/></svg>
-        <svg class="icon-pause" viewBox="0 0 20 20" fill="currentColor" style="display:none" aria-hidden="true"><rect x="4" y="3" width="4" height="14" rx="1"/><rect x="12" y="3" width="4" height="14" rx="1"/></svg>
-      </button>
-      <button class="sc-btn" id="sc-next" aria-label="Next">
-        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="14" y="3" width="3" height="14" rx="1"/><path d="M13 10L3 3v14z"/></svg>
-      </button>
-    </div>
-  </div>
-
   <!-- Now playing (archive tracks from audio.musicanossa.net). Driven by js/photo.js; shown while a track is loaded. -->
-  <div id="np-player" class="sc-player np-player" role="region" aria-label="Now playing">
-    <button class="sc-close" id="np-close" aria-label="Stop and close player">&times;</button>
+  <div id="np-player" class="player" role="region" aria-label="Now playing">
+    <button class="player-close" id="np-close" aria-label="Stop and close player">&times;</button>
     <div class="np-top">
       <button class="np-cover" id="np-cover" aria-label="Open record"><img id="np-img" alt="" /></button>
       <div class="np-text">
@@ -307,22 +275,19 @@
       <input type="range" id="np-seek" min="0" max="1000" step="1" value="0" aria-label="Position in track" />
       <span class="np-time" id="np-total">0:00</span>
     </div>
-    <div class="sc-controls">
-      <button class="sc-btn" id="np-prev" aria-label="Previous track">
+    <div class="player-controls">
+      <button class="player-btn" id="np-prev" aria-label="Previous track">
         <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="3" height="14" rx="1"/><path d="M7 10L17 3v14z"/></svg>
       </button>
-      <button class="sc-btn sc-btn-main" id="np-play" aria-label="Play">
+      <button class="player-btn player-btn-main" id="np-play" aria-label="Play">
         <svg class="icon-play" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5 3l14 7-14 7z"/></svg>
         <svg class="icon-pause" viewBox="0 0 20 20" fill="currentColor" style="display:none" aria-hidden="true"><rect x="4" y="3" width="4" height="14" rx="1"/><rect x="12" y="3" width="4" height="14" rx="1"/></svg>
       </button>
-      <button class="sc-btn" id="np-next" aria-label="Next track">
+      <button class="player-btn" id="np-next" aria-label="Next track">
         <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="14" y="3" width="3" height="14" rx="1"/><path d="M13 10L3 3v14z"/></svg>
       </button>
     </div>
   </div>
-
-  <!-- SoundCloud iframe: src is set by music.js on first Music interaction -->
-  <iframe id="sc-iframe" allow="autoplay" class="sc-iframe-hidden" title="SoundCloud Player"></iframe>
 
   <!-- Cine auth gate (hidden template, cloned by app.js) -->
   <div id="cine-auth-template" class="cine-login-overlay" style="display:none">
@@ -335,9 +300,8 @@
     </div>
   </div>
 
-  <script src="js/app.js?v=69"></script>
-  <script src="js/music.js?v=68"></script>
+  <script src="js/app.js?v=70"></script>
   <script src="js/archive-data.js?v=5"></script>
-  <script src="js/photo.js?v=75"></script>
+  <script src="js/photo.js?v=76"></script>
 </body>
 </html>
