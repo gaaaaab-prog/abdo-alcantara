@@ -5,7 +5,9 @@ const EDGE_PUSH_SOFT = 0.003, EDGE_PUSH_BOTTOM = 0.025, BOUNCE_DAMPING = 0.2;
 const REPULSE_FORCE = 0.045, REPULSE_BUFFER = 40, REPULSE_HARD_THRESHOLD = 0.85, REPULSE_HARD_PUSH = 0.12;
 const NAV_CONFIG = { friction: FRICTION, drift: DRIFT_FORCE, maxSpeed: MAX_SPEED, centerY: 0.42 };
 const DEFAULT_PAGE = 'sobre';
-const pages = { sobre: document.getElementById('page-sobre'), music: document.getElementById('page-music'), film: document.getElementById('page-film'), 'film-photo': document.getElementById('page-film-photo'), album: document.getElementById('page-album') };
+// Only pages present in the HTML are routable, so a deploy where the HTML and JS briefly disagree can't crash.
+const pages = Object.fromEntries(Object.entries({ sobre: 'page-sobre', music: 'page-music', film: 'page-film', 'film-photo': 'page-film-photo', album: 'page-album' })
+  .map(([k, id]) => [k, document.getElementById(id)]).filter(([, el]) => el));
 const navWords = document.querySelectorAll('.nav-word');
 const floatNav = document.getElementById('float-nav'), navPulldownEl = document.getElementById('nav-pulldown');
 const photoTabsEl = document.getElementById('photo-tabs'), scrollArrow = document.getElementById('scroll-arrow');
