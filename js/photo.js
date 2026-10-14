@@ -1,55 +1,52 @@
 (function() {
 'use strict';
+// Record archive (the "Photo" page). Physics and styling are unchanged from the photo version;
+// each floating item is now a square record cover that flips to its reverse side when enlarged.
 const PHOTO_FRICTION = 0.9917, PHOTO_DRIFT = 0.00184, PHOTO_MAX_SPEED = 2.3;
-const THUMB_HEIGHT = 72, ENLARGE_RATIO = 0.65, COLLISION_BUFFER = 20, COLLISION_FORCE = 0.03;
+const THUMB_HEIGHT = 72, COLLISION_BUFFER = 20, COLLISION_FORCE = 0.03;
+const ENLARGE_FRACTION = 0.34, ENLARGE_MIN = 180, ENLARGE_MAX = 300; // "slightly" enlarged square
 const PHOTO_CONFIG = { friction: PHOTO_FRICTION, drift: PHOTO_DRIFT, maxSpeed: PHOTO_MAX_SPEED, centerY: 0.42 };
-const PHOTO_PLACEHOLDERS = [
-  { src: 'images/photo/thumb/digital/rhr1talks_web/altman-1.jpg', full: 'images/photo/full/digital/rhr1talks_web/altman-1.jpg', type: 'digital', ar: 0.667 },
-  { src: 'images/photo/thumb/digital/rhr1talks_web/altman-2.jpg', full: 'images/photo/full/digital/rhr1talks_web/altman-2.jpg', type: 'digital', ar: 0.667 },
-  { src: 'images/photo/thumb/digital/rhr1talks_web/altman-3.jpg', full: 'images/photo/full/digital/rhr1talks_web/altman-3.jpg', type: 'digital', ar: 1.778 },
-  { src: 'images/photo/thumb/digital/rhr1talks_web/altman-4.jpg', full: 'images/photo/full/digital/rhr1talks_web/altman-4.jpg', type: 'digital', ar: 0.680 },
-  { src: 'images/photo/thumb/digital/rhr1talks_web/altman-5.jpg', full: 'images/photo/full/digital/rhr1talks_web/altman-5.jpg', type: 'digital', ar: 0.569 },
-  { src: 'images/photo/thumb/digital/rhr1talks_web/altman-6.jpg', full: 'images/photo/full/digital/rhr1talks_web/altman-6.jpg', type: 'digital', ar: 1.500 },
-  { src: 'images/photo/thumb/digital/rhr1talks_web/altman-7.jpg', full: 'images/photo/full/digital/rhr1talks_web/altman-7.jpg', type: 'digital', ar: 1.500 },
-  { src: 'images/photo/thumb/digital/rhr1talks_web/altman-8.jpg', full: 'images/photo/full/digital/rhr1talks_web/altman-8.jpg', type: 'digital', ar: 1.500 },
-  { src: 'images/photo/thumb/digital/rhr1talks_web/altman-9.jpg', full: 'images/photo/full/digital/rhr1talks_web/altman-9.jpg', type: 'digital', ar: 1.500 },
-  { src: 'images/photo/thumb/analog/2023_rhr_bw35/zoetrope_web-1.jpg', full: 'images/photo/full/analog/2023_rhr_bw35/zoetrope_web-1.jpg', type: 'analog', ar: 1.508 },
-  { src: 'images/photo/thumb/analog/2023_rhr_bw35/zoetrope_web-2.jpg', full: 'images/photo/full/analog/2023_rhr_bw35/zoetrope_web-2.jpg', type: 'analog', ar: 1.508 },
-  { src: 'images/photo/thumb/analog/2023_rhr_bw35/zoetrope_web-3.jpg', full: 'images/photo/full/analog/2023_rhr_bw35/zoetrope_web-3.jpg', type: 'analog', ar: 1.508 },
-  { src: 'images/photo/thumb/analog/2025_bm_polaroids/WEB_bm_polaroid-1.jpg', full: 'images/photo/full/analog/2025_bm_polaroids/WEB_bm_polaroid-1.jpg', type: 'analog', ar: 0.805 },
-  { src: 'images/photo/thumb/analog/2025_bm_polaroids/WEB_bm_polaroid-2.jpg', full: 'images/photo/full/analog/2025_bm_polaroids/WEB_bm_polaroid-2.jpg', type: 'analog', ar: 0.810 },
-  { src: 'images/photo/thumb/analog/2025_bm_polaroids/WEB_bm_polaroid-3.jpg', full: 'images/photo/full/analog/2025_bm_polaroids/WEB_bm_polaroid-3.jpg', type: 'analog', ar: 0.811 },
-  { src: 'images/photo/thumb/analog/2025_bm_polaroids/WEB_bm_polaroid-4.jpg', full: 'images/photo/full/analog/2025_bm_polaroids/WEB_bm_polaroid-4.jpg', type: 'analog', ar: 1.245 },
-  { src: 'images/photo/thumb/analog/2025_bm_polaroids/WEB_bm_polaroid-5.jpg', full: 'images/photo/full/analog/2025_bm_polaroids/WEB_bm_polaroid-5.jpg', type: 'analog', ar: 1.244 },
-  { src: 'images/photo/thumb/analog/2025_bm_polaroids/WEB_bm_polaroid-6.jpg', full: 'images/photo/full/analog/2025_bm_polaroids/WEB_bm_polaroid-6.jpg', type: 'analog', ar: 1.244 },
-  { src: 'images/photo/thumb/analog/2025_bm_polaroids/WEB_bm_polaroid-7.jpg', full: 'images/photo/full/analog/2025_bm_polaroids/WEB_bm_polaroid-7.jpg', type: 'analog', ar: 1.245 },
-  { src: 'images/photo/thumb/analog/2025_bm_polaroids/WEB_bm_polaroid-8.jpg', full: 'images/photo/full/analog/2025_bm_polaroids/WEB_bm_polaroid-8.jpg', type: 'analog', ar: 1.244 },
-  { src: 'images/photo/thumb/analog/2025_bm_polaroids/WEB_bm_polaroid-9.jpg', full: 'images/photo/full/analog/2025_bm_polaroids/WEB_bm_polaroid-9.jpg', type: 'analog', ar: 1.249 },
-  { src: 'images/photo/thumb/analog/2025_bm_polaroids/WEB_bm_polaroid-10.jpg', full: 'images/photo/full/analog/2025_bm_polaroids/WEB_bm_polaroid-10.jpg', type: 'analog', ar: 0.803 },
-  { src: 'images/photo/thumb/analog/2025_bm_polaroids/WEB_bm_polaroid-11.jpg', full: 'images/photo/full/analog/2025_bm_polaroids/WEB_bm_polaroid-11.jpg', type: 'analog', ar: 1.247 },
-];
+
+// Single source of truth for the archive. Placeholder entries until the real file structure is
+// wired in: front/back = cover image paths ('' = gray placeholder), audio = file path, notes = HTML.
+const ARCHIVE = Array.from({ length: 24 }, (_, i) => {
+  const n = String(i + 1).padStart(2, '0');
+  return { id: `r${n}`, num: n, title: 'Untitled', artist: 'Artist', year: '', media: '', style: '', label: '', front: '', back: '', audio: '', notes: '' };
+});
+const byId = id => ARCHIVE.find(r => r.id === id) || null;
+
 const photoContainer = document.getElementById('photo-float-container');
-const photoTabGroups = document.querySelectorAll('.photo-tab-group'), photoTabs = document.querySelectorAll('.photo-tab');
+const listEl = document.getElementById('archive-list');
+const albumView = document.getElementById('album-view');
+
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function face(src, side, rec) {
+  const img = src ? `<img src="${esc(src)}" alt="${esc(rec.title)} — ${side}" loading="lazy" />` : '';
+  return `<div class="record-face record-${side}">${img}</div>`;
+}
+function cardHTML(rec) {
+  return `<div class="record-inner">${face(rec.front, 'front', rec)}${face(rec.back, 'back', rec)}</div>`;
+}
+function openAlbum(id) { App.showPage('album', 'push', id); }
+
 class FloatingImage {
-  constructor(el, x, y, angle, fullSrc) {
-    this.el = el; this.x = x; this.y = y;
-    this.ar = parseFloat(el.dataset.ar) || 1; this.fullSrc = fullSrc;
-    this.h = THUMB_HEIGHT; this.w = Math.round(THUMB_HEIGHT * this.ar);
-    el.style.width = `${this.w}px`; el.style.height = `${THUMB_HEIGHT}px`;
+  constructor(el, x, y, angle, rec) {
+    this.el = el; this.x = x; this.y = y; this.rec = rec;
+    this.ar = 1; this.h = THUMB_HEIGHT; this.w = THUMB_HEIGHT;
+    el.style.width = `${THUMB_HEIGHT}px`; el.style.height = `${THUMB_HEIGHT}px`;
     this._driftAngle = angle;
     this._driftAngleSpeed = (Math.random() < 0.5 ? 1 : -1) * (0.0003 + Math.random() * 0.0005);
     this.vx = 0; this.vy = 0;
     this._enlarged = false;
     el.style.transform = `translate3d(${x}px,${y}px,0)`;
-    el.addEventListener('click', e => { e.stopPropagation(); if (!this._enlarged) this.toggleEnlarge(); });
+    // First click: enlarge + flip to the reverse side. Click again: open the record's page.
+    el.addEventListener('click', e => { e.stopPropagation(); if (this._enlarged) openAlbum(rec.id); else this.toggleEnlarge(); });
   }
   measure() { this.w = this.el.offsetWidth; this.h = this.el.offsetHeight; }
   _shrink(fi) {
     fi._enlarged = false; fi.el.style.transition = 'none'; fi.el.classList.remove('enlarged');
-    fi.w = Math.round(THUMB_HEIGHT * fi.ar); fi.h = THUMB_HEIGHT;
-    fi.el.style.width = `${fi.w}px`; fi.el.style.height = `${THUMB_HEIGHT}px`;
-    const img = fi.el.querySelector('img');
-    if (img && img.dataset.thumb) img.src = img.dataset.thumb;
+    fi.w = THUMB_HEIGHT; fi.h = THUMB_HEIGHT;
+    fi.el.style.width = `${THUMB_HEIGHT}px`; fi.el.style.height = `${THUMB_HEIGHT}px`;
     requestAnimationFrame(() => { fi.el.style.transition = ''; });
   }
   toggleEnlarge() {
@@ -60,20 +57,16 @@ class FloatingImage {
     }
     window.floatingImages.forEach(fi => { if (fi._enlarged) this._shrink(fi); });
     this._enlarged = true; this.el.style.transition = 'none'; this.el.classList.add('enlarged');
-    const img = this.el.querySelector('img');
-    if (img && this.fullSrc) { img.dataset.thumb = img.src; img.src = this.fullSrc; }
     this._layout();
     this.el.style.transform = 'none';
     photoContainer.classList.add('has-enlarged');
   }
-  // Size and centre the enlarged photo for the current viewport (also re-run on resize).
+  // Size and centre the enlarged record for the current viewport (also re-run on resize).
   _layout() {
-    const maxW = window.innerWidth * ENLARGE_RATIO, maxH = window.innerHeight * ENLARGE_RATIO;
-    let ew, eh;
-    if (this.ar >= maxW / maxH) { ew = maxW; eh = ew / this.ar; } else { eh = maxH; ew = eh * this.ar; }
-    this.el.style.width = `${Math.round(ew)}px`; this.el.style.height = `${Math.round(eh)}px`;
-    this.el.style.left = `${Math.round((window.innerWidth - ew) / 2)}px`;
-    this.el.style.top = `${Math.round((window.innerHeight - eh) / 2)}px`;
+    const s = Math.round(Math.max(ENLARGE_MIN, Math.min(ENLARGE_MAX, Math.min(window.innerWidth, window.innerHeight) * ENLARGE_FRACTION)));
+    this.el.style.width = `${s}px`; this.el.style.height = `${s}px`;
+    this.el.style.left = `${Math.round((window.innerWidth - s) / 2)}px`;
+    this.el.style.top = `${Math.round((window.innerHeight - s) / 2)}px`;
   }
   tick() {
     if (this._enlarged || this.el.style.opacity === '0') return;
@@ -83,31 +76,7 @@ class FloatingImage {
 window.floatingImages = [];
 window.addEventListener('resize', () => window.floatingImages.forEach(fi => { if (fi._enlarged) fi._layout(); }));
 let collisionTickRegistered = false, collisionFrame = 0;
-function updatePhotoFilter() {
-  const types = [];
-  photoTabs.forEach(t => { if (t.classList.contains('active')) types.push(t.dataset.photoTab); });
-  const activeSubFilters = {};
-  photoTabGroups.forEach(group => {
-    const tab = group.querySelector('.photo-tab');
-    if (tab && tab.classList.contains('active')) {
-      const type = tab.dataset.photoTab, subs = group.querySelectorAll('.photo-filter');
-      if (subs.length > 0) {
-        const active = [];
-        group.querySelectorAll('.photo-filter.active').forEach(f => active.push(f.dataset.photoFilter));
-        activeSubFilters[type] = active;
-      }
-    }
-  });
-  window.floatingImages.forEach(fi => {
-    const type = fi.el.dataset.type, filter = fi.el.dataset.filter;
-    let match = types.includes(type);
-    if (match && activeSubFilters[type]) match = activeSubFilters[type].includes(filter);
-    if (!match && fi._enlarged) fi.toggleEnlarge(); // don't leave a hidden photo enlarged
-    fi.el.style.opacity = match ? '' : '0';
-    fi.el.style.pointerEvents = match ? '' : 'none';
-  });
-}
-function photoCollisionTick(now) {
+function photoCollisionTick() {
   const imgs = window.floatingImages;
   if (!imgs.length) return;
   for (let i = 0; i < imgs.length; i++) imgs[i].tick();
@@ -132,23 +101,20 @@ function photoCollisionTick(now) {
 window.initPhotoFloat = function() {
   window.destroyPhotoFloat();
   if (!photoContainer) return;
-  const base = Math.random() * Math.PI * 2, count = PHOTO_PLACEHOLDERS.length;
+  const base = Math.random() * Math.PI * 2, count = ARCHIVE.length;
   for (let i = 0; i < count; i++) {
-    const ph = PHOTO_PLACEHOLDERS[i], el = document.createElement('div');
-    el.className = 'float-img';
-    const parts = ph.src.split('/'), pi = parts.indexOf('thumb');
-    el.dataset.type = (pi >= 0 && parts[pi + 1]) || ph.type || 'digital';
-    if (pi >= 0 && parts[pi + 2]) el.dataset.filter = parts[pi + 2];
-    el.dataset.ar = ph.ar || 1;
-    const initW = Math.round(THUMB_HEIGHT * (ph.ar || 1));
-    el.style.width = `${initW}px`; el.style.height = `${THUMB_HEIGHT}px`;
-    el.innerHTML = `<img src="${ph.src}" alt="" style="width:100%;height:100%;border-radius:inherit;" loading="lazy" onerror="this.style.display='none'" />`;
+    const rec = ARCHIVE[i], el = document.createElement('div');
+    el.className = 'float-img record';
+    el.dataset.id = rec.id;
+    el.setAttribute('role', 'button');
+    el.setAttribute('aria-label', `${rec.title} — ${rec.artist}`);
+    el.innerHTML = cardHTML(rec) + '<span class="record-hint" aria-hidden="true">Open →</span>';
     photoContainer.appendChild(el);
     const angle = base + (i / count) * Math.PI * 2;
     const margin = 160, rx = margin + Math.random() * Math.max(0, window.innerWidth - margin * 2), ry = margin + Math.random() * Math.max(0, window.innerHeight - 260 - margin);
-    window.floatingImages.push(new FloatingImage(el, rx, ry, angle, ph.full));
+    window.floatingImages.push(new FloatingImage(el, rx, ry, angle, rec));
   }
-  setTimeout(() => { window.floatingImages.forEach(fi => fi.measure()); updatePhotoFilter(); }, 100);
+  setTimeout(() => window.floatingImages.forEach(fi => fi.measure()), 100);
   if (!collisionTickRegistered) { App.registerTick(photoCollisionTick); collisionTickRegistered = true; }
 };
 window.destroyPhotoFloat = function() {
@@ -157,23 +123,48 @@ window.destroyPhotoFloat = function() {
   if (collisionTickRegistered) { App.unregisterTick(photoCollisionTick); collisionTickRegistered = false; }
   collisionFrame = 0;
 };
-photoTabs.forEach(tab => {
-  tab.addEventListener('click', e => {
-    e.stopPropagation(); tab.classList.toggle('active');
-    const group = tab.closest('.photo-tab-group');
-    if (group) {
-      const dd = group.querySelector('.photo-dropdown');
-      if (dd) { const open = tab.classList.contains('active'); tab.classList.toggle('dropdown-open', open); dd.classList.toggle('open', open); }
-    }
-    updatePhotoFilter();
-  });
-});
-document.querySelectorAll('.photo-filter').forEach(btn => {
-  btn.addEventListener('click', e => { e.stopPropagation(); btn.classList.toggle('active'); updatePhotoFilter(); });
-});
-// Self-init: if photo page is already active (e.g. page loaded with #film-photo hash),
-// showPage() in app.js ran before this script loaded, so initPhotoFloat was never called.
-if (document.getElementById('page-film-photo')?.classList.contains('active')) {
-  window.initPhotoFloat();
+
+// List view under the floating layer (same records; keyboard/screen-reader friendly way in).
+if (listEl) {
+  listEl.replaceChildren(...ARCHIVE.map(rec => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'music-entry'; b.dataset.id = rec.id;
+    b.innerHTML = `<span class="me-num">${esc(rec.num)}</span><span class="me-title">${esc(rec.title)} <span class="me-artist">${esc(rec.artist)}</span></span><span class="me-meta">${esc([rec.media, rec.year].filter(Boolean).join(' · ') || '—')}</span>`;
+    return b;
+  }));
+  listEl.addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (b) openAlbum(b.dataset.id); });
 }
+
+// Record page (#album/<id>). Called by app.js whenever the album page is shown.
+window.renderAlbum = function(id) {
+  const rec = byId(id);
+  if (!rec) { App.showPage('film-photo', 'replace'); return; }
+  const facts = [['Artist', rec.artist], ['Year', rec.year], ['Label', rec.label], ['Style', rec.style], ['Media', rec.media]]
+    .map(([k, v]) => `<div><dt class="label-upper">${k}</dt><dd>${esc(v || '—')}</dd></div>`).join('');
+  albumView.innerHTML = `
+    <button type="button" class="album-cover" aria-label="Flip cover">${cardHTML(rec)}</button>
+    <div class="album-meta">
+      <p class="label-upper album-kicker">Nº ${esc(rec.num)}</p>
+      <h1 class="album-title">${esc(rec.title)}</h1>
+      <p class="album-artist">${esc(rec.artist)}</p>
+      <dl class="album-facts">${facts}</dl>
+    </div>
+    <section class="album-section album-player" aria-label="Listen">
+      <h2 class="label-upper">Listen</h2>
+      ${rec.audio ? `<audio controls preload="none" src="${esc(rec.audio)}"></audio>` : '<p class="album-empty">The full recording will play here once the files are connected.</p>'}
+    </section>
+    <section class="album-section album-notes" aria-label="Notes">
+      <h2 class="label-upper">Notes</h2>
+      ${rec.notes || '<p class="album-empty">Research, liner notes and art for this record will appear here.</p>'}
+    </section>`;
+  albumView.querySelector('.album-cover').addEventListener('click', e => e.currentTarget.classList.toggle('flipped'));
+  document.title = `${rec.title} — MusicaNossa`;
+};
+const albumBack = document.getElementById('album-back');
+if (albumBack) albumBack.addEventListener('click', () => App.showPage('film-photo'));
+
+// Self-init: app.js runs before this script, so a page loaded directly on #film-photo or
+// #album/<id> needs initialising here.
+if (document.getElementById('page-film-photo')?.classList.contains('active')) window.initPhotoFloat();
+if (document.getElementById('page-album')?.classList.contains('active')) window.renderAlbum(location.hash.split('/')[1] || '');
 })();
