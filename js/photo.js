@@ -308,8 +308,13 @@ window.renderAlbum = function(id) {
   shownRecId = rec.id;
   let n = 0;
   const facts = factsHTML(rec, ['artist', 'year', 'label', 'catno', 'country', 'style', 'media', 'matrix']);
+  // Medley parts (B1.2, B1.3…) play as part of B1.1's file: not greyed when B1.1 is playable.
+  const liveMedleys = new Set((rec.tracks || []).filter(t => t[3] && /\.1$/.test(t[0])).map(t => t[0].replace(/\.1$/, '')));
   const tracks = (rec.tracks || []).map(([pos, title, dur, url]) => {
-    if (!url) return `<li><span class="tr-pos">${esc(pos)}</span><span class="tr-title">${esc(title)}</span><span class="tr-dur">${esc(dur)}</span></li>`;
+    if (!url) {
+      const inMedley = liveMedleys.has(String(pos).replace(/\.\d+$/, '')) && /\.\d+$/.test(pos);
+      return `<li${inMedley ? '' : ' class="tr-off" title="Not available yet"'}><span class="tr-pos">${esc(pos)}</span><span class="tr-title">${esc(title)}</span><span class="tr-dur">${esc(dur)}</span></li>`;
+    }
     const i = n++;
     return `<li data-i="${i}" data-pos="${esc(pos)}" data-dur="${esc(dur)}" data-title="${esc(title)}"><button type="button" class="tr-btn" aria-label="Play ${esc(title)}">`
       + `<span class="tr-pos">${esc(pos)}</span><span class="tr-title">${esc(title)}</span><span class="tr-dur">${esc(dur)}</span></button></li>`;
