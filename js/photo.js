@@ -189,13 +189,69 @@ if (listEl) {
   listEl.addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (b) openAlbum(b.dataset.id); });
 }
 
+// Tracklist player: one shared <audio> for the record page. A track is playable when the build
+// gave it a URL (4th item); clicking its title plays it, clicking again pauses, the next one follows.
+const player = new Audio();
+player.preload = 'none';
+let playable = [], current = -1;
+const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+function rowEls() { return albumView.querySelectorAll('.tracklist li[data-i]'); }
+function markRows() {
+  rowEls().forEach(li => {
+    const i = +li.dataset.i, on = i === current, btn = li.querySelector('.tr-btn');
+    li.classList.toggle('playing', on && !player.paused);
+    li.classList.toggle('current', on);
+    li.querySelector('.tr-pos').textContent = on ? (player.paused ? '▶' : '❚❚') : li.dataset.pos;
+    li.querySelector('.tr-dur').textContent = on && player.currentTime > 0 ? mmss(player.currentTime) : li.dataset.dur;
+    btn.setAttribute('aria-label', `${on && !player.paused ? 'Pause' : 'Play'} ${li.dataset.title}`);
+  });
+}
+function playAt(i) {
+  if (i < 0 || i >= playable.length) { stopTracks(); return; }
+  current = i;
+  player.src = playable[i];
+  player.play().then(markRows, markRows);
+  markRows();
+}
+function stopTracks() {
+  player.pause(); player.removeAttribute('src'); player.load();
+  current = -1; markRows();
+}
+player.addEventListener('play', markRows);
+player.addEventListener('pause', markRows);
+player.addEventListener('timeupdate', () => { const li = albumView.querySelector(`.tracklist li[data-i="${current}"] .tr-dur`); if (li) li.textContent = mmss(player.currentTime); });
+player.addEventListener('ended', () => playAt(current + 1));
+player.addEventListener('error', () => {
+  if (current < 0 || !player.getAttribute('src')) return;
+  const li = albumView.querySelector(`.tracklist li[data-i="${current}"]`);
+  if (li) li.classList.add('unavailable');
+  playAt(current + 1);
+});
+albumView.addEventListener('click', e => {
+  const btn = e.target.closest('.tr-btn');
+  if (!btn) return;
+  const i = +btn.closest('li').dataset.i;
+  if (i === current) { if (player.paused) player.play().then(markRows, markRows); else player.pause(); }
+  else playAt(i);
+});
+// Stop the music when the record page is left (any route: Back, nav, brand, menu).
+const albumPage = document.getElementById('page-album');
+if (albumPage) new MutationObserver(() => { if (!albumPage.classList.contains('active') && current >= 0) stopTracks(); })
+  .observe(albumPage, { attributes: true, attributeFilter: ['class'] });
+
 // Record page (#album/<id>). Called by app.js whenever the album page is shown.
 window.renderAlbum = function(id) {
   const rec = byId(id);
   if (!rec) { App.showPage('film-photo', 'replace'); return; }
+  if (current >= 0) stopTracks();
+  playable = [];
   const facts = factsHTML(rec, ['artist', 'year', 'label', 'catno', 'country', 'style', 'media', 'matrix']);
-  const tracks = (rec.tracks || []).map(([pos, title, dur]) =>
-    `<li><span class="tr-pos">${esc(pos)}</span><span class="tr-title">${esc(title)}</span><span class="tr-dur">${esc(dur)}</span></li>`).join('');
+  const tracks = (rec.tracks || []).map(([pos, title, dur, url]) => {
+    if (!url) return `<li><span class="tr-pos">${esc(pos)}</span><span class="tr-title">${esc(title)}</span><span class="tr-dur">${esc(dur)}</span></li>`;
+    const i = playable.push(url) - 1;
+    return `<li data-i="${i}" data-pos="${esc(pos)}" data-dur="${esc(dur)}" data-title="${esc(title)}"><button type="button" class="tr-btn" aria-label="Play ${esc(title)}">`
+      + `<span class="tr-pos">${esc(pos)}</span><span class="tr-title">${esc(title)}</span><span class="tr-dur">${esc(dur)}</span></button></li>`;
+  }).join('');
   albumView.innerHTML = `
     <div class="album-meta">
       <p class="label-upper album-kicker">Nº ${esc(rec.num)}</p>
@@ -205,13 +261,9 @@ window.renderAlbum = function(id) {
     </div>
     ${rec.back ? `<button type="button" class="album-cover" aria-label="Flip cover">${cardHTML(rec, false)}</button>`
       : `<div class="album-cover album-cover--static">${cardHTML(rec, false)}</div>`}
-    <section class="album-section album-player" aria-label="Listen">
-      <h2 class="label-upper">Listen</h2>
-      ${rec.audio ? `<audio controls preload="none" src="${esc(rec.audio)}"></audio>` : '<p class="album-empty">The full recording will play here once the files are connected.</p>'}
-    </section>
     ${tracks ? `<section class="album-section album-tracks" aria-label="Tracklist">
       <h2 class="label-upper">Tracklist</h2>
-      <ol class="tracklist">${tracks}</ol>
+      <ol class="tracklist${playable.length ? ' tracklist--playable' : ''}">${tracks}</ol>
     </section>` : ''}
     <section class="album-section album-article" aria-label="Article">
       <h2 class="label-upper">Article</h2>
