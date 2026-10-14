@@ -674,6 +674,7 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 .tr-btn:focus-visible { outline: 1px solid var(--text); outline-offset: 2px; }
 .tracklist li.current .tr-pos, .tracklist li.current .tr-dur { color: var(--text); }
 .tracklist li.unavailable .tr-btn { opacity: 0.4; cursor: default; }
+.tracklist li.tr-off { opacity: 0.38; }
 
 /* ── CINE AUTH OVERLAY ────────────────────────── */
 
