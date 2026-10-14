@@ -635,7 +635,6 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 
 .album-section { grid-column: 1 / -1; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
 .album-section h2 { margin-bottom: 14px; }
-.album-section audio { width: 100%; }
 .album-empty { font-size: 0.9rem; color: var(--muted); line-height: 1.7; }
 .album-article p:not(.album-empty) { font-size: 0.98rem; line-height: 1.8; max-width: 68ch; margin: 0 0 1.1em; }
 
@@ -644,6 +643,16 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 .tr-pos { flex: 0 0 2.2em; color: var(--muted); font-size: 0.8rem; padding-top: 1px; }
 .tr-title { flex: 1; }
 .tr-dur { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
+/* Playable tracklist: the whole row is the play button. */
+.tracklist li:has(.tr-btn) { padding: 0; }
+.tr-btn {
+  display: flex; gap: 14px; width: 100%; padding: 7px 0; margin: 0;
+  background: none; border: none; font: inherit; color: inherit; text-align: left; cursor: pointer;
+}
+.tr-btn:hover .tr-title, .tracklist li.current .tr-title { text-decoration: underline; text-underline-offset: 3px; }
+.tr-btn:focus-visible { outline: 1px solid var(--text); outline-offset: 2px; }
+.tracklist li.current .tr-pos, .tracklist li.current .tr-dur { color: var(--text); }
+.tracklist li.unavailable .tr-btn { opacity: 0.4; cursor: default; }
 
 /* ── CINE AUTH OVERLAY ────────────────────────── */
 
