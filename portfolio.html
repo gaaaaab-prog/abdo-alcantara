@@ -28,7 +28,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=72" />
+  <link rel="stylesheet" href="css/style.css?v=73" />
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -292,6 +292,35 @@
     </div>
   </div>
 
+  <!-- Now playing (archive tracks from audio.musicanossa.net). Driven by js/photo.js; shown while a track is loaded. -->
+  <div id="np-player" class="sc-player np-player" role="region" aria-label="Now playing">
+    <button class="sc-close" id="np-close" aria-label="Stop and close player">&times;</button>
+    <div class="np-top">
+      <button class="np-cover" id="np-cover" aria-label="Open record"><img id="np-img" alt="" /></button>
+      <div class="np-text">
+        <div class="np-title" id="np-title">&mdash;</div>
+        <div class="np-sub" id="np-sub"></div>
+      </div>
+    </div>
+    <div class="np-progress">
+      <span class="np-time" id="np-elapsed">0:00</span>
+      <input type="range" id="np-seek" min="0" max="1000" step="1" value="0" aria-label="Position in track" />
+      <span class="np-time" id="np-total">0:00</span>
+    </div>
+    <div class="sc-controls">
+      <button class="sc-btn" id="np-prev" aria-label="Previous track">
+        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="3" height="14" rx="1"/><path d="M7 10L17 3v14z"/></svg>
+      </button>
+      <button class="sc-btn sc-btn-main" id="np-play" aria-label="Play">
+        <svg class="icon-play" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5 3l14 7-14 7z"/></svg>
+        <svg class="icon-pause" viewBox="0 0 20 20" fill="currentColor" style="display:none" aria-hidden="true"><rect x="4" y="3" width="4" height="14" rx="1"/><rect x="12" y="3" width="4" height="14" rx="1"/></svg>
+      </button>
+      <button class="sc-btn" id="np-next" aria-label="Next track">
+        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="14" y="3" width="3" height="14" rx="1"/><path d="M13 10L3 3v14z"/></svg>
+      </button>
+    </div>
+  </div>
+
   <!-- SoundCloud iframe: src is set by music.js on first Music interaction -->
   <iframe id="sc-iframe" allow="autoplay" class="sc-iframe-hidden" title="SoundCloud Player"></iframe>
 
@@ -307,8 +336,8 @@
   </div>
 
   <script src="js/app.js?v=69"></script>
-  <script src="js/music.js?v=67"></script>
+  <script src="js/music.js?v=68"></script>
   <script src="js/archive-data.js?v=4"></script>
-  <script src="js/photo.js?v=73"></script>
+  <script src="js/photo.js?v=74"></script>
 </body>
 </html>
