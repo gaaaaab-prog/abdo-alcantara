@@ -166,6 +166,7 @@ function loadIntoWidget(idx) {
     scWidget.bind(SC.Widget.Events.READY, onWidgetReady);
     scWidget.bind(SC.Widget.Events.PLAY, () => {
       scPlaying = true; clearTimeout(scPauseTimer);
+      window.dispatchEvent(new CustomEvent('mn:audio', { detail: 'sc' })); // archive player (photo.js) stops
       scWidget.getCurrentSound(s => { scTrackName.textContent = s ? `${s.title} - (soundcloud)` : trackLabel(scTrackIdx); });
       syncPlayer();
     });
@@ -241,6 +242,13 @@ recordEl.addEventListener('click', () => {
 });
 scCloseBtn.addEventListener('click', e => {
   e.stopPropagation(); clearTimeout(scPauseTimer); scPendingPlay = false;
+  if (scWidget && scPlaying) scWidget.pause();
+  scPlayerEl.classList.remove('visible');
+});
+// An archive track started (photo.js): pause SoundCloud and hide its card so only one player shows.
+window.addEventListener('mn:audio', e => {
+  if (e.detail !== 'archive') return;
+  scPendingPlay = false; clearTimeout(scPauseTimer);
   if (scWidget && scPlaying) scWidget.pause();
   scPlayerEl.classList.remove('visible');
 });

@@ -189,16 +189,26 @@ if (listEl) {
   listEl.addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (b) openAlbum(b.dataset.id); });
 }
 
-// Tracklist player: one shared <audio> for the record page. A track is playable when the build
-// gave it a URL (4th item); clicking its title plays it, clicking again pauses, the next one follows.
+// Archive player: one shared <audio> for the whole site. A track is playable when the build gave it
+// a URL (4th item). Clicking a title queues that record and plays the track; playback keeps going
+// across pages, shown in the now-playing bar (#np-player). Only one source plays at a time: SoundCloud
+// (music.js) and this player pause each other via the 'mn:audio' event.
 const player = new Audio();
 player.preload = 'none';
-let playable = [], current = -1;
-const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+let queue = null, current = -1, shownRecId = null; // queue = { rec, tracks: [{pos,title,dur,url}] }
+const mmss = s => (isFinite(s) && s >= 0) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}` : '0:00';
+const np = {
+  el: document.getElementById('np-player'), img: document.getElementById('np-img'), cover: document.getElementById('np-cover'),
+  title: document.getElementById('np-title'), sub: document.getElementById('np-sub'),
+  elapsed: document.getElementById('np-elapsed'), total: document.getElementById('np-total'), seek: document.getElementById('np-seek'),
+  play: document.getElementById('np-play'), prev: document.getElementById('np-prev'), next: document.getElementById('np-next'), close: document.getElementById('np-close')
+};
+let seeking = false;
 function rowEls() { return albumView.querySelectorAll('.tracklist li[data-i]'); }
 function markRows() {
+  const mine = queue && shownRecId === queue.rec.id;
   rowEls().forEach(li => {
-    const i = +li.dataset.i, on = i === current, btn = li.querySelector('.tr-btn');
+    const i = +li.dataset.i, on = mine && i === current, btn = li.querySelector('.tr-btn');
     li.classList.toggle('playing', on && !player.paused);
     li.classList.toggle('current', on);
     li.querySelector('.tr-pos').textContent = on ? (player.paused ? '▶' : '❚❚') : li.dataset.pos;
@@ -206,49 +216,101 @@ function markRows() {
     btn.setAttribute('aria-label', `${on && !player.paused ? 'Pause' : 'Play'} ${li.dataset.title}`);
   });
 }
+function updateBar() {
+  if (!np.el) return;
+  const t = queue && queue.tracks[current];
+  np.el.classList.toggle('visible', !!t);
+  if (!t) return;
+  np.play.querySelector('.icon-play').style.display = player.paused ? '' : 'none';
+  np.play.querySelector('.icon-pause').style.display = player.paused ? 'none' : '';
+  np.play.setAttribute('aria-label', player.paused ? 'Play' : 'Pause');
+  np.elapsed.textContent = mmss(player.currentTime);
+  np.total.textContent = isFinite(player.duration) ? mmss(player.duration) : (t.dur || '0:00');
+  if (!seeking) np.seek.value = isFinite(player.duration) && player.duration > 0 ? Math.round(player.currentTime / player.duration * 1000) : 0;
+  np.prev.disabled = current <= 0 && player.currentTime < 3;
+  np.next.disabled = current >= queue.tracks.length - 1;
+}
+function setNowPlaying() {
+  const t = queue.tracks[current], rec = queue.rec;
+  if (!np.el) return; // page without the bar markup (e.g. mid-deploy): just play
+  np.title.textContent = `${t.pos}  ${t.title}`;
+  np.sub.textContent = `${rec.artist} — ${rec.title}${rec.year ? ' (' + rec.year + ')' : ''}`;
+  np.img.src = rec.frontSm || rec.front || '';
+  np.img.alt = '';
+  np.cover.setAttribute('aria-label', `Open ${rec.title}`);
+  if ('mediaSession' in navigator) {
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({ title: t.title, artist: rec.artist, album: rec.title,
+        artwork: rec.front ? [{ src: new URL(rec.front, location.href).href, sizes: '600x600', type: 'image/jpeg' }] : [] });
+    } catch (e) {}
+  }
+}
 function playAt(i) {
-  if (i < 0 || i >= playable.length) { stopTracks(); return; }
+  if (!queue || i < 0 || i >= queue.tracks.length) { stopTracks(); return; }
   current = i;
-  player.src = playable[i];
-  player.play().then(markRows, markRows);
-  markRows();
+  player.src = queue.tracks[i].url;
+  setNowPlaying();
+  player.play().then(sync, sync);
+  sync();
 }
 function stopTracks() {
   player.pause(); player.removeAttribute('src'); player.load();
-  current = -1; markRows();
+  current = -1; queue = null; sync();
 }
-player.addEventListener('play', markRows);
-player.addEventListener('pause', markRows);
-player.addEventListener('timeupdate', () => { const li = albumView.querySelector(`.tracklist li[data-i="${current}"] .tr-dur`); if (li) li.textContent = mmss(player.currentTime); });
+function sync() { markRows(); updateBar(); }
+function togglePlayback() { if (player.paused) player.play().then(sync, sync); else player.pause(); }
+player.addEventListener('play', () => { window.dispatchEvent(new CustomEvent('mn:audio', { detail: 'archive' })); sync(); });
+player.addEventListener('pause', sync);
+player.addEventListener('loadedmetadata', updateBar);
+player.addEventListener('timeupdate', () => {
+  updateBar();
+  if (queue && shownRecId === queue.rec.id) { const d = albumView.querySelector(`.tracklist li[data-i="${current}"] .tr-dur`); if (d) d.textContent = mmss(player.currentTime); }
+});
 player.addEventListener('ended', () => playAt(current + 1));
 player.addEventListener('error', () => {
   if (current < 0 || !player.getAttribute('src')) return;
-  const li = albumView.querySelector(`.tracklist li[data-i="${current}"]`);
-  if (li) li.classList.add('unavailable');
+  if (queue && shownRecId === queue.rec.id) { const li = albumView.querySelector(`.tracklist li[data-i="${current}"]`); if (li) li.classList.add('unavailable'); }
   playAt(current + 1);
 });
+// SoundCloud started on the Music page: stop the archive player.
+window.addEventListener('mn:audio', e => { if (e.detail === 'sc' && current >= 0) stopTracks(); });
 albumView.addEventListener('click', e => {
   const btn = e.target.closest('.tr-btn');
   if (!btn) return;
   const i = +btn.closest('li').dataset.i;
-  if (i === current) { if (player.paused) player.play().then(markRows, markRows); else player.pause(); }
-  else playAt(i);
+  if (queue && queue.rec.id === shownRecId && i === current) { togglePlayback(); return; }
+  const rec = byId(shownRecId);
+  queue = { rec, tracks: rec.tracks.filter(t => t[3]).map(([pos, title, dur, url]) => ({ pos, title, dur, url })) };
+  playAt(i);
 });
-// Stop the music when the record page is left (any route: Back, nav, brand, menu).
-const albumPage = document.getElementById('page-album');
-if (albumPage) new MutationObserver(() => { if (!albumPage.classList.contains('active') && current >= 0) stopTracks(); })
-  .observe(albumPage, { attributes: true, attributeFilter: ['class'] });
+if (np.el) {
+  np.play.addEventListener('click', togglePlayback);
+  np.next.addEventListener('click', () => playAt(current + 1));
+  np.prev.addEventListener('click', () => { if (player.currentTime > 3) { player.currentTime = 0; updateBar(); } else playAt(current - 1); });
+  np.close.addEventListener('click', stopTracks);
+  np.cover.addEventListener('click', () => { if (queue) App.showPage('album', 'push', queue.rec.id); });
+  np.seek.addEventListener('input', () => { seeking = true; if (isFinite(player.duration)) np.elapsed.textContent = mmss(np.seek.value / 1000 * player.duration); });
+  np.seek.addEventListener('change', () => { if (isFinite(player.duration)) player.currentTime = np.seek.value / 1000 * player.duration; seeking = false; updateBar(); });
+}
+if ('mediaSession' in navigator) {
+  try {
+    navigator.mediaSession.setActionHandler('play', () => player.play());
+    navigator.mediaSession.setActionHandler('pause', () => player.pause());
+    navigator.mediaSession.setActionHandler('nexttrack', () => playAt(current + 1));
+    navigator.mediaSession.setActionHandler('previoustrack', () => playAt(current - 1));
+  } catch (e) {}
+}
 
 // Record page (#album/<id>). Called by app.js whenever the album page is shown.
 window.renderAlbum = function(id) {
   const rec = byId(id);
   if (!rec) { App.showPage('film-photo', 'replace'); return; }
-  if (current >= 0) stopTracks();
-  playable = [];
+  shownRecId = rec.id;
+  let n = 0;
   const facts = factsHTML(rec, ['artist', 'year', 'label', 'catno', 'country', 'style', 'media', 'matrix']);
   const tracks = (rec.tracks || []).map(([pos, title, dur, url]) => {
     if (!url) return `<li><span class="tr-pos">${esc(pos)}</span><span class="tr-title">${esc(title)}</span><span class="tr-dur">${esc(dur)}</span></li>`;
-    const i = playable.push(url) - 1;
+    const i = n++;
     return `<li data-i="${i}" data-pos="${esc(pos)}" data-dur="${esc(dur)}" data-title="${esc(title)}"><button type="button" class="tr-btn" aria-label="Play ${esc(title)}">`
       + `<span class="tr-pos">${esc(pos)}</span><span class="tr-title">${esc(title)}</span><span class="tr-dur">${esc(dur)}</span></button></li>`;
   }).join('');
@@ -263,7 +325,7 @@ window.renderAlbum = function(id) {
       : `<div class="album-cover album-cover--static">${cardHTML(rec, false)}</div>`}
     ${tracks ? `<section class="album-section album-tracks" aria-label="Tracklist">
       <h2 class="label-upper">Tracklist</h2>
-      <ol class="tracklist${playable.length ? ' tracklist--playable' : ''}">${tracks}</ol>
+      <ol class="tracklist${n ? ' tracklist--playable' : ''}">${tracks}</ol>
     </section>` : ''}
     <section class="album-section album-article" aria-label="Article">
       <h2 class="label-upper">Article</h2>
@@ -272,6 +334,7 @@ window.renderAlbum = function(id) {
   const flip = albumView.querySelector('button.album-cover');
   if (flip) flip.addEventListener('click', e => e.currentTarget.classList.toggle('flipped'));
   document.title = `${rec.title} — MusicaNossa`;
+  markRows(); // reflect the site-wide player if this record is the one playing
 };
 const albumBack = document.getElementById('album-back');
 if (albumBack) albumBack.addEventListener('click', () => App.showPage('film-photo'));
