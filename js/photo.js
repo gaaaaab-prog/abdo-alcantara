@@ -182,7 +182,7 @@ window.destroyPhotoFloat = function() {
 if (listEl) {
   listEl.replaceChildren(...ARCHIVE.map(rec => {
     const b = document.createElement('button');
-    b.type = 'button'; b.className = 'music-entry'; b.dataset.id = rec.id;
+    b.type = 'button'; b.className = 'archive-entry'; b.dataset.id = rec.id;
     b.innerHTML = `<span class="me-num">${esc(rec.num)}</span><span class="me-title">${esc(rec.title)} <span class="me-artist">${esc(rec.artist)}</span></span><span class="me-meta">${esc([rec.media, rec.year].filter(Boolean).join(' · ') || '—')}</span>`;
     return b;
   }));
@@ -191,8 +191,7 @@ if (listEl) {
 
 // Archive player: one shared <audio> for the whole site. A track is playable when the build gave it
 // a URL (4th item). Clicking a title queues that record and plays the track; playback keeps going
-// across pages, shown in the now-playing bar (#np-player). Only one source plays at a time: SoundCloud
-// (music.js) and this player pause each other via the 'mn:audio' event.
+// across pages, shown in the now-playing bar (#np-player).
 const player = new Audio();
 player.preload = 'none';
 let queue = null, current = -1, shownRecId = null; // queue = { rec, tracks: [{pos,title,dur,url}] }
@@ -258,8 +257,10 @@ function stopTracks() {
   current = -1; queue = null; sync();
 }
 function sync() { markRows(); updateBar(); }
+// Previous: restart the track if more than 3 s in, else go to the previous track (stays on the first one).
+function prevTrack() { if (player.currentTime > 3 || current <= 0) { player.currentTime = 0; updateBar(); } else playAt(current - 1); }
 function togglePlayback() { if (player.paused) player.play().then(sync, sync); else player.pause(); }
-player.addEventListener('play', () => { window.dispatchEvent(new CustomEvent('mn:audio', { detail: 'archive' })); sync(); });
+player.addEventListener('play', sync);
 player.addEventListener('pause', sync);
 player.addEventListener('loadedmetadata', updateBar);
 player.addEventListener('timeupdate', () => {
@@ -272,8 +273,6 @@ player.addEventListener('error', () => {
   if (queue && shownRecId === queue.rec.id) { const li = albumView.querySelector(`.tracklist li[data-i="${current}"]`); if (li) li.classList.add('unavailable'); }
   playAt(current + 1);
 });
-// SoundCloud started on the Music page: stop the archive player.
-window.addEventListener('mn:audio', e => { if (e.detail === 'sc' && current >= 0) stopTracks(); });
 albumView.addEventListener('click', e => {
   const btn = e.target.closest('.tr-btn');
   if (!btn) return;
@@ -286,7 +285,7 @@ albumView.addEventListener('click', e => {
 if (np.el) {
   np.play.addEventListener('click', togglePlayback);
   np.next.addEventListener('click', () => playAt(current + 1));
-  np.prev.addEventListener('click', () => { if (player.currentTime > 3) { player.currentTime = 0; updateBar(); } else playAt(current - 1); });
+  np.prev.addEventListener('click', prevTrack);
   np.close.addEventListener('click', stopTracks);
   np.cover.addEventListener('click', () => { if (queue) App.showPage('album', 'push', queue.rec.id); });
   np.seek.addEventListener('input', () => { seeking = true; if (isFinite(player.duration)) np.elapsed.textContent = mmss(np.seek.value / 1000 * player.duration); });
@@ -297,7 +296,7 @@ if ('mediaSession' in navigator) {
     navigator.mediaSession.setActionHandler('play', () => player.play());
     navigator.mediaSession.setActionHandler('pause', () => player.pause());
     navigator.mediaSession.setActionHandler('nexttrack', () => playAt(current + 1));
-    navigator.mediaSession.setActionHandler('previoustrack', () => playAt(current - 1));
+    navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
   } catch (e) {}
 }
 

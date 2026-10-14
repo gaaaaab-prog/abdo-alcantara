@@ -6,13 +6,12 @@ const REPULSE_FORCE = 0.045, REPULSE_BUFFER = 40, REPULSE_HARD_THRESHOLD = 0.85,
 const NAV_CONFIG = { friction: FRICTION, drift: DRIFT_FORCE, maxSpeed: MAX_SPEED, centerY: 0.42 };
 const DEFAULT_PAGE = 'sobre';
 // Only pages present in the HTML are routable, so a deploy where the HTML and JS briefly disagree can't crash.
-const pages = Object.fromEntries(Object.entries({ sobre: 'page-sobre', music: 'page-music', film: 'page-film', 'film-photo': 'page-film-photo', album: 'page-album' })
+const pages = Object.fromEntries(Object.entries({ sobre: 'page-sobre', selos: 'page-selos', film: 'page-film', 'film-photo': 'page-film-photo', album: 'page-album' })
   .map(([k, id]) => [k, document.getElementById(id)]).filter(([, el]) => el));
 const navWords = document.querySelectorAll('.nav-word');
 const floatNav = document.getElementById('float-nav'), navPulldownEl = document.getElementById('nav-pulldown');
 const photoTabsEl = document.getElementById('photo-tabs'), scrollArrow = document.getElementById('scroll-arrow');
 const lb = document.getElementById('lightbox'), lbImg = document.getElementById('lb-img');
-const recordEl = document.getElementById('record');
 let mouseX = -9999, mouseY = -9999, mouseSpeed = 0, mouseActive = false, mouseIdleTimer = null;
 document.addEventListener('mousemove', e => {
   const dx = e.clientX - mouseX, dy = e.clientY - mouseY;
@@ -80,7 +79,7 @@ const floatingWords = (() => {
 })();
 document.fonts.ready.then(() => floatingWords.forEach(fw => fw.measure()));
 window.addEventListener('resize', () => floatingWords.forEach(fw => fw.measure()));
-let recordVisible = false, loopRunning = false, idleFrames = 0;
+let loopRunning = false, idleFrames = 0;
 const extraTicks = [];
 function registerTick(fn) { if (!extraTicks.includes(fn)) extraTicks.push(fn); }
 function unregisterTick(fn) { const i = extraTicks.indexOf(fn); if (i >= 0) extraTicks.splice(i, 1); }
@@ -134,8 +133,10 @@ function showCineLogin(onSuccess) {
 let bobInterval = null, currentKey = null, currentParam = null;
 // Hash format: #page or #page/param (e.g. #album/r01)
 const urlFor = (key, param) => key === DEFAULT_PAGE ? location.pathname + location.search : '#' + key + (param ? '/' + param : '');
+const HASH_ALIASES = { music: 'selos' }; // old #music links open Selos
 function parseHash() {
-  const [k, ...rest] = location.hash.replace('#', '').split('/');
+  let [k, ...rest] = location.hash.replace('#', '').split('/');
+  k = HASH_ALIASES[k] || k;
   return pages[k] ? { key: k, param: rest.join('/') || null } : { key: DEFAULT_PAGE, param: null };
 }
 // history: 'push' for user navigation, 'replace' for first load, 'none' when responding to Back/Forward
@@ -146,21 +147,19 @@ function showPage(key, historyMode = 'push', param = null) {
   Object.values(pages).forEach(p => p.classList.remove('active'));
   pages[key].classList.add('active');
   navWords.forEach(w => { const on = w.dataset.page === key; w.classList.toggle('active', on); w.classList.toggle('inactive', !on); });
-  recordVisible = (key === 'music'); recordEl.classList.toggle('visible', recordVisible);
   if (historyMode === 'replace') history.replaceState(null, '', urlFor(key, param));
   else if (historyMode === 'push' && (key !== currentKey || param !== currentParam)) history.pushState(null, '', urlFor(key, param));
   currentKey = key; currentParam = param;
   if (key !== 'album') document.title = 'MusicaNossa';
   window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  const isPhoto = key === 'film-photo', isMusic = key === 'music', isAlbum = key === 'album';
-  floatNav.classList.toggle('photo-active', isPhoto); floatNav.classList.toggle('music-active', isMusic); floatNav.classList.toggle('album-active', isAlbum);
-  navPulldownEl.classList.toggle('visible', isPhoto || isMusic || isAlbum);
+  const isPhoto = key === 'film-photo', isAlbum = key === 'album';
+  floatNav.classList.toggle('photo-active', isPhoto); floatNav.classList.toggle('album-active', isAlbum);
+  navPulldownEl.classList.toggle('visible', isPhoto || isAlbum);
   photoTabsEl.classList.toggle('visible', isPhoto);
   if (typeof window.initPhotoFloat === 'function' && typeof window.destroyPhotoFloat === 'function') {
     if (isPhoto) window.initPhotoFloat(); else window.destroyPhotoFloat();
   }
   if (scrollArrow) scrollArrow.style.display = isPhoto || isAlbum ? 'none' : '';
-  if (isMusic && typeof window.initSC === 'function') window.initSC();
   if (isAlbum && typeof window.renderAlbum === 'function') window.renderAlbum(param);
   wakeLoop();
 }
@@ -198,7 +197,7 @@ window.addEventListener('scroll', () => {
   const scrolled = window.scrollY > window.innerHeight * 0.15;
   document.body.classList.toggle('scrolled', scrolled);
   if (scrollArrow) scrollArrow.classList.toggle('visible', window.scrollY <= 40);
-  if (navPulldownEl && !['photo-active', 'music-active', 'album-active'].some(c => floatNav.classList.contains(c)))
+  if (navPulldownEl && !['photo-active', 'album-active'].some(c => floatNav.classList.contains(c)))
     navPulldownEl.classList.toggle('visible', scrolled);
 }, { passive: true });
 if (scrollArrow) {
@@ -243,6 +242,5 @@ document.addEventListener('click', () => {
 window.App = {
   mouseX: () => mouseX, mouseY: () => mouseY, mouseSpeed: () => mouseSpeed, mouseActive: () => mouseActive,
   tickEntity, NAV_CONFIG, showPage, wakeLoop, registerTick, unregisterTick,
-  get recordVisible() { return recordVisible; }, set recordVisible(v) { recordVisible = v; },
-  floatingWords, recordEl
+  floatingWords
 };
