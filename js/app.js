@@ -6,12 +6,11 @@ const REPULSE_FORCE = 0.045, REPULSE_BUFFER = 40, REPULSE_HARD_THRESHOLD = 0.85,
 const NAV_CONFIG = { friction: FRICTION, drift: DRIFT_FORCE, maxSpeed: MAX_SPEED, centerY: 0.42 };
 const DEFAULT_PAGE = 'sobre';
 // Only pages present in the HTML are routable, so a deploy where the HTML and JS briefly disagree can't crash.
-const pages = Object.fromEntries(Object.entries({ sobre: 'page-sobre', selos: 'page-selos', film: 'page-film', 'film-photo': 'page-film-photo', album: 'page-album' })
+const pages = Object.fromEntries(Object.entries({ sobre: 'page-sobre', selos: 'page-selos', 'film-photo': 'page-film-photo', album: 'page-album' })
   .map(([k, id]) => [k, document.getElementById(id)]).filter(([, el]) => el));
 const navWords = document.querySelectorAll('.nav-word');
 const floatNav = document.getElementById('float-nav'), navPulldownEl = document.getElementById('nav-pulldown');
 const photoTabsEl = document.getElementById('photo-tabs'), scrollArrow = document.getElementById('scroll-arrow');
-const lb = document.getElementById('lightbox'), lbImg = document.getElementById('lb-img');
 let mouseX = -9999, mouseY = -9999, mouseSpeed = 0, mouseActive = false, mouseIdleTimer = null;
 document.addEventListener('mousemove', e => {
   const dx = e.clientX - mouseX, dy = e.clientY - mouseY;
@@ -113,23 +112,6 @@ function loop(now) {
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) wakeLoop(); });
 wakeLoop();
-function showCineLogin(onSuccess) {
-  const existing = document.getElementById('cine-login-overlay');
-  if (existing) existing.remove();
-  const overlay = document.getElementById('cine-auth-template').cloneNode(true);
-  overlay.id = 'cine-login-overlay'; overlay.style.display = '';
-  document.body.appendChild(overlay);
-  const userEl = overlay.querySelector('.cine-user'), passEl = overlay.querySelector('.cine-pass'), errEl = overlay.querySelector('.cine-error');
-  function tryLogin() {
-    if (userEl.value === 'admin' && passEl.value === 'bogota') {
-      sessionStorage.setItem('cine_auth', '1'); overlay.remove(); onSuccess();
-    } else { errEl.textContent = 'Invalid credentials.'; errEl.style.opacity = '1'; passEl.value = ''; passEl.focus(); }
-  }
-  overlay.querySelector('.cine-submit').addEventListener('click', tryLogin);
-  passEl.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
-  userEl.addEventListener('keydown', e => { if (e.key === 'Enter') passEl.focus(); });
-  userEl.focus();
-}
 let bobInterval = null, currentKey = null, currentParam = null;
 // Hash format: #page or #page/param (e.g. #album/r01)
 const urlFor = (key, param) => key === DEFAULT_PAGE ? location.pathname + location.search : '#' + key + (param ? '/' + param : '');
@@ -142,8 +124,6 @@ function parseHash() {
 // history: 'push' for user navigation, 'replace' for first load, 'none' when responding to Back/Forward
 function showPage(key, historyMode = 'push', param = null) {
   if (!pages[key]) return;
-  if (key === 'film' && sessionStorage.getItem('cine_auth') !== '1') { showCineLogin(() => showPage('film', historyMode)); return; }
-  closeLightbox();
   Object.values(pages).forEach(p => p.classList.remove('active'));
   pages[key].classList.add('active');
   navWords.forEach(w => { const on = w.dataset.page === key; w.classList.toggle('active', on); w.classList.toggle('inactive', !on); });
@@ -169,29 +149,12 @@ navWords.forEach(w => {
   w.addEventListener('mouseleave', () => { if (!w.classList.contains('active')) w.classList.add('inactive'); });
 });
 window.addEventListener('popstate', () => { const { key, param } = parseHash(); showPage(key, 'none', param); });
-// Cancelling the Cine login: put the URL back to the page actually showing (or show the default on first load).
-function cancelCineLogin() {
-  const cl = document.getElementById('cine-login-overlay');
-  if (!cl) return;
-  cl.remove();
-  if (currentKey) history.replaceState(null, '', urlFor(currentKey, currentParam)); else showPage(DEFAULT_PAGE, 'replace');
-}
 // Skip link: focus the active page's content instead of changing the hash (which would trigger routing).
 const skipLink = document.querySelector('.skip-link');
 if (skipLink) skipLink.addEventListener('click', e => {
   e.preventDefault();
   const main = document.querySelector('.page.active .page-body');
   if (main) { main.setAttribute('tabindex', '-1'); main.focus(); main.scrollIntoView(); }
-});
-// Generic tabs: any .tab-bar switches sibling .tab-panel[data-panel] within the same .page
-document.querySelectorAll('.tab-bar').forEach(bar => {
-  const scope = bar.closest('.page') || document;
-  bar.addEventListener('click', e => {
-    const tab = e.target.closest('.tab[data-tab]');
-    if (!tab || !bar.contains(tab)) return;
-    bar.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === tab));
-    scope.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.dataset.panel === tab.dataset.tab));
-  });
 });
 window.addEventListener('scroll', () => {
   const scrolled = window.scrollY > window.innerHeight * 0.15;
@@ -216,19 +179,9 @@ if (pulldownToggle) pulldownToggle.addEventListener('click', e => {
 if (pulldownMenu) pulldownMenu.querySelectorAll('button').forEach(btn => {
   btn.addEventListener('click', () => { pulldownMenu.classList.remove('open'); pulldownToggle.setAttribute('aria-expanded', 'false'); showPage(btn.dataset.page); });
 });
-function openLightbox(src) { lbImg.src = src; lb.classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeLightbox() { lb.classList.remove('open'); lbImg.src = ''; document.body.style.overflow = ''; }
-document.getElementById('lb-close').addEventListener('click', closeLightbox);
-lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
 document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
-  closeLightbox();
   if (typeof window.floatingImages !== 'undefined') window.floatingImages.forEach(fi => { if (fi._enlarged) fi.toggleEnlarge(); });
-  cancelCineLogin();
-});
-['film-grid', 'bts-grid'].forEach(id => {
-  const g = document.getElementById(id);
-  if (g) g.addEventListener('click', e => { const img = e.target.closest('img'); if (img) openLightbox(img.src); });
 });
 document.querySelectorAll('#site-brand, .hero-name, .hero-tagline').forEach(el => el.addEventListener('click', () => showPage(DEFAULT_PAGE)));
 document.addEventListener('click', () => {
