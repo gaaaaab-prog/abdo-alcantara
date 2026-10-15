@@ -251,6 +251,21 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 .bm-featured { padding: 0 56px 28px; }
 .bm-video { aspect-ratio: 21/9; max-height: 340px; font-size: 0.72rem; }
 
+/* Selos (record labels) */
+.selos-intro { font-size: 1rem; line-height: 1.75; color: var(--muted); max-width: 640px; margin-bottom: 8px; }
+.selo { max-width: 640px; padding: 48px 0; border-top: 1px solid var(--border); scroll-margin-top: 80px; }
+.selos-intro + .selo { border-top: none; padding-top: 40px; }
+.selo-name { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; }
+.selo-meta { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.02em; margin: 8px 0 22px; }
+.selo p { font-size: 0.95rem; line-height: 1.82; margin-bottom: 14px; }
+.selo .selo-lede { font-size: 1.08rem; line-height: 1.6; font-weight: 500; margin-bottom: 18px; }
+.selo-sub { margin: 28px 0 10px; }
+.selo-list { list-style: none; }
+.selo-list li { font-size: 0.9rem; line-height: 1.6; padding: 7px 0; border-bottom: 1px solid var(--border); }
+.selo .selo-links { display: flex; flex-wrap: wrap; gap: 10px 22px; margin: 0; }
+.selo-links a { font-size: 0.9rem; color: var(--text); text-decoration: none; border-bottom: 1px solid var(--border); padding-bottom: 2px; transition: border-color 0.2s; }
+.selo-links a:hover { border-color: var(--text); }
+
 /* CV sheet (Filmmaking tab) */
 .cv-sheet { max-width: 860px; margin: 0 auto; padding: 0 56px; }
 
