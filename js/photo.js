@@ -203,7 +203,17 @@ const np = {
   play: document.getElementById('np-play'), prev: document.getElementById('np-prev'), next: document.getElementById('np-next'), close: document.getElementById('np-close'),
   min: document.getElementById('np-min'), tab: document.getElementById('np-tab'), body: document.getElementById('np-body')
 };
-let seeking = false;
+// Seek bar works in seconds (max = duration, step any) so dragging is as precise as the pixels allow.
+// While the user drags, playback updates never move the thumb; after release it stays put until the
+// browser reports the seek finished ('seeked'), so it can't jump back to the old position.
+let seeking = false, seekTimer = null, seekChanged = false;
+function seekFill(v) { const d = +np.seek.max || 0; np.seek.style.setProperty('--p', d > 0 ? (Math.min(v, d) / d * 100).toFixed(3) + '%' : '0%'); }
+function seekReady() {
+  if (!np.seek) return;
+  const ok = isFinite(player.duration) && player.duration > 0;
+  np.seek.disabled = !ok;
+  np.seek.max = ok ? player.duration : 0;
+}
 function rowEls() { return albumView.querySelectorAll('.tracklist li[data-i]'); }
 function markRows() {
   const mine = queue && shownRecId === queue.rec.id;
@@ -227,7 +237,7 @@ function updateBar() {
   np.play.setAttribute('aria-label', player.paused ? 'Play' : 'Pause');
   np.elapsed.textContent = mmss(player.currentTime);
   np.total.textContent = isFinite(player.duration) ? mmss(player.duration) : (t.dur || '0:00');
-  if (!seeking) np.seek.value = isFinite(player.duration) && player.duration > 0 ? Math.round(player.currentTime / player.duration * 1000) : 0;
+  if (!seeking) { np.seek.value = isFinite(player.duration) ? player.currentTime : 0; seekFill(+np.seek.value); }
   np.prev.disabled = current <= 0 && player.currentTime < 3;
   np.next.disabled = current >= queue.tracks.length - 1;
 }
@@ -250,6 +260,7 @@ function playAt(i) {
   if (!queue || i < 0 || i >= queue.tracks.length) { stopTracks(); return; }
   current = i;
   player.src = queue.tracks[i].url;
+  seeking = false; if (np.seek) { np.seek.disabled = true; np.seek.max = 0; np.seek.value = 0; seekFill(0); }
   setNowPlaying();
   player.play().then(sync, sync);
   sync();
@@ -264,7 +275,9 @@ function prevTrack() { if (player.currentTime > 3 || current <= 0) { player.curr
 function togglePlayback() { if (player.paused) player.play().then(sync, sync); else player.pause(); }
 player.addEventListener('play', sync);
 player.addEventListener('pause', sync);
-player.addEventListener('loadedmetadata', updateBar);
+player.addEventListener('loadedmetadata', () => { seekReady(); updateBar(); });
+player.addEventListener('durationchange', () => { seekReady(); updateBar(); });
+player.addEventListener('seeked', () => { clearTimeout(seekTimer); seeking = false; updateBar(); });
 player.addEventListener('timeupdate', () => {
   updateBar();
   if (queue && shownRecId === queue.rec.id) { const d = albumView.querySelector(`.tracklist li[data-i="${current}"] .tr-dur`); if (d) d.textContent = mmss(player.currentTime); }
@@ -302,8 +315,17 @@ if (np.el) {
   np.prev.addEventListener('click', prevTrack);
   np.close.addEventListener('click', stopTracks);
   np.cover.addEventListener('click', () => { if (queue) App.showPage('album', 'push', queue.rec.id); });
-  np.seek.addEventListener('input', () => { seeking = true; if (isFinite(player.duration)) np.elapsed.textContent = mmss(np.seek.value / 1000 * player.duration); });
-  np.seek.addEventListener('change', () => { if (isFinite(player.duration)) player.currentTime = np.seek.value / 1000 * player.duration; seeking = false; updateBar(); });
+  np.seek.addEventListener('pointerdown', () => { if (!np.seek.disabled) { seeking = true; seekChanged = false; } });
+  // A press that ends without moving the value fires no 'change': release the bar so it follows playback again.
+  const releaseSeek = () => setTimeout(() => { if (seeking && !seekChanged) { seeking = false; updateBar(); } }, 0);
+  window.addEventListener('pointerup', releaseSeek); window.addEventListener('pointercancel', releaseSeek);
+  np.seek.addEventListener('input', () => { seeking = true; np.elapsed.textContent = mmss(+np.seek.value); seekFill(+np.seek.value); });
+  np.seek.addEventListener('change', () => {
+    seekChanged = true;
+    if (!isFinite(player.duration)) { seeking = false; return; }
+    player.currentTime = +np.seek.value;
+    clearTimeout(seekTimer); seekTimer = setTimeout(() => { seeking = false; updateBar(); }, 1500); // fallback if 'seeked' never fires
+  });
 }
 if ('mediaSession' in navigator) {
   try {
