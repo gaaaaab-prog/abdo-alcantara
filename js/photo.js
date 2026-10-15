@@ -200,7 +200,8 @@ const np = {
   el: document.getElementById('np-player'), img: document.getElementById('np-img'), cover: document.getElementById('np-cover'),
   title: document.getElementById('np-title'), sub: document.getElementById('np-sub'),
   elapsed: document.getElementById('np-elapsed'), total: document.getElementById('np-total'), seek: document.getElementById('np-seek'),
-  play: document.getElementById('np-play'), prev: document.getElementById('np-prev'), next: document.getElementById('np-next'), close: document.getElementById('np-close')
+  play: document.getElementById('np-play'), prev: document.getElementById('np-prev'), next: document.getElementById('np-next'), close: document.getElementById('np-close'),
+  min: document.getElementById('np-min'), tab: document.getElementById('np-tab'), body: document.getElementById('np-body')
 };
 let seeking = false;
 function rowEls() { return albumView.querySelectorAll('.tracklist li[data-i]'); }
@@ -219,6 +220,7 @@ function updateBar() {
   if (!np.el) return;
   const t = queue && queue.tracks[current];
   np.el.classList.toggle('visible', !!t);
+  np.el.classList.toggle('playing', !!t && !player.paused);
   if (!t) return;
   np.play.querySelector('.icon-play').style.display = player.paused ? '' : 'none';
   np.play.querySelector('.icon-pause').style.display = player.paused ? 'none' : '';
@@ -254,7 +256,7 @@ function playAt(i) {
 }
 function stopTracks() {
   player.pause(); player.removeAttribute('src'); player.load();
-  current = -1; queue = null; sync();
+  current = -1; queue = null; setMinimized(false); sync();
 }
 function sync() { markRows(); updateBar(); }
 // Previous: restart the track if more than 3 s in, else go to the previous track (stays on the first one).
@@ -282,7 +284,19 @@ albumView.addEventListener('click', e => {
   queue = { rec, tracks: rec.tracks.filter(t => t[3]).map(([pos, title, dur, url]) => ({ pos, title, dur, url })) };
   playAt(i);
 });
+// Minimize: the card slides off to the right, leaving the arrow tab. Playback is unaffected.
+function setMinimized(on) {
+  if (!np.el || !np.min) return;
+  np.el.classList.toggle('minimized', on);
+  np.min.setAttribute('aria-expanded', String(!on));
+  np.tab.tabIndex = on ? 0 : -1;
+  if ('inert' in np.body) np.body.inert = on;
+}
 if (np.el) {
+  if (np.min && np.tab && np.body) {
+    np.min.addEventListener('click', e => { e.stopPropagation(); setMinimized(true); np.tab.focus({ preventScroll: true }); });
+    np.tab.addEventListener('click', e => { e.stopPropagation(); setMinimized(false); np.play.focus({ preventScroll: true }); });
+  }
   np.play.addEventListener('click', togglePlayback);
   np.next.addEventListener('click', () => playAt(current + 1));
   np.prev.addEventListener('click', prevTrack);
