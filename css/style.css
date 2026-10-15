@@ -189,6 +189,7 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
   position: fixed; bottom: var(--np-edge); right: var(--np-edge); z-index: 1000;
   width: 290px;
   color: var(--text);
+  user-select: none; -webkit-user-select: none;
   opacity: 0; transform: translateY(10px);
   transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1);
   pointer-events: none;
@@ -265,11 +266,16 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 .np-progress { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
 .np-time { font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 28px; }
 .np-time:last-child { text-align: right; }
-#np-seek { flex: 1; -webkit-appearance: none; appearance: none; height: 14px; background: transparent; cursor: pointer; margin: 0; }
-#np-seek::-webkit-slider-runnable-track { height: 2px; background: rgba(15, 15, 15, 0.16); border-radius: 1px; }
-#np-seek::-moz-range-track { height: 2px; background: rgba(15, 15, 15, 0.16); border-radius: 1px; }
-#np-seek::-webkit-slider-thumb { -webkit-appearance: none; width: 10px; height: 10px; margin-top: -4px; border-radius: 50%; background: var(--text); }
-#np-seek::-moz-range-thumb { width: 10px; height: 10px; border: none; border-radius: 50%; background: var(--text); }
+/* Seek bar: 22 px tall hit area around a 3 px track; filled to --p; thumb grows while dragged. */
+#np-seek { --p: 0%; flex: 1; -webkit-appearance: none; appearance: none; height: 22px; margin: 0; background: transparent; cursor: pointer; touch-action: none; }
+#np-seek:disabled { cursor: default; opacity: 0.5; }
+#np-seek::-webkit-slider-runnable-track { height: 3px; border-radius: 2px; background: linear-gradient(to right, rgba(15,15,15,0.75) var(--p), rgba(15,15,15,0.14) var(--p)); }
+#np-seek::-moz-range-track { height: 3px; border-radius: 2px; background: rgba(15,15,15,0.14); }
+#np-seek::-moz-range-progress { height: 3px; border-radius: 2px; background: rgba(15,15,15,0.75); }
+#np-seek::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; margin-top: -4.5px; border-radius: 50%; background: var(--text); box-shadow: 0 0 0 4px rgba(15,15,15,0); transition: transform 0.12s, box-shadow 0.12s; }
+#np-seek::-moz-range-thumb { width: 12px; height: 12px; border: none; border-radius: 50%; background: var(--text); transition: transform 0.12s; }
+#np-seek:not(:disabled):hover::-webkit-slider-thumb, #np-seek:active::-webkit-slider-thumb { transform: scale(1.2); box-shadow: 0 0 0 5px rgba(15,15,15,0.08); }
+#np-seek:not(:disabled):hover::-moz-range-thumb, #np-seek:active::-moz-range-thumb { transform: scale(1.2); }
 
 /* Browsers without backdrop-filter: a more opaque card so text stays readable. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
