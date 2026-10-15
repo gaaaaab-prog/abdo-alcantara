@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=79" />
+  <link rel="stylesheet" href="css/style.css?v=80" />
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -167,7 +167,7 @@
         <button class="np-action" id="np-close" type="button" aria-label="Stop and close player">&times;</button>
       </div>
       <div class="np-top">
-        <button class="np-cover" id="np-cover" aria-label="Open record"><img id="np-img" alt="" /></button>
+        <button class="np-cover" id="np-cover" aria-label="Open record"><img id="np-img" alt="" draggable="false" /></button>
         <div class="np-text">
           <div class="np-title" id="np-title">&mdash;</div>
           <div class="np-sub" id="np-sub"></div>
@@ -175,7 +175,7 @@
       </div>
       <div class="np-progress">
         <span class="np-time" id="np-elapsed">0:00</span>
-        <input type="range" id="np-seek" min="0" max="1000" step="1" value="0" aria-label="Position in track" />
+        <input type="range" id="np-seek" min="0" max="0" step="any" value="0" disabled aria-label="Position in track" />
         <span class="np-time" id="np-total">0:00</span>
       </div>
       <div class="player-controls">
@@ -195,6 +195,6 @@
 
   <script src="js/app.js?v=71"></script>
   <script src="js/archive-data.js?v=5"></script>
-  <script src="js/photo.js?v=77"></script>
+  <script src="js/photo.js?v=78"></script>
 </body>
 </html>
