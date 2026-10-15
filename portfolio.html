@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=78" />
+  <link rel="stylesheet" href="css/style.css?v=79" />
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -153,37 +153,48 @@
     <svg width="16" height="28" viewBox="0 0 16 28" fill="none" aria-hidden="true"><line x1="8" y1="0" x2="8" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M1 16l7 8 7-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
 
-  <!-- Now playing (archive tracks from audio.musicanossa.net). Driven by js/photo.js; shown while a track is loaded. -->
+  <!-- Now playing (archive tracks from audio.musicanossa.net). Driven by js/photo.js; shown while a track is loaded.
+       Minimize slides it off to the right, leaving the arrow tab to bring it back. -->
   <div id="np-player" class="player" role="region" aria-label="Now playing">
-    <button class="player-close" id="np-close" aria-label="Stop and close player">&times;</button>
-    <div class="np-top">
-      <button class="np-cover" id="np-cover" aria-label="Open record"><img id="np-img" alt="" /></button>
-      <div class="np-text">
-        <div class="np-title" id="np-title">&mdash;</div>
-        <div class="np-sub" id="np-sub"></div>
+    <button class="np-tab" id="np-tab" type="button" aria-label="Show player" aria-controls="np-body" tabindex="-1">
+      <svg viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4L3 10l5 6"/></svg>
+    </button>
+    <div class="np-body" id="np-body">
+      <div class="np-actions">
+        <button class="np-action" id="np-min" type="button" aria-label="Minimize player" aria-expanded="true" aria-controls="np-body">
+          <svg viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4l5 6-5 6"/></svg>
+        </button>
+        <button class="np-action" id="np-close" type="button" aria-label="Stop and close player">&times;</button>
       </div>
-    </div>
-    <div class="np-progress">
-      <span class="np-time" id="np-elapsed">0:00</span>
-      <input type="range" id="np-seek" min="0" max="1000" step="1" value="0" aria-label="Position in track" />
-      <span class="np-time" id="np-total">0:00</span>
-    </div>
-    <div class="player-controls">
-      <button class="player-btn" id="np-prev" aria-label="Previous track">
-        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="3" height="14" rx="1"/><path d="M7 10L17 3v14z"/></svg>
-      </button>
-      <button class="player-btn player-btn-main" id="np-play" aria-label="Play">
-        <svg class="icon-play" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5 3l14 7-14 7z"/></svg>
-        <svg class="icon-pause" viewBox="0 0 20 20" fill="currentColor" style="display:none" aria-hidden="true"><rect x="4" y="3" width="4" height="14" rx="1"/><rect x="12" y="3" width="4" height="14" rx="1"/></svg>
-      </button>
-      <button class="player-btn" id="np-next" aria-label="Next track">
-        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="14" y="3" width="3" height="14" rx="1"/><path d="M13 10L3 3v14z"/></svg>
-      </button>
+      <div class="np-top">
+        <button class="np-cover" id="np-cover" aria-label="Open record"><img id="np-img" alt="" /></button>
+        <div class="np-text">
+          <div class="np-title" id="np-title">&mdash;</div>
+          <div class="np-sub" id="np-sub"></div>
+        </div>
+      </div>
+      <div class="np-progress">
+        <span class="np-time" id="np-elapsed">0:00</span>
+        <input type="range" id="np-seek" min="0" max="1000" step="1" value="0" aria-label="Position in track" />
+        <span class="np-time" id="np-total">0:00</span>
+      </div>
+      <div class="player-controls">
+        <button class="player-btn" id="np-prev" aria-label="Previous track">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="3" height="14" rx="1"/><path d="M7 10L17 3v14z"/></svg>
+        </button>
+        <button class="player-btn player-btn-main" id="np-play" aria-label="Play">
+          <svg class="icon-play" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5 3l14 7-14 7z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 20 20" fill="currentColor" style="display:none" aria-hidden="true"><rect x="4" y="3" width="4" height="14" rx="1"/><rect x="12" y="3" width="4" height="14" rx="1"/></svg>
+        </button>
+        <button class="player-btn" id="np-next" aria-label="Next track">
+          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="14" y="3" width="3" height="14" rx="1"/><path d="M13 10L3 3v14z"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 
   <script src="js/app.js?v=71"></script>
   <script src="js/archive-data.js?v=5"></script>
-  <script src="js/photo.js?v=76"></script>
+  <script src="js/photo.js?v=77"></script>
 </body>
 </html>
