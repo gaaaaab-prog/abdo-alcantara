@@ -148,6 +148,7 @@ function measureAvoidRects() {
       top: Math.min(...rows.map(r => r.top)), bottom: Math.max(...rows.map(r => r.bottom)) });
   }
   add(document.querySelector('.site-brand'));
+  add(document.querySelector('.site-brand .brand-logo'));
   if (document.body.classList.contains('scrolled')) document.querySelectorAll('#page-film-photo .hero-name, #page-film-photo .hero-tagline').forEach(add);
   avoidRects = out;
 }
