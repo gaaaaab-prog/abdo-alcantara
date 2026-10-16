@@ -35,7 +35,7 @@ body {
 /* ── SITE BRAND (fixed, every page) ───────────── */
 
 .site-brand {
-  position: fixed; top: 28px; right: 40px; z-index: 250;
+  position: fixed; top: 20px; right: 40px; z-index: 250;
   background: none; border: none; padding: 0;
   font: inherit;
   font-size: clamp(1.6rem, 3.2vw, 2.8rem);
@@ -53,9 +53,9 @@ body {
 .site-brand .brand-text {
   /* Edge to edge: the "M" starts on the centre of the frame's left stroke (x 90.1 of the 1000-wide viewBox), the last "a"
      ends on the centre of the right stroke (x 920.5); the name's ink runs 0.0805em-6.1431em of its box.
-     Height: the tops of the lowercase letters sit 14 units inside the bottom line's outer edge (y 524.7 of 607),
-     mirroring how the letters used to sit on the top line. left/top are in the name's own em. */
-  position: absolute; left: 0.573em; top: 3.49em;
+     Height: the name hangs just below the logo's bottom line; the tops of the capitals sit at y 538 of 607 (the line's
+     underside above the M and N is at 538-545), so they only graze it. left/top are in the name's own em. */
+  position: absolute; left: 0.573em; top: 3.768em;
   font-size: 0.897em; line-height: 1; white-space: nowrap;
 }
 .site-brand .brand-word { z-index: 0; color: var(--text); }
@@ -555,7 +555,7 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 /* ── RESPONSIVE ───────────────────────────────── */
 
 @media (max-width: 680px) {
-  .site-brand { top: 20px; right: 20px; font-size: 1.35rem; }
+  .site-brand { top: 14px; right: 20px; font-size: 1.35rem; }
   .nav-pulldown { top: 16px; left: 16px; }
   .photo-tabs { top: calc(20px + 3.949 * 1.35rem + 12px); max-width: calc(100vw - 32px); gap: 4px 20px; } /* just below the logo */
   .af-link { font-size: 0.8rem; }
