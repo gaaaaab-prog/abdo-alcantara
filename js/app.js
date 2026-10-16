@@ -112,7 +112,13 @@ function loop(now) {
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) wakeLoop(); });
 wakeLoop();
-let bobInterval = null, currentKey = null, currentParam = null;
+let currentKey = null, currentParam = null;
+// Scroll hint: visible near the top of any page that has more below; fades out as soon as you scroll.
+function updateScrollHint() {
+  if (!scrollArrow) return;
+  const more = document.documentElement.scrollHeight - window.innerHeight > 80;
+  scrollArrow.classList.toggle('visible', more && window.scrollY <= 40);
+}
 // Hash format: #page or #page/param (e.g. #album/r01)
 const urlFor = (key, param) => key === DEFAULT_PAGE ? location.pathname + location.search : '#' + key + (param ? '/' + param : '');
 const HASH_ALIASES = { music: 'selos' }; // old #music links open Selos
@@ -139,8 +145,8 @@ function showPage(key, historyMode = 'push', param = null) {
   if (typeof window.initPhotoFloat === 'function' && typeof window.destroyPhotoFloat === 'function') {
     if (isPhoto) window.initPhotoFloat(); else window.destroyPhotoFloat();
   }
-  if (scrollArrow) scrollArrow.style.display = isPhoto || isAlbum ? 'none' : '';
   if (isAlbum && typeof window.renderAlbum === 'function') window.renderAlbum(param);
+  updateScrollHint(); setTimeout(updateScrollHint, 400); // again once covers/images have laid out
   wakeLoop();
 }
 navWords.forEach(w => {
@@ -159,17 +165,14 @@ if (skipLink) skipLink.addEventListener('click', e => {
 window.addEventListener('scroll', () => {
   const scrolled = window.scrollY > window.innerHeight * 0.15;
   document.body.classList.toggle('scrolled', scrolled);
-  if (scrollArrow) scrollArrow.classList.toggle('visible', window.scrollY <= 40);
+  updateScrollHint();
   if (navPulldownEl && !['photo-active', 'album-active'].some(c => floatNav.classList.contains(c)))
     navPulldownEl.classList.toggle('visible', scrolled);
 }, { passive: true });
 if (scrollArrow) {
-  scrollArrow.classList.add('visible');
-  scrollArrow.addEventListener('click', () => window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' }));
-  bobInterval = setInterval(() => {
-    if (!scrollArrow.classList.contains('visible')) { clearInterval(bobInterval); bobInterval = null; return; }
-    scrollArrow.classList.remove('bobbing'); void scrollArrow.offsetWidth; scrollArrow.classList.add('bobbing');
-  }, 300000);
+  scrollArrow.addEventListener('click', e => { e.stopPropagation(); window.scrollBy({ top: window.innerHeight * 0.85, behavior: 'smooth' }); });
+  window.addEventListener('resize', updateScrollHint);
+  window.addEventListener('load', updateScrollHint);
 }
 const pulldownToggle = document.getElementById('pulldown-toggle'), pulldownMenu = document.getElementById('pulldown-menu');
 if (pulldownToggle) pulldownToggle.addEventListener('click', e => {
