@@ -11,7 +11,7 @@
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'self';
-                 script-src 'self' 'unsafe-inline';
+                 script-src 'self';
                  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
                  font-src 'self' https://fonts.gstatic.com;
                  img-src 'self' data:;
@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=96" />
+  <link rel="stylesheet" href="css/style.css?v=97" />
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -36,20 +36,19 @@
 
   <!-- ── FLOATING NAV ───────────────────────────── -->
   <nav id="float-nav" aria-label="Main navigation">
-    <button class="nav-word active" data-page="sobre">Sobre</button>
-    <button class="nav-word" data-page="selos">Selos</button>
-    <button class="nav-word" data-page="film-photo">Acervo</button>
-
+    <button class="nav-word active" type="button" data-page="sobre">Sobre</button>
+    <button class="nav-word" type="button" data-page="selos">Selos</button>
+    <button class="nav-word" type="button" data-page="film-photo">Acervo</button>
   </nav>
 
   <div class="nav-pulldown" id="nav-pulldown">
-    <button class="pulldown-toggle" id="pulldown-toggle" aria-label="Navigation menu" aria-expanded="false">
+    <button class="pulldown-toggle" id="pulldown-toggle" type="button" aria-label="Navigation menu" aria-expanded="false">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
     </button>
     <div class="pulldown-menu" id="pulldown-menu">
-      <button data-page="sobre">Sobre</button>
-      <button data-page="selos">Selos</button>
-      <button data-page="film-photo">Acervo</button>
+      <button type="button" data-page="sobre">Sobre</button>
+      <button type="button" data-page="selos">Selos</button>
+      <button type="button" data-page="film-photo">Acervo</button>
     </div>
   </div>
 
@@ -59,11 +58,7 @@
       <h1 class="hero-name">Sobre</h1>
     </header>
     <main class="page-body" id="main-content">
-      <section class="resume-section">
-        <div class="resume-text">
-          <p>Para a educação e pela história. O acervo MusicaNossa é uma porta ao redescobrimento da nossa música brasileira.</p>
-        </div>
-      </section>
+      <p class="sobre-text">Para a educação e pela história. O acervo MusicaNossa é uma porta ao redescobrimento da nossa música brasileira.</p>
     </main>
   </div>
 
@@ -74,8 +69,6 @@
       <div class="hero-tagline">Brazilian record labels</div>
     </header>
     <main class="page-body">
-      <p class="selos-intro">Three labels represented in the Acervo: two independent Rio de Janeiro labels of the 1960s and the oldest record company in Brazil.</p>
-
       <article class="selo" id="selo-forma">
         <h2 class="selo-name">Forma</h2>
         <p class="selo-meta">Rio de Janeiro · from 1964 · founded by Roberto Quartin and Wadi Gebara</p>
@@ -126,13 +119,12 @@
   </div>
 
   <!-- ── ACERVO ─────────────────────────────────── -->
-  <!-- Record archive: floating covers + list. Data: js/archive-data.js (generated); rendering: js/photo.js. -->
+  <!-- Record archive: floating covers, filters and a list. Data: js/archive-data.js (generated); rendering: js/photo.js. -->
   <div id="page-film-photo" class="page">
     <header class="page-hero">
       <h1 class="hero-name">Acervo</h1>
       <div class="hero-tagline">Records</div>
     </header>
-    <!-- Filters (format, style): rendered by js/photo.js from the archive tags -->
     <nav class="photo-tabs" id="photo-tabs" aria-label="Archive filters" hidden></nav>
     <div class="photo-float-container" id="photo-float-container"></div>
     <main class="page-body">
@@ -164,7 +156,7 @@
         <button class="np-action" id="np-close" type="button" aria-label="Stop and close player">&times;</button>
       </div>
       <div class="np-top">
-        <button class="np-cover" id="np-cover" aria-label="Open record"><img id="np-img" alt="" draggable="false" /></button>
+        <button class="np-cover" id="np-cover" type="button" aria-label="Open record"><img id="np-img" alt="" draggable="false" /></button>
         <div class="np-text">
           <div class="np-title" id="np-title">&mdash;</div>
           <div class="np-sub" id="np-sub"></div>
@@ -176,14 +168,14 @@
         <span class="np-time" id="np-total">0:00</span>
       </div>
       <div class="player-controls">
-        <button class="player-btn" id="np-prev" aria-label="Previous track">
+        <button class="player-btn" id="np-prev" type="button" aria-label="Previous track">
           <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="3" height="14" rx="1"/><path d="M7 10L17 3v14z"/></svg>
         </button>
-        <button class="player-btn player-btn-main" id="np-play" aria-label="Play">
+        <button class="player-btn player-btn-main" id="np-play" type="button" aria-label="Play">
           <svg class="icon-play" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M5 3l14 7-14 7z"/></svg>
           <svg class="icon-pause" viewBox="0 0 20 20" fill="currentColor" style="display:none" aria-hidden="true"><rect x="4" y="3" width="4" height="14" rx="1"/><rect x="12" y="3" width="4" height="14" rx="1"/></svg>
         </button>
-        <button class="player-btn" id="np-next" aria-label="Next track">
+        <button class="player-btn" id="np-next" type="button" aria-label="Next track">
           <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><rect x="14" y="3" width="3" height="14" rx="1"/><path d="M13 10L3 3v14z"/></svg>
         </button>
       </div>
@@ -195,8 +187,8 @@
     <svg viewBox="0 0 14 30" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 1v27M1.5 22.5L7 28l5.5-5.5"/></svg>
   </button>
 
-  <script src="js/app.js?v=73"></script>
+  <script src="js/app.js?v=74"></script>
   <script src="js/archive-data.js?v=7"></script>
-  <script src="js/photo.js?v=82"></script>
+  <script src="js/photo.js?v=83"></script>
 </body>
 </html>
