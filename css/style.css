@@ -323,14 +323,24 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 /* Text-link filters, centred under the top edge; rendered by photo.js. Active = underlined. */
 .photo-tabs {
   position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 250;
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 34px;
+  display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 6px 34px;
   max-width: calc(100vw - 2 * 300px);
   opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
 }
 .photo-tabs.visible { opacity: 1; pointer-events: all; }
 .photo-tabs[hidden] { display: none; }
 .af-group { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 0; white-space: nowrap; }
-.af-label { margin-right: 12px; font-size: 0.74rem; color: var(--muted); opacity: 0.75; }
+/* The group word (format / style) is a button: click folds the group's links away (a folded group keeps its active value). */
+.af-label {
+  background: none; border: none; padding: 2px 1px; margin-right: 12px; cursor: pointer;
+  font: inherit; font-size: 0.74rem; color: var(--muted); opacity: 0.75;
+  text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; text-decoration-thickness: 1px;
+  transition: opacity 0.2s, text-decoration-color 0.2s;
+}
+.af-label:hover { opacity: 1; text-decoration-color: rgba(15,15,15,0.3); }
+.af-group.collapsed .af-label { opacity: 0.6; }
+.af-group.collapsed .af-label:hover { opacity: 1; }
+.af-group--style .af-link { font-weight: 600; }
 .af-link {
   background: none; border: none; padding: 2px 1px; cursor: pointer;
   font: inherit; font-size: 0.86rem; color: var(--muted);
