@@ -189,8 +189,6 @@ document.addEventListener('keydown', e => {
 document.querySelectorAll('#site-brand, .hero-name, .hero-tagline').forEach(el => el.addEventListener('click', () => showPage(DEFAULT_PAGE)));
 document.addEventListener('click', () => {
   if (typeof window.floatingImages !== 'undefined') window.floatingImages.forEach(fi => { if (fi._enlarged) fi.toggleEnlarge(); });
-  document.querySelectorAll('.photo-tab').forEach(t => t.classList.remove('dropdown-open'));
-  document.querySelectorAll('.photo-dropdown').forEach(d => d.classList.remove('open'));
   if (pulldownMenu) pulldownMenu.classList.remove('open');
   if (pulldownToggle) pulldownToggle.setAttribute('aria-expanded', 'false');
 });
