@@ -43,6 +43,18 @@ body {
   font-weight: 500; letter-spacing: -0.025em; line-height: 1.1;
   color: var(--text);
   cursor: pointer; user-select: none;
+  --brand-top: 28px; --brand-edge: 40px;
+}
+/* Temporary logo (images/mn-logo.svg) over the name, Gabriel's "divide" look: the name is a softer grey and the
+   black logo sits on top of it (a dark layer divided by the name's grey stays black, so the logo wins where they cross).
+   The logo is 2.5x the name's line height, centred on the end of the word and sticking out to the right,
+   but clamped so its frame stays 8px inside the screen edge and 6px below the top. The name itself doesn't move. */
+.site-brand .brand-word { position: relative; z-index: 0; color: #8a8a8a; }
+.site-brand .brand-logo {
+  position: absolute; z-index: 1; pointer-events: none;
+  height: 2.75em; width: auto; /* 2.5 x the 1.1em line box */
+  right: max(-1.77em, calc(8px - var(--brand-edge)));  /* centre 0.5em before the word's end, within the screen */
+  top: max(-0.825em, calc(6px - var(--brand-top)));    /* vertically centred on the name, kept on-screen */
 }
 
 /* ── FLOATING NAV ─────────────────────────────── */
@@ -544,9 +556,9 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 /* ── RESPONSIVE ───────────────────────────────── */
 
 @media (max-width: 680px) {
-  .site-brand { top: 20px; right: 20px; font-size: 1.35rem; }
+  .site-brand { top: 20px; right: 20px; font-size: 1.35rem; --brand-top: 20px; --brand-edge: 20px; }
   .nav-pulldown { top: 16px; left: 16px; }
-  .photo-tabs { top: 62px; max-width: calc(100vw - 32px); gap: 4px 20px; } /* below the brand so they don't collide on narrow screens */
+  .photo-tabs { top: 72px; max-width: calc(100vw - 32px); gap: 4px 20px; } /* below the brand so they don't collide on narrow screens */
   .af-link { font-size: 0.8rem; }
   .page-hero { padding: 0 24px 48px; }
   .page-body { padding: 0 24px 80px; }
