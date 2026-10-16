@@ -43,22 +43,20 @@ body {
   font-weight: 500; letter-spacing: -0.025em; line-height: 1.1;
   color: var(--text);
   cursor: pointer; user-select: none;
-  /* The temporary logo (images/mn-logo.svg) takes the name's place at the name's old width (6.2em). The name, straight
-     and black, stands on top of it: sized to the frame's inside width, with only the bottoms of the letters overlapping
-     the logo's top line (baseline at y 62 of the 607-unit viewBox = 0.3844em). Gabriel's "divide" / negative look:
-     where the letters overlap the logo's line they turn white. CSS has no divide blend (and
-     mix-blend-mode inside this fixed button is isolated), so the negative is a white copy of the name (.brand-neg)
-     masked by the logo itself; both copies of the name share .brand-text so they line up exactly. */
+  /* Temporary logo (images/mn-logo.svg) in the name's place, 5% wider than the old name (6.2em); the name hangs from the
+     logo's bottom line. Gabriel's "divide"/negative look: wherever the letters overlap the logo they turn white. CSS has
+     no divide blend (and mix-blend-mode inside this fixed button is isolated), so .brand-neg is a white copy of the name
+     masked by the logo; both copies share .brand-text so they line up exactly. */
   width: 6.51em; height: 3.949em;   /* the name's old width (6.2em) + 5%; 1000 x 606.61 viewBox */
 }
 .site-brand .brand-logo, .site-brand .brand-neg { position: absolute; inset: 0; pointer-events: none; }
 .site-brand .brand-logo { z-index: 1; width: 100%; height: 100%; }
 .site-brand .brand-text {
-  /* Edge to edge: the ink of "M" starts on the centre of the logo frame's left stroke (x 90.1 of 1000) and the ink of
-     the last "a" ends on the centre of the right stroke (x 920.5). Ink runs 0.0805em-6.1431em of the name's box.
-     The baseline (top + 0.8635 x font-size at line-height 1) is tuned by eye with Gabriel (steps of 0.065em).
-     left/top are in the name's own em. */
-  position: absolute; left: 0.573em; top: -0.276em;   /* one step (0.065em) lower than the tuned baseline, per Gabriel */
+  /* Edge to edge: the "M" starts on the centre of the frame's left stroke (x 90.1 of the 1000-wide viewBox), the last "a"
+     ends on the centre of the right stroke (x 920.5); the name's ink runs 0.0805em-6.1431em of its box.
+     Height: the tops of the lowercase letters sit 14 units inside the bottom line's outer edge (y 524.7 of 607),
+     mirroring how the letters used to sit on the top line. left/top are in the name's own em. */
+  position: absolute; left: 0.573em; top: 3.49em;
   font-size: 0.897em; line-height: 1; white-space: nowrap;
 }
 .site-brand .brand-word { z-index: 0; color: #0f0f0f; }
