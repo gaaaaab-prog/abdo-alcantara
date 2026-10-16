@@ -43,18 +43,24 @@ body {
   font-weight: 500; letter-spacing: -0.025em; line-height: 1.1;
   color: var(--text);
   cursor: pointer; user-select: none;
-  --brand-top: 28px; --brand-edge: 40px;
+  --brand-edge: 40px;
 }
-/* Temporary logo (images/mn-logo.svg) over the name, Gabriel's "divide" look: the name is a softer grey and the
-   black logo sits on top of it (a dark layer divided by the name's grey stays black, so the logo wins where they cross).
-   The logo is 2.5x the name's line height, centred on the end of the word and sticking out to the right,
-   but clamped so its frame stays 8px inside the screen edge and 6px below the top. The name itself doesn't move. */
+/* Temporary logo (images/mn-logo.svg) with the name, Gabriel's "divide" / negative look: the name is a softer grey,
+   the black logo sits on top, and where the logo's lines cross the letters the letters turn white (negative).
+   CSS has no divide blend, so the negative is a white copy of the name (.brand-neg) masked by the logo itself.
+   The logo is 2.5x the name's line height, sits below the name with its frame line just crossing the bottom of the letters (top 0.45em), centred
+   0.5em before the word's end and sticking out right, clamped 8px inside the screen edge. The name doesn't move. */
 .site-brand .brand-word { position: relative; z-index: 0; color: #8a8a8a; }
+.site-brand .brand-logo, .site-brand .brand-neg { position: absolute; pointer-events: none; }
 .site-brand .brand-logo {
-  position: absolute; z-index: 1; pointer-events: none;
-  height: 2.75em; width: auto; /* 2.5 x the 1.1em line box */
-  right: max(-1.77em, calc(8px - var(--brand-edge)));  /* centre 0.5em before the word's end, within the screen */
-  top: max(-0.825em, calc(6px - var(--brand-top)));    /* vertically centred on the name, kept on-screen */
+  z-index: 1; height: 2.75em; width: auto;               /* 2.5 x the 1.1em line box */
+  right: max(-1.77em, calc(8px - var(--brand-edge)));   /* centre 0.5em before the word's end, within the screen */
+  top: 0.45em;                                           /* the frame line just crosses the bottom of the letters */
+}
+.site-brand .brand-neg {
+  z-index: 2; left: 0; top: 0; white-space: nowrap; color: #fff;
+  -webkit-mask: url(../images/mn-logo.svg) no-repeat right max(-1.77em, calc(8px - var(--brand-edge))) top 0.45em / auto 2.75em;
+          mask: url(../images/mn-logo.svg) no-repeat right max(-1.77em, calc(8px - var(--brand-edge))) top 0.45em / auto 2.75em;
 }
 
 /* ── FLOATING NAV ─────────────────────────────── */
@@ -556,9 +562,9 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 /* ── RESPONSIVE ───────────────────────────────── */
 
 @media (max-width: 680px) {
-  .site-brand { top: 20px; right: 20px; font-size: 1.35rem; --brand-top: 20px; --brand-edge: 20px; }
+  .site-brand { top: 20px; right: 20px; font-size: 1.35rem; --brand-edge: 20px; }
   .nav-pulldown { top: 16px; left: 16px; }
-  .photo-tabs { top: 72px; max-width: calc(100vw - 32px); gap: 4px 20px; } /* below the brand so they don't collide on narrow screens */
+  .photo-tabs { top: 98px; max-width: calc(100vw - 32px); gap: 4px 20px; } /* below the brand so they don't collide on narrow screens */
   .af-link { font-size: 0.8rem; }
   .page-hero { padding: 0 24px 48px; }
   .page-body { padding: 0 24px 80px; }
