@@ -78,23 +78,24 @@ body.scrolled .nav-word,
   transition: opacity 0.25s ease;
 }
 
-/* ── SCROLL ARROW ─────────────────────────────── */
+/* ── SCROLL ARROW (global scroll hint) ────────── */
 
 .scroll-arrow {
-  position: fixed; bottom: 32px; right: 60px; z-index: 200;
-  cursor: pointer; color: var(--muted);
-  background: none; border: none; outline: none;
-  padding: 0; font: inherit;
+  position: fixed; left: 50%; bottom: 26px; z-index: 900;
+  width: 32px; height: 44px; margin-left: -16px; padding: 7px 9px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text);
   opacity: 0; pointer-events: none;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.7s ease, bottom 0.4s ease;
 }
-.scroll-arrow.visible { opacity: 0.6; pointer-events: all; }
-.scroll-arrow.bobbing { animation: arrow-bob 2.4s ease-in-out 1; }
-.scroll-arrow:hover { opacity: 0.8; }
+.scroll-arrow svg { display: block; width: 14px; height: 30px; }
+.scroll-arrow.visible { opacity: 0.38; pointer-events: all; }
+.scroll-arrow.visible svg { animation: arrow-drift 3.2s ease-in-out infinite; }
+.scroll-arrow.visible:hover { opacity: 0.75; }
 
-@keyframes arrow-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(5px); }
+@keyframes arrow-drift {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(5px); }
 }
 
 /* ── PAGES ────────────────────────────────────── */
@@ -516,7 +517,9 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
   .page-body.album-page { padding-top: 88px; }
   .album { grid-template-columns: 1fr; grid-template-areas: "cover" "meta"; gap: 28px 0; }
   .album-cover { max-width: 280px; }
-  .scroll-arrow { right: 24px; bottom: 24px; }
+  .scroll-arrow { bottom: 18px; }
+  /* Phones: the player card spans the bottom edge, so the hint sits just above it. */
+  #np-player.visible:not(.minimized) ~ .scroll-arrow { bottom: 168px; }
 }
 
 @media (max-width: 420px) {
