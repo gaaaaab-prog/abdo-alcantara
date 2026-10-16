@@ -340,7 +340,10 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 .af-label:hover { opacity: 1; text-decoration-color: rgba(15,15,15,0.3); }
 .af-group.collapsed .af-label { opacity: 0.6; }
 .af-group.collapsed .af-label:hover { opacity: 1; }
-.af-group--style .af-link { font-weight: 600; }
+/* Style names: bold, never underlined; the selected one is marked by its darker colour. */
+.af-group--style .af-link,
+.af-group--style .af-link:hover,
+.af-group--style .af-link.active { font-weight: 600; text-decoration: none; }
 .af-link {
   background: none; border: none; padding: 2px 1px; cursor: pointer;
   font: inherit; font-size: 0.86rem; color: var(--muted);
