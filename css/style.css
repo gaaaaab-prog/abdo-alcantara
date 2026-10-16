@@ -51,11 +51,11 @@ body {
 .site-brand .brand-logo, .site-brand .brand-neg { position: absolute; inset: 0; pointer-events: none; }
 .site-brand .brand-logo { z-index: 1; width: 100%; height: 100%; }
 .site-brand .brand-text {
-  /* Edge to edge: the "M" starts on the centre of the frame's left stroke (x 90.1 of the 1000-wide viewBox), the last "a"
-     ends on the centre of the right stroke (x 920.5); the name's ink runs 0.0805em-6.1431em of its box.
+  /* Centred on the logo: the logo's ink spans x 61-939 of the 1000-wide viewBox (centre 500); the name's ink
+     (0.0805em-6.1431em of its box, 831 units wide) spans x 84.3-915.7.
      Height: the name hangs just below the logo's bottom line; the tops of the capitals sit at y 538 of 607 (the line's
      underside above the M and N is at 538-545), so they only graze it. left/top are in the name's own em. */
-  position: absolute; left: 0.573em; top: 3.768em;
+  position: absolute; left: 0.532em; top: 3.768em;
   font-size: 0.897em; line-height: 1; white-space: nowrap;
 }
 .site-brand .brand-word { z-index: 0; color: var(--text); }
