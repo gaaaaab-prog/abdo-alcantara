@@ -141,7 +141,7 @@ function showPage(key, historyMode = 'push', param = null) {
   const isPhoto = key === 'film-photo', isAlbum = key === 'album';
   floatNav.classList.toggle('photo-active', isPhoto); floatNav.classList.toggle('album-active', isAlbum);
   navPulldownEl.classList.toggle('visible', isPhoto || isAlbum);
-  photoTabsEl.classList.toggle('visible', isPhoto);
+  if (photoTabsEl) photoTabsEl.classList.toggle('visible', isPhoto);
   if (typeof window.initPhotoFloat === 'function' && typeof window.destroyPhotoFloat === 'function') {
     if (isPhoto) window.initPhotoFloat(); else window.destroyPhotoFloat();
   }
@@ -193,8 +193,5 @@ document.addEventListener('click', () => {
   if (pulldownToggle) pulldownToggle.setAttribute('aria-expanded', 'false');
 });
 { const { key, param } = parseHash(); showPage(key, 'replace', param); }
-window.App = {
-  mouseX: () => mouseX, mouseY: () => mouseY, mouseSpeed: () => mouseSpeed, mouseActive: () => mouseActive,
-  tickEntity, NAV_CONFIG, showPage, wakeLoop, registerTick, unregisterTick,
-  floatingWords
-};
+// Shared with photo.js (record archive): physics, routing and the animation loop.
+window.App = { tickEntity, showPage, wakeLoop, registerTick, unregisterTick };
