@@ -1,5 +1,5 @@
 /* =============================================
-      MusicaNossa — Portfolio
+      MusicaNossa — musicanossa.net
    ============================================ */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -9,7 +9,6 @@
   --text: #0f0f0f;
   --muted: #909090;
   --border: rgba(0,0,0,0.1);
-  --ph-bg: #e3e3de;
   --font: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
@@ -59,7 +58,7 @@ body {
   position: absolute; left: 0.573em; top: 3.49em;
   font-size: 0.897em; line-height: 1; white-space: nowrap;
 }
-.site-brand .brand-word { z-index: 0; color: #0f0f0f; }
+.site-brand .brand-word { z-index: 0; color: var(--text); }
 .site-brand .brand-neg {
   z-index: 2; color: #fff;
   -webkit-mask: url(../images/mn-logo.svg) no-repeat 0 0 / 100% 100%;
@@ -162,12 +161,7 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 
 /* ── SOBRE ────────────────────────────────────── */
 
-.resume-section { padding: 36px 0; border-top: 1px solid var(--border); }
-.resume-section:first-child { border-top: none; padding-top: 0; }
-
-.resume-text { font-size: 0.9rem; line-height: 1.82; color: var(--text); }
-.resume-text p { margin-bottom: 10px; }
-.resume-text p:last-child { margin-bottom: 0; }
+.sobre-text { font-size: 0.9rem; line-height: 1.82; }
 
 /* ── ARCHIVE LIST ───────────────────────────── */
 
@@ -186,11 +180,12 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 .me-num { font-size: 0.66rem; color: var(--muted); letter-spacing: 0.07em; }
 .me-title { font-size: 0.95rem; font-weight: 500; }
 .me-meta { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.04em; }
+.me-artist { color: var(--muted); font-weight: 400; margin-left: 8px; }
 
-/* Selos (record labels) */
-.selos-intro { font-size: 1rem; line-height: 1.75; color: var(--muted); max-width: 640px; margin-bottom: 8px; }
+/* ── SELOS (record labels) ────────────────────── */
+
 .selo { max-width: 640px; padding: 48px 0; border-top: 1px solid var(--border); scroll-margin-top: 80px; }
-.selos-intro + .selo { border-top: none; padding-top: 40px; }
+.selo:first-child { border-top: none; padding-top: 0; }
 .selo-name { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; }
 .selo-meta { font-size: 0.78rem; color: var(--muted); letter-spacing: 0.02em; margin: 8px 0 22px; }
 .selo p { font-size: 0.95rem; line-height: 1.82; margin-bottom: 14px; }
@@ -408,15 +403,16 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
   box-shadow: 0 12px 60px rgba(0,0,0,0.4);
   border-radius: 6px; transform: none !important; will-change: auto;
 }
-.float-img.enlarged img { object-fit: cover; filter: grayscale(0%); image-rendering: high-quality; }
+.float-img.enlarged img { filter: grayscale(0%); }
 
 .photo-float-container.has-enlarged .float-img:not(.enlarged) {
   opacity: 0.2; pointer-events: none; will-change: auto;
 }
+/* Filtered-out covers fade away (opacity is also set inline so the physics skips them). */
+.float-img.filtered-out { pointer-events: none; }
 
 /* ── RECORD ARCHIVE (floating covers) ─────────── */
-/* Square covers that flip to the reverse side when enlarged. Physics/size match the old photos. */
-
+/* Square covers that flip to the reverse side when enlarged. */
 
 .float-img.record { overflow: visible; box-shadow: none; background: none; perspective: 900px; }
 .float-img.record.enlarged { box-shadow: none; }
@@ -464,8 +460,6 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 }
 .float-img.enlarged .record-hint { opacity: 1; transition-delay: 0.35s; }
 
-.me-artist { color: var(--muted); font-weight: 400; margin-left: 8px; }
-
 /* ── RECORD PAGE (#album/<id>) ────────────────── */
 
 .page-body.album-page { padding-top: 112px; min-height: 100vh; }
@@ -487,7 +481,7 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
   grid-area: cover; width: 100%; aspect-ratio: 1; padding: 0; border: none; background: none;
   perspective: 1200px; cursor: pointer;
 }
-.album-cover--static { cursor: default; }
+.album-cover--static { cursor: zoom-in; }
 
 .album-kicker { margin-bottom: 10px; }
 .album-title { font-size: clamp(1.6rem, 3.2vw, 2.4rem); font-weight: 500; letter-spacing: -0.02em; line-height: 1.1; margin-bottom: 6px; }
@@ -519,11 +513,7 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 .tracklist li.unavailable .tr-btn { opacity: 0.4; cursor: default; }
 .tracklist li.tr-off { opacity: 0.38; }
 
-/* Filtered-out covers fade away (opacity is also set inline so the physics skips them). */
-.float-img.filtered-out { pointer-events: none; }
-
 /* ── COVER VIEWER (record page: double-click the cover) ── */
-.album-cover--static { cursor: zoom-in; }
 .zv {
   position: fixed; inset: 0; z-index: 2000;
   background: rgba(245, 245, 240, 0.86);
@@ -567,7 +557,7 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 @media (max-width: 680px) {
   .site-brand { top: 20px; right: 20px; font-size: 1.35rem; }
   .nav-pulldown { top: 16px; left: 16px; }
-  .photo-tabs { top: calc(20px + 3.949 * 1.35rem + 12px); max-width: calc(100vw - 32px); gap: 4px 20px; } /* below the brand so they don't collide on narrow screens */
+  .photo-tabs { top: calc(20px + 3.949 * 1.35rem + 12px); max-width: calc(100vw - 32px); gap: 4px 20px; } /* just below the logo */
   .af-link { font-size: 0.8rem; }
   .page-hero { padding: 0 24px 48px; }
   .page-body { padding: 0 24px 80px; }
