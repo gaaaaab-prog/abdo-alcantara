@@ -4,9 +4,9 @@
 // each floating item is now a square record cover that flips to its reverse side when enlarged.
 const PHOTO_FRICTION = 0.9917, PHOTO_DRIFT = 0.00184, PHOTO_MAX_SPEED = 2.3;
 const THUMB_HEIGHT = 72, COLLISION_BUFFER = 20, COLLISION_FORCE = 0.03;
-// Desktop (wider than the 900px breakpoint) shows the floating covers larger: +10%, then +10% again (Oct 15).
+// Desktop (wider than the 900px breakpoint) shows the floating covers larger: +10%, +10% (Oct 15), then +15% (Oct 16) = 100 px.
 const DESKTOP_MQ = window.matchMedia('(min-width: 901px)');
-const thumbSize = () => Math.round(THUMB_HEIGHT * (DESKTOP_MQ.matches ? 1.21 : 1));
+const thumbSize = () => Math.round(THUMB_HEIGHT * (DESKTOP_MQ.matches ? 1.21 * 1.15 : 1));
 const ENLARGE_FRACTION = 0.34, ENLARGE_MIN = 180, ENLARGE_MAX = 300; // "slightly" enlarged square
 const INFO_GAP = 32, INFO_MIN_W = 200, INFO_MAX_W = 260; // details panel beside the enlarged cover
 const PHOTO_CONFIG = { friction: PHOTO_FRICTION, drift: PHOTO_DRIFT, maxSpeed: PHOTO_MAX_SPEED, centerY: 0.42 };
