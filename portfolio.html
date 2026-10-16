@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=80" />
+  <link rel="stylesheet" href="css/style.css?v=81" />
 </head>
 <body>
   <a class="skip-link" href="#main-content">Skip to main content</a>
@@ -149,9 +149,6 @@
   </div>
 
   <!-- ── GLOBAL UI ──────────────────────────────── -->
-  <button id="scroll-arrow" class="scroll-arrow" aria-label="Scroll down">
-    <svg width="16" height="28" viewBox="0 0 16 28" fill="none" aria-hidden="true"><line x1="8" y1="0" x2="8" y2="20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M1 16l7 8 7-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  </button>
 
   <!-- Now playing (archive tracks from audio.musicanossa.net). Driven by js/photo.js; shown while a track is loaded.
        Minimize slides it off to the right, leaving the arrow tab to bring it back. -->
@@ -193,7 +190,12 @@
     </div>
   </div>
 
-  <script src="js/app.js?v=71"></script>
+  <!-- Scroll hint: shown at the top of any page with more content below; fades out once you scroll. -->
+  <button id="scroll-arrow" class="scroll-arrow" type="button" aria-label="Scroll down">
+    <svg viewBox="0 0 14 30" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 1v27M1.5 22.5L7 28l5.5-5.5"/></svg>
+  </button>
+
+  <script src="js/app.js?v=72"></script>
   <script src="js/archive-data.js?v=5"></script>
   <script src="js/photo.js?v=78"></script>
 </body>
