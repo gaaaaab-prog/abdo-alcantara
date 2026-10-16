@@ -319,51 +319,32 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 }
 .pulldown-menu button:hover { background: rgba(15,15,15,0.06); }
 
-/* ── PHOTO TABS ───────────────────────────────── */
-
+/* ── ARCHIVE FILTERS (Acervo: format · style) ── */
+/* Text-link filters, centred under the top edge; rendered by photo.js. Active = underlined. */
 .photo-tabs {
-  position: fixed; top: 24px; left: 50%;
-  transform: translateX(-50%); z-index: 250;
-  display: flex; gap: 24px;
+  position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 250;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 34px;
+  max-width: calc(100vw - 2 * 300px);
   opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
 }
 .photo-tabs.visible { opacity: 1; pointer-events: all; }
-
-.photo-tab-group { position: relative; }
-
-.photo-tab {
-  background: none; border: none;
-  font-family: var(--font); font-size: 0.78rem; font-weight: 500;
-  letter-spacing: 0.08em; text-transform: lowercase;
-  color: var(--muted); cursor: pointer;
-  padding: 8px 14px; display: flex; align-items: center; gap: 6px;
-  transition: color 0.25s, background 0.25s; border-radius: 6px;
+.photo-tabs[hidden] { display: none; }
+.af-group { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 0; white-space: nowrap; }
+.af-label { margin-right: 12px; font-size: 0.74rem; color: var(--muted); opacity: 0.75; }
+.af-link {
+  background: none; border: none; padding: 2px 1px; cursor: pointer;
+  font: inherit; font-size: 0.86rem; color: var(--muted);
+  text-decoration: underline; text-decoration-color: transparent; text-underline-offset: 4px; text-decoration-thickness: 1px;
+  transition: color 0.2s, text-decoration-color 0.2s;
 }
-.photo-tab:hover { color: var(--text); }
-.photo-tab.active { color: var(--text); text-decoration: underline; text-underline-offset: 4px; }
-
-.dropdown-arrow { width: 10px; height: 10px; transition: transform 0.3s; }
-.photo-tab.dropdown-open .dropdown-arrow { transform: rotate(180deg); }
-
-.photo-dropdown {
-  position: absolute; top: 100%; left: 0; margin-top: 4px;
-  background: rgba(245,245,240,0.95);
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  border-radius: 6px; padding: 6px 0;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-  display: none; flex-direction: column; min-width: 110px;
+.af-link:hover { color: var(--text); text-decoration-color: rgba(15,15,15,0.35); }
+.af-link.active { color: var(--text); text-decoration-color: currentColor; }
+.af-link:disabled { opacity: 0.4; cursor: default; text-decoration-color: transparent; color: var(--muted); }
+.af-sep { color: var(--muted); opacity: 0.5; margin: 0 7px; }
+/* Narrower desktops/tablets: filters sit under the brand instead of between the hamburger and the brand. */
+@media (max-width: 1180px) {
+  .photo-tabs { top: 84px; max-width: calc(100vw - 48px); }
 }
-.photo-dropdown.open { display: flex; }
-
-.photo-filter {
-  background: none; border: none;
-  font-family: var(--font); font-size: 0.75rem;
-  color: var(--muted); padding: 7px 16px;
-  cursor: pointer; text-align: left;
-  transition: color 0.15s, background 0.15s;
-}
-.photo-filter:hover { background: rgba(15,15,15,0.04); color: var(--text); }
-.photo-filter.active { color: var(--text); font-weight: 400; text-decoration: underline; text-underline-offset: 3px; }
 
 /* ── FLOATING IMAGES ──────────────────────────── */
 
@@ -402,7 +383,6 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 /* ── RECORD ARCHIVE (floating covers) ─────────── */
 /* Square covers that flip to the reverse side when enlarged. Physics/size match the old photos. */
 
-.photo-tabs[hidden] { display: none; }
 
 .float-img.record { overflow: visible; box-shadow: none; background: none; perspective: 900px; }
 .float-img.record.enlarged { box-shadow: none; }
@@ -505,12 +485,56 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 .tracklist li.unavailable .tr-btn { opacity: 0.4; cursor: default; }
 .tracklist li.tr-off { opacity: 0.38; }
 
+/* Filtered-out covers fade away (opacity is also set inline so the physics skips them). */
+.float-img.filtered-out { pointer-events: none; }
+
+/* ── COVER VIEWER (record page: double-click the cover) ── */
+.album-cover--static { cursor: zoom-in; }
+.zv {
+  position: fixed; inset: 0; z-index: 2000;
+  background: rgba(245, 245, 240, 0.86);
+  backdrop-filter: blur(18px) saturate(140%); -webkit-backdrop-filter: blur(18px) saturate(140%);
+  opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+}
+.zv.open { opacity: 1; pointer-events: all; }
+.zv-stage {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  overflow: hidden; cursor: zoom-in; touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.zv.zoomed .zv-stage { cursor: grab; }
+.zv.zoomed .zv-stage:active { cursor: grabbing; }
+.zv-img {
+  max-width: min(88vw, 1100px); max-height: 82vh; object-fit: contain; display: block;
+  box-shadow: 0 18px 70px rgba(0, 0, 0, 0.25); border-radius: 3px;
+  transform-origin: center center; will-change: transform;
+}
+.zv-bar {
+  position: absolute; left: 50%; bottom: 28px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 4px; padding: 4px;
+  background: rgba(250, 250, 246, 0.6); border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 999px;
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 6px 24px rgba(15, 15, 15, 0.12);
+}
+.zv-btn {
+  min-width: 36px; height: 36px; padding: 0 10px; border: none; border-radius: 999px; background: none;
+  font: inherit; font-size: 1.05rem; color: var(--text); cursor: pointer; transition: background 0.15s;
+}
+.zv-btn:hover { background: rgba(15, 15, 15, 0.07); }
+.zv-fit { font-size: 0.78rem; letter-spacing: 0.04em; }
+.zv-level { min-width: 46px; text-align: center; font-size: 0.75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.zv-close {
+  position: absolute; top: 22px; right: 26px; width: 40px; height: 40px; border: none; border-radius: 50%;
+  background: none; font: inherit; font-size: 1.5rem; line-height: 1; color: var(--text); cursor: pointer;
+}
+.zv-close:hover { background: rgba(15, 15, 15, 0.07); }
+
 /* ── RESPONSIVE ───────────────────────────────── */
 
 @media (max-width: 680px) {
   .site-brand { top: 20px; right: 20px; font-size: 1.35rem; }
   .nav-pulldown { top: 16px; left: 16px; }
-  .photo-tabs { top: 58px; gap: 8px; } /* below the brand so they don't collide on narrow screens */
+  .photo-tabs { top: 62px; max-width: calc(100vw - 32px); gap: 4px 20px; } /* below the brand so they don't collide on narrow screens */
+  .af-link { font-size: 0.8rem; }
   .page-hero { padding: 0 24px 48px; }
   .page-body { padding: 0 24px 80px; }
   .nav-word { font-size: clamp(2.8rem, 15vw, 5rem); }
