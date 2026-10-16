@@ -49,23 +49,21 @@ body {
      where the letters overlap the logo's line they turn white. CSS has no divide blend (and
      mix-blend-mode inside this fixed button is isolated), so the negative is a white copy of the name (.brand-neg)
      masked by the logo itself; both copies of the name share .brand-text so they line up exactly. */
-  width: 6.51em; height: 3.949em;   /* the name's old width (6.2em) + 5%; 1000 x 606.61 viewBox */
+  width: 6.2em; height: 3.761em;   /* 1000 x 606.61 viewBox */
 }
 .site-brand .brand-logo, .site-brand .brand-neg { position: absolute; inset: 0; pointer-events: none; }
 .site-brand .brand-logo { z-index: 1; width: 100%; height: 100%; }
 .site-brand .brand-text {
-  /* Inside the logo, placed so the logo's first dot (centre x 331.3, y 135.8 of the 1000 x 607 viewBox, 39 units wide)
-     sits exactly on the dot of the "i" (centre 2.102em from the name's left, 0.167em from its top at line-height 1).
-     left/top are in the name's own em: left = 331.3/1000 x 6.51/0.84 - 2.102, top = 135.8/606.61 x 3.949/0.84 - 0.167. */
-  position: absolute; left: 0.465em; top: 0.886em;
-  font-size: 0.84em; line-height: 1; white-space: nowrap;   /* 0.8em + 5% */
+  /* 0.8em ≈ the frame's inside width; line-height 1 puts Inter's baseline 0.8635 x font-size below the top,
+     the top value was then tuned by eye with Gabriel ("higher" steps); note top/right em are the name's own font-size. */
+  position: absolute; right: 0.575em; top: -0.306em;   /* em = the name's own size; right: the last letter ends at the centre of the frame's right stroke (x 920.5 of 1000) */
+  font-size: 0.8em; line-height: 1; white-space: nowrap;
 }
 .site-brand .brand-word { z-index: 0; color: #0f0f0f; }
 .site-brand .brand-neg {
   z-index: 2; color: #fff;
-  /* masked by the logo's lines only (no dots), so the logo's dot covers the i's dot instead of turning it white */
-  -webkit-mask: url(../images/mn-logo-mark.svg) no-repeat 0 0 / 100% 100%;
-          mask: url(../images/mn-logo-mark.svg) no-repeat 0 0 / 100% 100%;
+  -webkit-mask: url(../images/mn-logo.svg) no-repeat 0 0 / 100% 100%;
+          mask: url(../images/mn-logo.svg) no-repeat 0 0 / 100% 100%;
 }
 
 /* ── FLOATING NAV ─────────────────────────────── */
@@ -379,7 +377,7 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 .af-sep { color: var(--muted); opacity: 0.5; margin: 0 7px; }
 /* Narrower desktops/tablets: filters sit under the brand instead of between the hamburger and the brand. */
 @media (max-width: 1180px) {
-  .photo-tabs { top: calc(28px + 3.949 * clamp(1.6rem, 3.2vw, 2.8rem) + 12px); max-width: calc(100vw - 48px); } /* just below the logo */
+  .photo-tabs { top: calc(28px + 3.761 * clamp(1.6rem, 3.2vw, 2.8rem) + 12px); max-width: calc(100vw - 48px); } /* just below the logo */
 }
 
 /* ── FLOATING IMAGES ──────────────────────────── */
@@ -569,7 +567,7 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 @media (max-width: 680px) {
   .site-brand { top: 20px; right: 20px; font-size: 1.35rem; }
   .nav-pulldown { top: 16px; left: 16px; }
-  .photo-tabs { top: calc(20px + 3.949 * 1.35rem + 12px); max-width: calc(100vw - 32px); gap: 4px 20px; } /* below the brand so they don't collide on narrow screens */
+  .photo-tabs { top: calc(20px + 3.761 * 1.35rem + 12px); max-width: calc(100vw - 32px); gap: 4px 20px; } /* below the brand so they don't collide on narrow screens */
   .af-link { font-size: 0.8rem; }
   .page-hero { padding: 0 24px 48px; }
   .page-body { padding: 0 24px 80px; }
