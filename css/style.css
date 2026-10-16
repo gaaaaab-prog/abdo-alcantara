@@ -54,10 +54,12 @@ body {
 .site-brand .brand-logo, .site-brand .brand-neg { position: absolute; inset: 0; pointer-events: none; }
 .site-brand .brand-logo { z-index: 1; width: 100%; height: 100%; }
 .site-brand .brand-text {
-  /* 0.8em ≈ the frame's inside width; line-height 1 puts Inter's baseline 0.8635 x font-size below the top,
-     the top value was then tuned by eye with Gabriel ("higher" steps); note top/right em are the name's own font-size. */
-  position: absolute; right: 0.575em; top: -0.306em;   /* em = the name's own size; right: the last letter ends at the centre of the frame's right stroke (x 920.5 of 1000) */
-  font-size: 0.84em; line-height: 1; white-space: nowrap;   /* 0.8em + 5%; top/right scale with it */
+  /* Edge to edge: the ink of "M" starts on the centre of the logo frame's left stroke (x 90.1 of 1000) and the ink of
+     the last "a" ends on the centre of the right stroke (x 920.5). Ink runs 0.0805em-6.1431em of the name's box.
+     The baseline (top + 0.8635 x font-size at line-height 1) is tuned by eye with Gabriel (steps of 0.065em).
+     left/top are in the name's own em. */
+  position: absolute; left: 0.573em; top: -0.276em;   /* one step (0.065em) lower than the tuned baseline, per Gabriel */
+  font-size: 0.897em; line-height: 1; white-space: nowrap;
 }
 .site-brand .brand-word { z-index: 0; color: #0f0f0f; }
 .site-brand .brand-neg {
