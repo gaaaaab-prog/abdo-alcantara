@@ -76,8 +76,41 @@ const floatingWords = (() => {
     new FloatingWord(el, cx + (Math.random() - 0.5) * 20, cy + (Math.random() - 0.5) * 15, base + (i / n) * Math.PI * 2)
   );
 })();
-document.fonts.ready.then(() => floatingWords.forEach(fw => fw.measure()));
-window.addEventListener('resize', () => floatingWords.forEach(fw => fw.measure()));
+// Gabriel's negative look on the home page: where a floating word crosses the logo's ink it turns white.
+// White copies of the words live inside the brand's .brand-neg layer (already masked by the logo) and
+// follow the words; each copy takes the word's own alpha, so faded words stay faint.
+const brandEl = document.getElementById('site-brand'), brandNeg = brandEl && brandEl.querySelector('.brand-neg');
+const wordNegs = brandNeg ? floatingWords.map(fw => {
+  const s = document.createElement('span');
+  s.className = 'nav-neg'; s.textContent = fw.el.textContent; s.hidden = true;
+  brandNeg.appendChild(s); return s;
+}) : [];
+let brandRect = null;
+function measureWordNegs() {
+  if (!brandNeg) return;
+  brandRect = brandEl.getBoundingClientRect();
+  floatingWords.forEach((fw, i) => { wordNegs[i].style.fontSize = getComputedStyle(fw.el).fontSize; });
+}
+function wordAlpha(el) {   // colour alpha x opacity, e.g. rgba(15, 15, 15, 0.22) at opacity 1 -> 0.22
+  const cs = getComputedStyle(el), m = cs.color.match(/rgba?\(([^)]+)\)/), parts = m ? m[1].split(',') : [];
+  return (parts.length === 4 ? parseFloat(parts[3]) : 1) * parseFloat(cs.opacity);
+}
+function updateWordNegs() {
+  if (!brandRect) return;
+  const b = brandRect;
+  floatingWords.forEach((fw, i) => {
+    const n = wordNegs[i];
+    const over = fw.x < b.right && fw.x + fw.w > b.left && fw.y < b.bottom && fw.y + fw.h > b.top;
+    const a = over ? wordAlpha(fw.el) : 0;
+    if (a < 0.01) { if (!n.hidden) n.hidden = true; return; }
+    n.hidden = false;
+    n.style.opacity = a.toFixed(3);
+    n.style.transform = `translate3d(${fw.x - b.left}px,${fw.y - b.top}px,0)`;
+  });
+}
+const measureAll = () => { floatingWords.forEach(fw => fw.measure()); measureWordNegs(); };
+document.fonts.ready.then(measureAll);
+window.addEventListener('resize', measureAll);
 let loopRunning = false, idleFrames = 0;
 const extraTicks = [];
 function registerTick(fn) { if (!extraTicks.includes(fn)) extraTicks.push(fn); }
@@ -101,6 +134,7 @@ function loop(now) {
       }
     }
   }
+  updateWordNegs();
   extraTicks.forEach(fn => fn(now));
   if (!mouseActive) {
     let maxVSq = 0;
