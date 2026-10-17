@@ -460,7 +460,7 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 }
 .float-img.enlarged .record-hint { opacity: 1; transition-delay: 0.35s; }
 
-/* ── RECORD PAGE (#album/<id>) ────────────────── */
+/* ── RECORD PAGE (#acervo/<id>) ────────────────── */
 
 .page-body.album-page { padding-top: 112px; min-height: 100vh; }
 
