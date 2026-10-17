@@ -231,7 +231,7 @@ window.destroyPhotoFloat = function() {
 // Filters: two rows of text links (format, style). A record shows when it matches every active
 // filter; clicking the active link again clears it. Filtered-out covers fade out and leave the physics
 // (tick/collisions skip opacity 0); list rows are hidden.
-const FILTERS = [['format', ['LP', '7" Single']], ['style', ['jazz', 'MPB', 'bossa', 'samba', 'forró']]];
+const FILTERS = [['format', ['LP', '7" Single']], ['style', ['jazz', 'MPB', 'bossa', 'samba', 'forró', 'psychedelic']]];
 const activeFilter = { format: null, style: null };
 // Clicking a group's word (format / style) folds its links away; a folded group still shows its active value.
 const collapsed = { format: false, style: false };
@@ -528,7 +528,7 @@ function closeCoverViewer() {
 }
 window.addEventListener('popstate', closeCoverViewer);
 
-// Record page (#acervo/<id>). Called by app.js whenever the record page is shown.
+// Record page (#acervo/<id>): details + article (left), cover (right), tracklist, credits. Called by app.js whenever the record page is shown.
 window.renderAlbum = function(id) {
   const rec = byId(id);
   if (!rec) { App.showPage('acervo', 'replace'); return; }
@@ -548,25 +548,29 @@ window.renderAlbum = function(id) {
     return `<li data-i="${i}" data-pos="${esc(pos)}" data-dur="${esc(dur)}" data-title="${esc(title)}"><button type="button" class="tr-btn" aria-label="Play ${esc(title)}">`
       + `<span class="tr-pos">${esc(pos)}</span>${name}<span class="tr-dur">${esc(dur)}</span></button></li>`;
   }).join('');
-  const notes = (rec.notes || []).map(t => `<p>${esc(t)}</p>`).join('');
+  // Credits (personnel): [role, names] rows, shown under the tracklist.
+  const credits = (rec.personnel || []).map(([role, names]) => `<div><dt>${esc(role)}</dt><dd>${esc(names)}</dd></div>`).join('');
   albumView.innerHTML = `
     <div class="album-meta">
       <p class="label-upper album-kicker">Nº ${esc(rec.num)}</p>
       <h1 class="album-title">${esc(rec.title)}</h1>
       <p class="album-artist">${esc(rec.artist)}</p>
       <dl class="album-facts">${facts}</dl>
-      ${notes ? `<div class="album-notes">${notes}</div>` : ''}
     </div>
     ${rec.back ? `<button type="button" class="album-cover" aria-label="Flip cover" title="Click to flip · double-click to zoom">${cardHTML(rec, false)}</button>`
       : `<div class="album-cover album-cover--static" title="Double-click to zoom">${cardHTML(rec, false)}</div>`}
+    <section class="album-article" aria-label="Article">
+      <h2 class="label-upper">Article</h2>
+      ${rec.article || '<p class="album-empty">An article about the artist and this release is on its way.</p>'}
+    </section>
     ${tracks ? `<section class="album-section" aria-label="Tracklist">
       <h2 class="label-upper">Tracklist</h2>
       <ol class="tracklist">${tracks}</ol>
     </section>` : ''}
-    <section class="album-section album-article" aria-label="Article">
-      <h2 class="label-upper">Article</h2>
-      ${rec.article || '<p class="album-empty">An article about the artist and this release is on its way.</p>'}
-    </section>`;
+    ${credits ? `<section class="album-section album-credits" aria-label="Credits">
+      <h2 class="label-upper">Credits</h2>
+      <dl class="credits-list">${credits}</dl>
+    </section>` : ''}`;
   // Cover: single click flips (when there is a back), double-click opens the zoomable viewer on the side showing.
   const cover = albumView.querySelector('.album-cover');
   if (cover) {
