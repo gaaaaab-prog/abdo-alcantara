@@ -57,7 +57,7 @@ function showInfo(rec) {
   infoEl.classList.add('visible');
 }
 function hideInfo() { if (infoEl) infoEl.classList.remove('visible'); }
-function openAlbum(id) { App.showPage('album', 'push', id); }
+function openAlbum(id) { App.showPage('record', 'push', id); }
 
 class FloatingImage {
   constructor(el, x, y, angle, rec) {
@@ -151,7 +151,7 @@ function measureAvoidRects() {
   }
   add(document.querySelector('.site-brand'));               // the logo
   add(document.querySelector('.site-brand .brand-word'));   // the name, which hangs just below it
-  if (document.body.classList.contains('scrolled')) document.querySelectorAll('#page-film-photo .hero-name, #page-film-photo .hero-tagline').forEach(add);
+  if (document.body.classList.contains('scrolled')) document.querySelectorAll('#page-acervo .hero-name, #page-acervo .hero-tagline').forEach(add);
   avoidRects = out;
 }
 function avoidWords(fi) {
@@ -417,7 +417,7 @@ if (np.el) {
   np.next.addEventListener('click', () => playAt(current + 1));
   np.prev.addEventListener('click', prevTrack);
   np.close.addEventListener('click', stopTracks);
-  np.cover.addEventListener('click', () => { if (queue) App.showPage('album', 'push', queue.rec.id); });
+  np.cover.addEventListener('click', () => { if (queue) App.showPage('record', 'push', queue.rec.id); });
   np.seek.addEventListener('pointerdown', () => { if (!np.seek.disabled) { seeking = true; seekChanged = false; } });
   // A press that ends without moving the value fires no 'change': release the bar so it follows playback again.
   const releaseSeek = () => setTimeout(() => { if (seeking && !seekChanged) { seeking = false; updateBar(); } }, 0);
@@ -528,10 +528,10 @@ function closeCoverViewer() {
 }
 window.addEventListener('popstate', closeCoverViewer);
 
-// Record page (#album/<id>). Called by app.js whenever the album page is shown.
+// Record page (#acervo/<id>). Called by app.js whenever the record page is shown.
 window.renderAlbum = function(id) {
   const rec = byId(id);
-  if (!rec) { App.showPage('film-photo', 'replace'); return; }
+  if (!rec) { App.showPage('acervo', 'replace'); return; }
   shownRecId = rec.id;
   let n = 0;
   const facts = factsHTML(rec, ['artist', 'year', 'label', 'catno', 'country', 'style', 'media', 'matrix']);
@@ -580,10 +580,10 @@ window.renderAlbum = function(id) {
   markRows(); // reflect the site-wide player if this record is the one playing
 };
 const albumBack = document.getElementById('album-back');
-if (albumBack) albumBack.addEventListener('click', () => App.showPage('film-photo'));
+if (albumBack) albumBack.addEventListener('click', () => App.showPage('acervo'));
 
-// Self-init: app.js runs before this script, so a page loaded directly on #film-photo or
-// #album/<id> needs initialising here.
-if (document.getElementById('page-film-photo')?.classList.contains('active')) window.initPhotoFloat();
-if (document.getElementById('page-album')?.classList.contains('active')) window.renderAlbum(location.hash.split('/')[1] || '');
+// Self-init: app.js runs before this script, so a page loaded directly on #acervo or
+// #acervo/<id> needs initialising here.
+if (document.getElementById('page-acervo')?.classList.contains('active')) window.initPhotoFloat();
+if (document.getElementById('page-record')?.classList.contains('active')) window.renderAlbum(location.hash.split('/').slice(1).join('/'));
 })();

@@ -6,7 +6,7 @@ const REPULSE_FORCE = 0.045, REPULSE_BUFFER = 40, REPULSE_HARD_THRESHOLD = 0.85,
 const NAV_CONFIG = { friction: FRICTION, drift: DRIFT_FORCE, maxSpeed: MAX_SPEED, centerY: 0.42 };
 const DEFAULT_PAGE = 'sobre';
 // Only pages present in the HTML are routable, so a deploy where the HTML and JS briefly disagree can't crash.
-const pages = Object.fromEntries(Object.entries({ sobre: 'page-sobre', selos: 'page-selos', 'film-photo': 'page-film-photo', album: 'page-album' })
+const pages = Object.fromEntries(Object.entries({ sobre: 'page-sobre', selos: 'page-selos', acervo: 'page-acervo', record: 'page-record' })
   .map(([k, id]) => [k, document.getElementById(id)]).filter(([, el]) => el));
 const navWords = document.querySelectorAll('.nav-word');
 const floatNav = document.getElementById('float-nav'), navPulldownEl = document.getElementById('nav-pulldown');
@@ -119,26 +119,29 @@ function updateScrollHint() {
   const more = document.documentElement.scrollHeight - window.innerHeight > 80;
   scrollArrow.classList.toggle('visible', more && window.scrollY <= 40);
 }
-// Hash format: #page or #page/param (e.g. #album/r01)
-const urlFor = (key, param) => key === DEFAULT_PAGE ? location.pathname + location.search : '#' + key + (param ? '/' + param : '');
-const HASH_ALIASES = { music: 'selos' }; // old #music links open Selos
+// Addresses: / (Sobre), #selos, #acervo, and #acervo/<record id> for a record page (page key 'record').
+// Anything else opens Sobre.
+const urlFor = (key, param) => key === DEFAULT_PAGE ? location.pathname + location.search
+  : key === 'record' ? '#acervo/' + param : '#' + key;
 function parseHash() {
-  let [k, ...rest] = location.hash.replace('#', '').split('/');
-  k = HASH_ALIASES[k] || k;
-  return pages[k] ? { key: k, param: rest.join('/') || null } : { key: DEFAULT_PAGE, param: null };
+  const [k, ...rest] = location.hash.replace('#', '').split('/');
+  const param = rest.join('/') || null;
+  const key = k === 'acervo' && param ? 'record' : k === 'record' ? null : k;   // 'record' is internal only
+  const valid = Object.hasOwn(pages, key) && (key === 'record' ? !!param : !param);
+  return valid ? { key, param } : { key: DEFAULT_PAGE, param: null };
 }
 // history: 'push' for user navigation, 'replace' for first load, 'none' when responding to Back/Forward
 function showPage(key, historyMode = 'push', param = null) {
-  if (!pages[key]) return;
+  if (!Object.hasOwn(pages, key)) return;
   Object.values(pages).forEach(p => p.classList.remove('active'));
   pages[key].classList.add('active');
   navWords.forEach(w => { const on = w.dataset.page === key; w.classList.toggle('active', on); w.classList.toggle('inactive', !on); });
   if (historyMode === 'replace') history.replaceState(null, '', urlFor(key, param));
   else if (historyMode === 'push' && (key !== currentKey || param !== currentParam)) history.pushState(null, '', urlFor(key, param));
   currentKey = key; currentParam = param;
-  if (key !== 'album') document.title = 'MusicaNossa';
+  if (key !== 'record') document.title = 'MusicaNossa';
   window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-  const isPhoto = key === 'film-photo', isAlbum = key === 'album';
+  const isPhoto = key === 'acervo', isAlbum = key === 'record';
   floatNav.classList.toggle('photo-active', isPhoto); floatNav.classList.toggle('album-active', isAlbum);
   navPulldownEl.classList.toggle('visible', isPhoto || isAlbum);
   if (photoTabsEl) photoTabsEl.classList.toggle('visible', isPhoto);
