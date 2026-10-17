@@ -43,7 +43,7 @@ body {
   color: var(--text);
   cursor: pointer; user-select: none;
   /* Temporary logo (images/mn-logo.svg) in the name's place, 5% wider than the old name (6.2em); the name hangs from the
-     logo's bottom line. Gabriel's "divide"/negative look: wherever the letters overlap the logo they turn white. CSS has
+     logo's bottom line. The "divide"/negative look: wherever the letters overlap the logo they turn white. CSS has
      no divide blend (and mix-blend-mode inside this fixed button is isolated), so .brand-neg is a white copy of the name
      masked by the logo; both copies share .brand-text so they line up exactly. */
   width: 6.51em; height: 3.949em;   /* the name's old width (6.2em) + 5%; 1000 x 606.61 viewBox */
