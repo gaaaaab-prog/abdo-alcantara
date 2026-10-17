@@ -64,6 +64,14 @@ body {
   -webkit-mask: url(../images/mn-logo.svg) no-repeat 0 0 / 100% 100%;
           mask: url(../images/mn-logo.svg) no-repeat 0 0 / 100% 100%;
 }
+/* White copies of the floating nav words (app.js keeps them on top of the real words and sets their size and
+   alpha), so a word turns white where it crosses the logo — the same negative look as the name. */
+.site-brand .nav-neg {
+  position: absolute; left: 0; top: 0;
+  font-family: var(--font); font-weight: 700; letter-spacing: -0.04em; line-height: 1;
+  white-space: nowrap; color: #fff; will-change: transform;
+  text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased;
+}
 
 /* ── FLOATING NAV ─────────────────────────────── */
 
