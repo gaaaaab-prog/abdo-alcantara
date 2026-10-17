@@ -537,21 +537,25 @@ window.renderAlbum = function(id) {
   const facts = factsHTML(rec, ['artist', 'year', 'label', 'catno', 'country', 'style', 'media', 'matrix']);
   // Medley parts (B1.2, B1.3…) play as part of B1.1's file: not greyed when B1.1 is playable.
   const liveMedleys = new Set((rec.tracks || []).filter(t => t[3] && /\.1$/.test(t[0])).map(t => t[0].replace(/\.1$/, '')));
-  const tracks = (rec.tracks || []).map(([pos, title, dur, url]) => {
+  // Track rows: [pos, title, duration, url, credits]; credits (optional) show as a small line under the title.
+  const tracks = (rec.tracks || []).map(([pos, title, dur, url, credits]) => {
+    const name = `<span class="tr-title">${esc(title)}${credits ? `<span class="tr-credits">${esc(credits)}</span>` : ''}</span>`;
     if (!url) {
       const inMedley = liveMedleys.has(String(pos).replace(/\.\d+$/, '')) && /\.\d+$/.test(pos);
-      return `<li${inMedley ? '' : ' class="tr-off" title="Not available yet"'}><span class="tr-pos">${esc(pos)}</span><span class="tr-title">${esc(title)}</span><span class="tr-dur">${esc(dur)}</span></li>`;
+      return `<li${inMedley ? '' : ' class="tr-off" title="Not available yet"'}><span class="tr-pos">${esc(pos)}</span>${name}<span class="tr-dur">${esc(dur)}</span></li>`;
     }
     const i = n++;
     return `<li data-i="${i}" data-pos="${esc(pos)}" data-dur="${esc(dur)}" data-title="${esc(title)}"><button type="button" class="tr-btn" aria-label="Play ${esc(title)}">`
-      + `<span class="tr-pos">${esc(pos)}</span><span class="tr-title">${esc(title)}</span><span class="tr-dur">${esc(dur)}</span></button></li>`;
+      + `<span class="tr-pos">${esc(pos)}</span>${name}<span class="tr-dur">${esc(dur)}</span></button></li>`;
   }).join('');
+  const notes = (rec.notes || []).map(t => `<p>${esc(t)}</p>`).join('');
   albumView.innerHTML = `
     <div class="album-meta">
       <p class="label-upper album-kicker">Nº ${esc(rec.num)}</p>
       <h1 class="album-title">${esc(rec.title)}</h1>
       <p class="album-artist">${esc(rec.artist)}</p>
       <dl class="album-facts">${facts}</dl>
+      ${notes ? `<div class="album-notes">${notes}</div>` : ''}
     </div>
     ${rec.back ? `<button type="button" class="album-cover" aria-label="Flip cover" title="Click to flip · double-click to zoom">${cardHTML(rec, false)}</button>`
       : `<div class="album-cover album-cover--static" title="Double-click to zoom">${cardHTML(rec, false)}</div>`}
