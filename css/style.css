@@ -508,6 +508,9 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
 .tracklist li { display: flex; gap: 14px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; break-inside: avoid; }
 .tr-pos { flex: 0 0 2.2em; color: var(--muted); font-size: 0.8rem; padding-top: 1px; }
 .tr-title { flex: 1; }
+.tr-credits { display: inline-block; width: 100%; font-size: 0.76rem; color: var(--muted); line-height: 1.45; margin-top: 2px; }
+.album-notes { margin-top: 26px; max-width: 56ch; }
+.album-notes p { font-size: 0.86rem; line-height: 1.7; color: #55554f; margin: 0 0 0.8em; }
 .tr-dur { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; }
 /* Playable tracklist: the whole row is the play button. */
 .tracklist li:has(.tr-btn) { padding: 0; }
