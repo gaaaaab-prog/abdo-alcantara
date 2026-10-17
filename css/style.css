@@ -184,6 +184,7 @@ body.scrolled .hero-tagline { opacity: 1; pointer-events: all; }
   cursor: pointer; transition: background 0.15s;
 }
 .archive-entry:hover { background: rgba(0,0,0,0.015); }
+.archive-entry[hidden] { display: none; } /* rows left out by the format/style filters */
 
 .me-num { font-size: 0.66rem; color: var(--muted); letter-spacing: 0.07em; }
 .me-title { font-size: 0.95rem; font-weight: 500; }
