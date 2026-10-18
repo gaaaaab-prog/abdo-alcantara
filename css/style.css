@@ -109,18 +109,18 @@ body.scrolled .nav-word,
 /* ── SCROLL ARROW (global scroll hint, bottom-left) */
 
 .scroll-arrow {
-  /* Left-aligned with the page titles (60 px gutter; the button's 9 px padding is subtracted). */
+  /* Left-aligned with the page titles (arrow centre at 67 px = 51 left + 8 padding + 8 half-width). */
   position: fixed; left: 51px; bottom: 26px; z-index: 900;
-  width: 32px; height: 44px; padding: 7px 9px;
+  width: 32px; height: 46px; padding: 7px 8px;
   background: none; border: none; cursor: pointer;
   color: var(--text);
   opacity: 0; pointer-events: none;
   transition: opacity 0.7s ease, bottom 0.4s ease;
 }
-.scroll-arrow svg { display: block; width: 14px; height: 30px; }
-.scroll-arrow.visible { opacity: 0.38; pointer-events: all; }
+.scroll-arrow svg { display: block; width: 16px; height: 32px; } /* bold (stroke 2.6) so it reads as "scroll" — Oct 17 */
+.scroll-arrow.visible { opacity: 0.8; pointer-events: all; }
 .scroll-arrow.visible svg { animation: arrow-drift 3.2s ease-in-out infinite; }
-.scroll-arrow.visible:hover { opacity: 0.75; }
+.scroll-arrow.visible:hover { opacity: 1; }
 
 @keyframes arrow-drift {
   0%, 60%, 100% { transform: translateY(0); }
